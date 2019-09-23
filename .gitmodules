@@ -1,0 +1,9 @@
+[submodule "lib/source-sdk-2013"]
+	path = lib/source-sdk-2013
+	url = https://github.com/ValveSoftware/source-sdk-2013
+[submodule "lib/imgui"]
+	path = lib/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "lib/glm"]
+	path = lib/glm
+	url = https://github.com/g-truc/glm
