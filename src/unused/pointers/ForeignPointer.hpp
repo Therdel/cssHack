@@ -1,9 +1,7 @@
 //
 // Created by therdel on 29.06.19.
 //
-
-#ifndef CSSHACK_FOREIGNPOINTER_HPP
-#define CSSHACK_FOREIGNPOINTER_HPP
+#pragma once
 
 #include <cstdint>  // uintptr_t
 #include <cstddef> // ptrdiff_t
@@ -91,5 +89,3 @@ public:
 		return m_value;
 	}
 };
-
-#endif //CSSHACK_FOREIGNPOINTER_HPP

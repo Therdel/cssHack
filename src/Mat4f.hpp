@@ -1,9 +1,7 @@
 //
 // Created by therdel on 29.06.19.
 //
-
-#ifndef CSSHACK_MAT4F_HPP
-#define CSSHACK_MAT4F_HPP
+#pragma once
 
 #include <array>
 
@@ -51,5 +49,3 @@ struct Mat4f {
 		return result;
 	}
 };
-
-#endif //CSSHACK_MAT4F_HPP

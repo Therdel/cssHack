@@ -1,9 +1,7 @@
 //
 // Created by therdel on 29.06.19.
 //
-
-#ifndef CSSHACK_ESP_HPP
-#define CSSHACK_ESP_HPP
+#pragma once
 
 #include <array>
 #include <optional>
@@ -104,5 +102,3 @@ private:
 
 	void drawBoneBoxes() const;
 };
-
-#endif //CSSHACK_ESP_HPP
