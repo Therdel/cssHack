@@ -1,0 +1,45 @@
+TODO:
+    - central, generic user configuration.
+        - features could register themselves in the configuration
+        - changes to the config could propagate back to Features using Observer pattern
+        - changes are made using the menu
+        - i want to store my config in a file
+    - log should hold all messages in memory, with timestamp
+        - GUI should be able to display the messages
+    - internal configuration header
+        - log level
+        - key bindings
+        x offsets
+    - aimbot
+        - visibility check: radar?
+        x fov restricted aim by distance
+        - enemy crouch check
+        - bone/hitbox aim
+    - triggerbot
+        - auto knife
+            auto right / left
+
+FIXME:
+    - bunnyhop sometimes won't jump. Dirtily fixed by +jump.
+
+DONE:
+    x aimbot
+        x aimbot update on enemy pos update
+    x Logging should go to central, configurable space
+        x silent
+        x debug
+            x stdout
+            x error window
+    x build VariableTweaker with ImGui
+        x variable types:
+            x sliding, numerical checkbox
+        / default values
+        x bi-directional callbacks on change
+    x change toolchain from MSVC to CMake + Clang
+        (for interop with Clion or Linux)
+
+DITCHED:
+    - hack console
+      - save to file
+      - display ingame
+      - display in external console window
