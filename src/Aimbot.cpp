@@ -261,15 +261,12 @@ void Aimbot::install() {
 }
 
 void Aimbot::uninstall() {
-	if (m_detour_viewAngles_update.isEnabled()) {
-		if (!m_detour_viewAngles_update.remove()) {
-			Log::log("Aimbot failed to un-detour update_ang");
-		}
+	if (!m_detour_viewAngles_update.remove()) {
+		Log::log("Aimbot failed to un-detour update_ang");
 	}
-	if (m_detour_viewAnglesVis_update.isEnabled()) {
-		if (!m_detour_viewAnglesVis_update.remove()) {
-			Log::log("Aimbot failed to un-detour update_vis_ang");
-		}
+
+	if (!m_detour_viewAnglesVis_update.remove()) {
+		Log::log("Aimbot failed to un-detour update_vis_ang");
 	}
 
 	// TODO: necessary?

@@ -7,13 +7,13 @@ struct Vec3f {
 	float m_y;
 	float m_z;
 
-	Vec3f(float x, float y, float z) {
+	Vec3f(float x, float y, float z) noexcept {
 		m_x = x;
 		m_y = y;
 		m_z = z;
 	}
 
-	Vec3f()
+	Vec3f() noexcept
 			: Vec3f(0, 0, 0) {
 	}
 
