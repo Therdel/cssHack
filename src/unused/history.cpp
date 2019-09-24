@@ -175,3 +175,12 @@ ForeignPointerBuilderBase<> ForeignPointerBuilder::base(LibName const &libName) 
 	return {std::make_shared<ForeignPointerBaseLibrary>(libName)};
 }
  */
+/*
+bool Input::windowFocused() const {
+	// TODO? doesn't work at all
+	Window w;
+	int revert_to;
+	XGetInputFocus(m_display, &w, &revert_to); // see man
+	return w != None && w != PointerRoot;
+}
+ */

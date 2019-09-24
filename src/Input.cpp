@@ -16,7 +16,6 @@
 
 #include <SDL2/SDL.h>
 #include <X11/Xlib.h>   // XOpenDisplay, XCloseDisplay, XGetInputFocus
-#include <dlfcn.h>      // dlsym, RTLD_DEFAULT
 #include <optional>
 
 Input *g_keyboard{nullptr};
@@ -43,15 +42,6 @@ bool Input::isDown(SDL_Keycode key) const {
 	SDL_Scancode scancode = SDL_GetScancodeFromKey(key);
 
 	return keyState[scancode] == 1;
-}
-
-bool Input::windowFocused() const {
-	return true;
-	// TODO? doesn't work at all
-	Window w;
-	int revert_to;
-	XGetInputFocus(m_display, &w, &revert_to); // see man
-	return w != None && w != PointerRoot;
 }
 
 void Input::setKeyHandler(KeyStroke key, keyHandler callback) {

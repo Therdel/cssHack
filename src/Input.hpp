@@ -43,8 +43,8 @@ struct KeyStroke {
 };
 
 #ifdef __linux__
-constexpr KeyStroke key_inject(SDLK_i, KMOD_LCTRL);
-constexpr KeyStroke key_eject(SDLK_e, KMOD_LCTRL);
+constexpr KeyStroke key_inject(SDLK_F10);
+constexpr KeyStroke key_eject(SDLK_F11);
 
 constexpr KeyStroke key_aim(SDLK_LSHIFT);
 constexpr KeyStroke key_trigger(SDLK_CAPSLOCK);
@@ -87,8 +87,6 @@ public:
 	~Input();
 
 	bool isDown(SDL_Keycode key) const;
-
-	bool windowFocused() const;
 
 	void setKeyHandler(KeyStroke key, keyHandler callback);
 
