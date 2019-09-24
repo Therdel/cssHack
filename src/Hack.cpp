@@ -44,8 +44,12 @@ void wait_for_inject_combination(Input &input) {
 	}
 }
 
-bool onEjectKey(SDL_KeyboardEvent const &) {
-	eject_from_within_hack();
+bool onEjectKey(SDL_KeyboardEvent const &event) {
+	if (event.repeat == 0) {
+		if (event.type == SDL_KEYDOWN) {
+			eject_from_within_hack();
+		}
+	}
 	return false;
 }
 
