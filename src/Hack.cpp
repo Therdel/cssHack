@@ -14,6 +14,7 @@
 #include "Visuals/ESP.hpp"
 #include "Visuals/Wallhack.hpp"
 #include "Pointers/GamePointerFactory.hpp"
+#include "Pointers/GamePointerUpdater.hpp"
 
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
 
@@ -125,6 +126,9 @@ void hack_loop() {
 
 		if (g_do_exit == false && *l_isInGame == 1) {
 			// initialize game hacks
+			// fixme: Crashes when put at main() beginning
+			// fixme: Sometimes an update after an invalidate is missing and causes a null deref
+			GamePointerUpdater l_gamePointerUpdater;
 			DrawHook l_drawHook;
 			GUI l_gui(l_drawHook, l_input);
 			l_gui.registerButton({"Update localplayer",
@@ -135,7 +139,7 @@ void hack_loop() {
 			Aimbot l_aimbot(l_gui);
 			Bunnyhop l_bunnyhop;
 			ESP l_esp(l_drawHook, l_gui, l_aimbot);
-			Wallhack l_wallhack;
+//			Wallhack l_wallhack;
 
 			while (g_do_exit == false && *l_isInGame == 1) {
 				if (g_do_exit == false && *l_isInGame == 1 &&

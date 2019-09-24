@@ -241,7 +241,7 @@ Vec3f const &Aimbot::getBulletPredictionAngles() const {
 void Aimbot::install() {
 	bool l_ang_detour_success = m_detour_viewAngles_update.install<AIMBOT_DETOUR_LEN_ON_UPDATE_ANG>(
 			GamePointerFactory::get(GamePointerDef::op_viewAngles_update),
-			&Aimbot::aim_once,
+			&Aimbot::hookViewAnglesUpdate,
 			this,
 			DetourToMethod::CODE_BEFORE_DETOUR
 	);
@@ -393,6 +393,10 @@ void Aimbot::removeVisRecoil() {
 	} else {
 		*m_visualAngles += m_recoilFix_previous / 2.0;
 	}
+}
+
+void Aimbot::hookViewAnglesUpdate() {
+	aim_once();
 }
 
 void Aimbot::hookViewAnglesVisUpdate() {

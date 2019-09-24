@@ -70,12 +70,10 @@ void Bunnyhop::hook() {
 }
 
 void Bunnyhop::unhook() {
-	// remove inc hook
 	if (!m_detour_onGround_inc.remove()) {
 		Log::log("Bunnyhop failed to un-detour inc on_ground");
 	}
 
-	// remove dec hook
 	if (!m_detour_onGround_dec.remove()) {
 		Log::log("Bunnyhop failed to un-detour dec on_ground");
 	}

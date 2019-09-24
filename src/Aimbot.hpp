@@ -128,6 +128,8 @@ private:
 
 	void removeVisRecoil();
 
+	void hookViewAnglesUpdate();
+
 	void hookViewAnglesVisUpdate();
 
 	bool is_user_shooting() const;
