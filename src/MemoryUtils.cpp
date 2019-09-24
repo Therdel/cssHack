@@ -17,7 +17,7 @@
 #include <fstream>      // std::ifstream
 #include <sys/mman.h>   // mprotect
 #include <unistd.h>     // getpagesize
-#include <dlfcn.h>      // dlopen, dlsym, dlclose
+#include <dlfcn.h>      // dlopen, dlsym, dlclose, dladdr, Dl_info
 #include <memory>       // std::unique_ptr
 #include <functional>   // std::function
 
@@ -125,6 +125,8 @@ uintptr_t MemoryUtils::lib_base_32(const std::string &libName) {
 	return *l_libBase;
 }
 
+#ifdef __linux__
+
 std::optional<std::string> MemoryUtils::loadedLibPath(LibName const &libName) {
 	std::optional<std::string> l_libPath;
 
@@ -138,6 +140,14 @@ std::optional<std::string> MemoryUtils::loadedLibPath(LibName const &libName) {
 	}
 
 	return l_libPath;
+}
+
+std::string MemoryUtils::this_lib_path() {
+	// get library path without its name
+	// https://www.unknowncheats.me/forum/counterstrike-global-offensive/248039-linux-unloading-cheat.html
+	Dl_info info;
+	dladdr((void *) &this_lib_path, &info);
+	return {info.dli_fname};
 }
 
 std::optional<int> MemoryUtils::read_protection(uintptr_t address, size_t length) {
@@ -186,6 +196,7 @@ std::optional<int> MemoryUtils::read_protection(uintptr_t address, size_t length
 
 	return protection;
 }
+#endif
 
 std::optional<MemoryUtils::MemoryProtection>
 MemoryUtils::set_memory_protection(MemoryUtils::MemoryProtection newProtection) {
@@ -311,23 +322,18 @@ MemoryUtils::scoped_remove_memory_protection(uintptr_t address, size_t length) {
 }
 
 // link with -ldl
-std::optional<uintptr_t> MemoryUtils::getSymbolAddress(std::string const &libName, std::string const &symbol) {
+std::optional<uintptr_t> MemoryUtils::getSymbolAddress(LibName const &libName, std::string const &symbol) {
 	std::optional<uintptr_t> result;
 
-	auto library = findFirstLoadedObject([&libName](dl_phdr_info const &info) {
-		return Utility::get_filename(info.dlpi_name) == libName;
-	});
+	auto libPath = loadedLibPath(libName);
 
 	// check if specified library is loaded
-	if (library.has_value()) {
-		// loaded library found
-		const char *libPath = library->dlpi_name;
-
+	if (libPath.has_value()) {
 		// get lib handle (auto-closing)
 		auto dlCloser = [](void *handle) { dlclose(handle); };
-		std::unique_ptr<void, decltype(dlCloser) &> hLib(dlopen(libPath, RTLD_NOW), dlCloser);
+		std::unique_ptr<void, decltype(dlCloser) &> hLib(dlopen(libPath->c_str(), RTLD_NOW), dlCloser);
 
-		// check if library was opened
+		// check if library could be opened
 		if (hLib != nullptr) {
 			// see man dlsym(3) on purpose of dlerror use
 			dlerror(); // clear old error
@@ -338,7 +344,7 @@ std::optional<uintptr_t> MemoryUtils::getSymbolAddress(std::string const &libNam
 				result = reinterpret_cast<uintptr_t>(address);
 			}
 		} else {
-			// library couldn't be opened, thus needn't be closed
+			// library couldn't be opened, so the handle needn't be closed
 			hLib.release();
 		}
 		if (!result.has_value()) {

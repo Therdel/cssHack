@@ -72,9 +72,11 @@ public:
 	/// \return library base address
 	static uintptr_t lib_base_32(const std::string &libName);
 
+#ifdef __linux__
 	static std::optional<std::string> loadedLibPath(LibName const &libName);
 
-#ifdef __linux__
+	/// retrieves the path of this loaded library
+	static std::string this_lib_path();
 
 	/// reads the memory protection of given range
 	/// \param address start address
@@ -82,7 +84,6 @@ public:
 	/// \return the protection (as defined in sys/mman.h),
 	/// 		or std::nullopt, if given region spans multiple mappings or isn't contained in any
 	static std::optional<int> read_protection(uintptr_t address, size_t length);
-
 #endif
 
 	/// alters the protection of a memory area
@@ -97,7 +98,7 @@ public:
 	/// \param symbol symbol name
 	/// \return address of libName::symbol or std::nullopt if library wasn't
 	/// 		loaded or symbol wasn't found in its exported symbols
-	static std::optional<uintptr_t> getSymbolAddress(std::string const &libName, std::string const &symbol);
+	static std::optional<uintptr_t> getSymbolAddress(LibName const &libName, std::string const &symbol);
 
 private:
 
