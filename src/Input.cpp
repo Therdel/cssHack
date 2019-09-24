@@ -96,7 +96,7 @@ void Input::installPollEventHook() {
 }
 
 void Input::removePollEventHook() {
-	uintptr_t l_launcherBase = MemoryUtils::lib_base_32("launcher.so");
+	uintptr_t l_launcherBase = MemoryUtils::lib_base_32(libNames::launcher);
 
 	// calculate call-relative address to original function
 	uintptr_t addr_call_pollEvent = l_launcherBase + Offsets::launcher_sdl_pollEvent_caller;

@@ -1,15 +1,11 @@
 #include <string>
-#include <iostream>
-#include <fstream>
 #include <thread>
 #include <atomic>
-#include <memory>
 #include <chrono>
 
 // own includes
 #include "Hack.hpp"
 #include "MemoryUtils.hpp"
-#include "Pointers/libNames.hpp"
 #include "Aimbot.hpp"
 #include "Bunnyhop.hpp"
 #include "Input.hpp"
@@ -22,7 +18,6 @@
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
 
 #include "Log.hpp"
-#include "Pointers/Offsets.hpp"
 
 pthread_t g_nix_hack_thread;
 // flag that tells if the hack was loaded before
@@ -257,15 +252,12 @@ void *eject_hack(void *) {
 		Log::stop();
 
 		if (g_ejectingFromWithinGame) {
-			// get library name without its name
-			// https://www.unknowncheats.me/forum/counterstrike-global-offensive/248039-linux-unloading-cheat.html
-			Dl_info info;
-			dladdr((void *) &eject_hack, &info);
+			auto libPath = MemoryUtils::this_lib_path();
 
-//		// get library handle and make it re-loadable again (RTLD_NOLOAD | RTLD_GLOBAL)
-//		// incrementing the reference count by 1
-//		// source: https://linux.die.net/man/3/dlclose
-			void *handle = dlopen(info.dli_fname, 6);
+			// get library handle and make it re-loadable again (RTLD_NOLOAD | RTLD_GLOBAL)
+			// incrementing the reference count by 1
+			// source: https://linux.die.net/man/3/dlclose
+			void *handle = dlopen(libPath.c_str(), 6);
 			// close once to decrease lib ref count because of dlopen a moment ago
 			dlclose(handle);
 
