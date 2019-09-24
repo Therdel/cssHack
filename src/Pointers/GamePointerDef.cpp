@@ -61,6 +61,13 @@ Base<>
 Base<uint8_t>
 		GamePointerDef::isIngame
 		{materialsystem, {materialsystem_isIngame}};
-Base<uint32_t >
+Base<uint32_t>
 		GamePointerDef::isInMenu
 		{vgui2, {vgui2_isInMenu}};
+// GamePointerUpdater
+Base<>
+		GamePointerDef::op_localplayer_update
+		{client, {client_op_localplayer_update}};
+Base<>
+		GamePointerDef::op_localplayer_invalidate
+		{client, {client_op_localplayer_invalidate}};

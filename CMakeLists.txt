@@ -31,7 +31,7 @@ set(HACK_SOURCES
         src/Visuals/GUI.cpp
         src/Visuals/Gui_imgui_impl_sdl.cpp
         src/Pointers/GamePointerDef.cpp
-        )
+        src/Pointers/GamePointerUpdater.cpp)
 
 set(IMGUI_SOURCES
         lib/imgui/imgui.cpp

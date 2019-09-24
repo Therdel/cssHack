@@ -23,7 +23,8 @@ namespace Offsets {
 
 	// Aimbot
 #ifdef __linux__
-	constexpr ptrdiff_t client_localplayer = 0xB915E0;
+//	constexpr ptrdiff_t client_localplayer = 0xBA3E74;
+	constexpr ptrdiff_t client_localplayer = 0xBCE5F0;
 	constexpr ptrdiff_t engine_viewAngles = 0xB37058;
 	constexpr ptrdiff_t client_viewAngleVis = 0xBC1CB4;
 	constexpr ptrdiff_t client_punch_p_base = client_localplayer;
@@ -70,13 +71,14 @@ namespace Offsets {
 #endif
 	// Input
 	constexpr ptrdiff_t launcher_sdl_pollEvent_caller = 0x32F5B;
-
 	// ESP
 	constexpr ptrdiff_t launcher_sdl_swapWindow_caller = 0x30EBC;
 	constexpr ptrdiff_t client_matViewModel = 0xBF2BE0;
 	constexpr ptrdiff_t engine_screenDimensions = 0xD23A54;
 	constexpr ptrdiff_t engine_fov_horizontal = 0xC9EAF8;
-
+	// GamePointerUpdater
+	constexpr ptrdiff_t client_op_localplayer_update = 0x56BAAA;
+	constexpr ptrdiff_t client_op_localplayer_invalidate = 0x573390;
 	// Wallhack
 	constexpr ptrdiff_t shaderapidx9_drawIndexedPrimitive_caller = 0x2DABC;
 }

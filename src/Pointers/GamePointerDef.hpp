@@ -59,4 +59,7 @@ namespace GamePointerDef {
 	// hack
 	extern Base<uint8_t> isIngame;
 	extern Base<uint32_t> isInMenu;
+	// GamePointerUpdater
+	extern Base<> op_localplayer_update;
+	extern Base<> op_localplayer_invalidate;
 }
