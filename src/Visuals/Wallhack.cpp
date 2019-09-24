@@ -17,24 +17,10 @@
 Wallhack *g_Wallhack = nullptr;
 
 Wallhack::DrawIndexedPrimitive_t Wallhack::getDrawIndexedPrimitive() {
-	auto libPath = MemoryUtils::loadedLibPath(libNames::libtogl);
-	if (!libPath.has_value()) {
-		std::string error{libNames::libtogl.name() + " base addr not found"};
-		Log::log<Log::FLUSH>(error);
-		throw std::runtime_error(error);
-	}
+	const char *symbolName = "_ZN16IDirect3DDevice920DrawIndexedPrimitiveE17_D3DPRIMITIVETYPEijjjj";
 
-	// get library handle and make it re-loadable again (RTLD_NOLOAD | RTLD_GLOBAL)
-	// incrementing the reference count by 1
-	// source: https://linux.die.net/man/3/dlclose
-	void *handle = dlopen(libPath->c_str(), 6);
-	// close once to decrease lib ref count because of dlopen a moment ago
-	dlclose(handle);
-
-	static constexpr auto symbolName = "_ZN16IDirect3DDevice920DrawIndexedPrimitiveE17_D3DPRIMITIVETYPEijjjj";
-
-	void *drawIndexedPrimitiveRaw = dlsym(handle, symbolName);
-	return reinterpret_cast<DrawIndexedPrimitive_t>(drawIndexedPrimitiveRaw);
+	auto drawIndexedPrimitiveRaw = MemoryUtils::getSymbolAddress(libNames::libtogl, symbolName);
+	return reinterpret_cast<DrawIndexedPrimitive_t>(*drawIndexedPrimitiveRaw);
 }
 
 Wallhack::Wallhack()
