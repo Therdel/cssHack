@@ -18,6 +18,7 @@ TODO:
     - triggerbot
         - auto knife
             auto right / left
+    - sigscanner using c++ stl <regex>
 
 FIXME:
     - bunnyhop sometimes won't jump. Dirtily fixed by +jump.
