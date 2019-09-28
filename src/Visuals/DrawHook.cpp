@@ -4,8 +4,8 @@
 
 #include <algorithm>    // std::remove
 
-#include <SDL2/SDL.h>    // SDL_Window, SDL_GL_SwapWindow
-//#include <SDL2/SDL_opengl.h>
+#include <SDL.h>    // SDL_Window, SDL_GL_SwapWindow
+//#include <SDL_opengl.h>
 #include <GL/gl.h>
 
 #include "DrawHook.hpp"

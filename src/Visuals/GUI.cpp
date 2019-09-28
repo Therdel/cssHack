@@ -3,7 +3,7 @@
 //
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include "Gui_imgui_impl_sdl.h"
 

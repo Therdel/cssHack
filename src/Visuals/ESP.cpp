@@ -2,7 +2,7 @@
 // Created by therdel on 29.06.19.
 //
 
-#include <SDL2/SDL.h>    // SDL_Window
+#include <SDL.h>    // SDL_Window
 #include <GL/gl.h>
 
 #include "ESP.hpp"

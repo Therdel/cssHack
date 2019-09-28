@@ -14,7 +14,7 @@
 
 #ifdef __linux__
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <X11/Xlib.h>   // XOpenDisplay, XCloseDisplay, XGetInputFocus
 #include <optional>
 

@@ -10,7 +10,7 @@
 #include <mutex>
 #include <string>
 
-#include <SDL2/SDL_keyboard.h>
+#include <SDL_keyboard.h>
 
 #include "Utility.hpp"
 
