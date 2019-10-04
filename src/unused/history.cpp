@@ -175,6 +175,8 @@ ForeignPointerBuilderBase<> ForeignPointerBuilder::base(LibName const &libName) 
 	return {std::make_shared<ForeignPointerBaseLibrary>(libName)};
 }
  */
+
+// Input.cpp
 /*
 bool Input::windowFocused() const {
 	// TODO? doesn't work at all
@@ -184,3 +186,26 @@ bool Input::windowFocused() const {
 	return w != None && w != PointerRoot;
 }
  */
+/*
+// windows includes
+#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#include <Windows.h>
+
+bool Input::isDown(int virtualKey)
+{
+  return GetAsyncKeyState(virtualKey) & 0x1;
+}
+
+bool Input::isApplicationActivated() {
+  HWND activatedHandle = GetForegroundWindow();
+  if (activatedHandle == nullptr) {
+    return false;       // No window is currently activated
+  }
+
+  DWORD procId = GetCurrentProcessId();
+  DWORD activeProcId;
+  GetWindowThreadProcessId(activatedHandle, &activeProcId);
+
+  return activeProcId == procId;
+}
+*/

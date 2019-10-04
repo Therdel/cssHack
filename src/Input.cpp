@@ -1,38 +1,36 @@
 //
 // Created by therdel on 15.06.19.
 //
+#include <optional>
 
-#include <thread>
+#include <SDL.h>
 
 #include "Input.hpp"
-#include "MemoryUtils.hpp"  // getSymbolAddress
-#include "Pointers/Offsets.hpp"
+#include "MemoryUtils.hpp"
+#include "Pointers/GamePointerFactory.hpp"
 
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
 
 #include "Log.hpp"
 
-#ifdef __linux__
-
-#include <SDL.h>
-#include <X11/Xlib.h>   // XOpenDisplay, XCloseDisplay, XGetInputFocus
-#include <optional>
+using SDL_PollEvent_t = decltype(&SDL_PollEvent);
+static SDL_PollEvent_t g_pOrigSDL_PollEvent;
 
 Input *g_keyboard{nullptr};
 
 Input::Input()
-		: m_display(XOpenDisplay(nullptr))
+		: m_op_sdl_pollEvent_call(GamePointerFactory::get(GamePointerDef::op_sdl_pollEvent_call()))
 		, m_keyHandlersMutex()
 		, m_keyHandlers()
 		, m_mouseHandlerMutex()
 		, m_mouseHandler() {
+	Log::log<Log::FLUSH>(Log::Channel::STD_OUT,
+	                     "Input Ctor");
 	g_keyboard = this;
 	installPollEventHook();
 }
 
 Input::~Input() {
-	XCloseDisplay(m_display);
-
 	removePollEventHook();
 	g_keyboard = nullptr;
 }
@@ -71,13 +69,14 @@ bool Input::removeMouseHandler() {
 }
 
 void Input::installPollEventHook() {
-	uintptr_t l_launcherBase = MemoryUtils::lib_base_32(libNames::launcher);
 
 	// calculate call-relative hook address
-	uintptr_t addr_call_pollEvent = l_launcherBase + Offsets::launcher_sdl_pollEvent_caller;
+	uintptr_t addr_call_pollEvent = m_op_sdl_pollEvent_call;
+	uintptr_t *p_call_dest_relative = (uintptr_t *) (addr_call_pollEvent + 1);
 	uintptr_t addr_after_call = addr_call_pollEvent + 0x05;
 	uintptr_t addr_hook_relative = (uintptr_t) hook_SDL_PollEvent - addr_after_call;
 
+	g_pOrigSDL_PollEvent = reinterpret_cast<SDL_PollEvent_t>(*p_call_dest_relative + addr_after_call);
 	{
 		auto scoped_reprotect = MemoryUtils::scoped_remove_memory_protection(addr_call_pollEvent + 1, 4);
 		// patch this shit
@@ -86,12 +85,11 @@ void Input::installPollEventHook() {
 }
 
 void Input::removePollEventHook() {
-	uintptr_t l_launcherBase = MemoryUtils::lib_base_32(libNames::launcher);
-
 	// calculate call-relative address to original function
-	uintptr_t addr_call_pollEvent = l_launcherBase + Offsets::launcher_sdl_pollEvent_caller;
+	uintptr_t addr_call_pollEvent = m_op_sdl_pollEvent_call;
 	uintptr_t addr_after_call = addr_call_pollEvent + 0x05;
-	uintptr_t addr_orig_relative = (uintptr_t) SDL_PollEvent - addr_after_call;
+	//uintptr_t addr_orig_relative = (uintptr_t) SDL_PollEvent - addr_after_call;
+	uintptr_t addr_orig_relative = (uintptr_t) g_pOrigSDL_PollEvent - addr_after_call;
 
 	{
 		auto scoped_reprotect = MemoryUtils::scoped_remove_memory_protection(addr_call_pollEvent + 1, 4);
@@ -157,7 +155,7 @@ static SDL_Event getNopEvent() {
 //	result.wheel.direction = SDL_MOUSEWHEEL_NORMAL;
 
 	result.type = SDL_KEYUP;
-	result.key.timestamp = std::numeric_limits<decltype(result.key.timestamp)>::max();
+	result.key.timestamp = (std::numeric_limits<decltype(result.key.timestamp)>::max)();
 	result.key.state = SDL_RELEASED;
 	result.key.repeat = 0;
 	result.key.keysym.sym = key_gui.m_keycode;
@@ -165,12 +163,9 @@ static SDL_Event getNopEvent() {
 	return result;
 }
 
-//extern "C" {
-//__attribute__ ((visibility("default")))
 int SDLCALL Input::hook_SDL_PollEvent(SDL_Event *callerEvent) {
 	return g_keyboard->detour_SDL_PollEvent(callerEvent);
 }
-//}
 
 int Input::detour_SDL_PollEvent(SDL_Event *callerEvent) {
 	if (callerEvent == nullptr) {
@@ -179,8 +174,9 @@ int Input::detour_SDL_PollEvent(SDL_Event *callerEvent) {
 
 	bool steal = false;
 
-	static SDL_Event event;
-	int eventExists = SDL_PollEvent(&event);
+	SDL_Event event;
+	//int eventExists = SDL_PollEvent(&event);
+	int eventExists = g_pOrigSDL_PollEvent(&event);
 	if (eventExists == 1) {
 		{
 			std::lock_guard<std::mutex> l_lock(m_allEventConsumerMutex);
@@ -233,27 +229,6 @@ int Input::detour_SDL_PollEvent(SDL_Event *callerEvent) {
 	return eventExists;
 }
 
-#else
-
-bool Input::isDown(int virtualKey)
-{
-	return GetAsyncKeyState(virtualKey) != 0;
-}
-
-bool Input::isApplicationActivated() {
-	HWND activatedHandle = GetForegroundWindow();
-	if (activatedHandle == nullptr) {
-		return false;       // No window is currently activated
-	}
-
-	DWORD procId = GetCurrentProcessId();
-	DWORD activeProcId;
-	GetWindowThreadProcessId(activatedHandle, &activeProcId);
-
-	return activeProcId == procId;
-}
-#endif
-
 ScopedKeyHandler::ScopedKeyHandler(Input &keyboard,
                                    KeyStroke key,
                                    Input::keyHandler handler) noexcept
@@ -266,7 +241,9 @@ ScopedKeyHandler::ScopedKeyHandler(Input &keyboard,
 ScopedKeyHandler::ScopedKeyHandler(ScopedKeyHandler &&other) noexcept
 		: m_input(other.m_input)
 		, m_key(other.m_key)
-		, m_valid(other.m_valid) { other.m_valid = false; }
+		, m_valid(other.m_valid) {
+	other.m_valid = false;
+}
 
 ScopedKeyHandler &ScopedKeyHandler::operator=(ScopedKeyHandler &&other) noexcept {
 	m_input = other.m_input;

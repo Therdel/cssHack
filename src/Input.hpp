@@ -3,20 +3,15 @@
 //
 #pragma once
 
-#ifdef __linux__
-
-#include <map>
 #include <functional>
 #include <mutex>
-#include <string>
+#include <map>
+#include <optional>
 
 #include <SDL_keyboard.h>
 
 #include "Utility.hpp"
-
-#else
-#include <windows.h>
-#endif
+#include "Pointers/SharedGamePointer.hpp"
 
 struct KeyStroke {
 	constexpr explicit KeyStroke(SDL_Keycode keycode, uint16_t modifiers = KMOD_NONE)
@@ -27,10 +22,10 @@ struct KeyStroke {
 	/// those without modifiers compare equally pairwise
 	/// and sort after those with modifiers
 	bool operator<(KeyStroke const &other) const {
-		if(m_keycode != other.m_keycode) {
+		if (m_keycode != other.m_keycode) {
 			return m_keycode < other.m_keycode;
 		} else {
-			if(m_modifiers == KMOD_NONE) {
+			if (m_modifiers == KMOD_NONE) {
 				return false;
 			} else {
 				return m_modifiers < other.m_modifiers;
@@ -42,7 +37,6 @@ struct KeyStroke {
 	uint16_t m_modifiers;
 };
 
-#ifdef __linux__
 constexpr KeyStroke key_inject(SDLK_F10);
 constexpr KeyStroke key_eject(SDLK_F11);
 
@@ -50,25 +44,9 @@ constexpr KeyStroke key_aim(SDLK_LSHIFT);
 constexpr KeyStroke key_trigger(SDLK_CAPSLOCK);
 constexpr KeyStroke key_bhop(SDLK_SPACE);
 constexpr KeyStroke key_gui(SDLK_INSERT);
-#else
-#define key_eject_comb_0    VK_LCONTROL
-#define key_eject_comb_1    0x45
-
-#define key_inject_comb_0    VK_LCONTROL
-#define key_inject_comb_1    0x49
-
-#define key_aim             VK_SHIFT
-#define key_trigger         VK_CAPITAL
-#define key_bhop            VK_LMENU
-#endif
-
-#ifdef __linux__
 
 struct SDL_KeyboardEvent;
 union SDL_Event;
-
-struct _XDisplay;
-typedef struct _XDisplay Display;
 
 class Input {
 public:
@@ -103,7 +81,7 @@ public:
 	static void injectEvent(SDL_Event *event);
 
 private:
-	Display *m_display;
+	SharedGamePointer<uintptr_t> m_op_sdl_pollEvent_call;
 	std::mutex m_keyHandlersMutex;
 	std::map<KeyStroke, keyHandler> m_keyHandlers;
 
@@ -113,9 +91,9 @@ private:
 	std::mutex m_allEventConsumerMutex;
 	std::optional<eventHandler> m_allEventConsumer;
 
-	static void installPollEventHook();
+	void installPollEventHook();
 
-	static void removePollEventHook();
+	void removePollEventHook();
 
 	std::optional<bool> callKeyHandlerIfExists(SDL_KeyboardEvent const &event);
 
@@ -126,16 +104,6 @@ private:
 
 // TODO: This is ugly as fuck. Should be a singleton.
 extern Input *g_keyboard;
-
-#else
-
-class Input {
-public:
-	static bool isDown(int virtualKey);
-
-	bool isApplicationActivated();
-};
-#endif
 
 class ScopedKeyHandler : public Utility::NonCopyable {
 public:
