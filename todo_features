@@ -19,6 +19,10 @@ TODO:
         - auto knife
             auto right / left
     - sigscanner using c++ stl <regex>
+    - log rewrite
+        - flush() next to log()
+        - remove #define DEFAULT_LOG_CHANNEL
+        ? implement schwarz/nifty counter for lifetime-management
 
 FIXME:
     - bunnyhop sometimes won't jump. Dirtily fixed by +jump.
