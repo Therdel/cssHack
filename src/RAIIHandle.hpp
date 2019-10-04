@@ -1,5 +1,6 @@
 #pragma once
-#include <windows.h>  // CloseHandle
+#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#include <Windows.h>  // CloseHandle
 
 // RAII wrapper for a windows handle, calling CloseHandle(HANDLE) on destruct
 class RAIIHandle {
