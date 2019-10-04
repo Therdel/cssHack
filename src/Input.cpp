@@ -24,8 +24,6 @@ Input::Input()
 		, m_keyHandlers()
 		, m_mouseHandlerMutex()
 		, m_mouseHandler() {
-	Log::log<Log::FLUSH>(Log::Channel::STD_OUT,
-	                     "Input Ctor");
 	g_keyboard = this;
 	installPollEventHook();
 }

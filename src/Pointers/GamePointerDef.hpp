@@ -19,7 +19,7 @@ namespace GamePointerDef {
 				, offsets(std::move(offsets))
 				, lastOffsetType(lastOffsetType) {}
 
-		std::string_view const &libName;
+		std::string_view libName;
 		std::vector<ptrdiff_t> offsets;
 		OffsetType lastOffsetType;
 	};

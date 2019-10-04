@@ -119,9 +119,6 @@ void hack_loop() {
 	  std::this_thread::sleep_for(100ms);
 	}
 	*/
-
-//	Log::log<Log::FLUSH>(libNames::client);
-//	Log::log<Log::FLUSH>("waitin");
 	Input l_input;
 	l_input.setKeyHandler(key_eject, &onEjectKey);
 	wait_for_inject_combination(l_input);
