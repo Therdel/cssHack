@@ -27,8 +27,6 @@ namespace Utility {
 		NonMovable &operator=(NonMovable &&) = delete;
 	};
 
-	extern double PI;
-
 // simple string split
 // source: https://www.bfilipek.com/2018/07/string-view-perf-followup.html
 // code: https://github.com/fenbf/StringViewTests/blob/master/StringViewTest.cpp

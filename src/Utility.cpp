@@ -3,13 +3,14 @@
 //
 #include "Utility.hpp"
 
+#include <cmath>
 #include <vector>
 #include <algorithm>    // std::find_first_of
 
 #include "Vec3f.hpp"
 
 namespace Utility {
-	double PI = std::acos(-1);
+	static const float PI = static_cast<float>(std::acos(-1));
 
 // simple string split
 // source: https://www.bfilipek.com/2018/07/string-view-perf-followup.html
@@ -42,18 +43,18 @@ namespace Utility {
 
 		size_t i = path.rfind(sep, path.length());
 		if (i != std::string_view::npos) {
-			return(path.substr(i+1, path.length() - i));
+			return (path.substr(i + 1, path.length() - i));
 		} else {
 			return path;
 		}
 	}
 
 	float toRadians(float degrees) {
-		return static_cast<float>(degrees * PI / 180.0);
+		return (degrees * PI) / 180.0f;
 	}
 
 	float toDegrees(float radians) {
-		return static_cast<float>(radians * 180.0 / PI);
+		return (radians * 180.0f) / PI;
 	}
 
 
