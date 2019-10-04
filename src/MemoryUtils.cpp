@@ -167,8 +167,6 @@ std::optional<uintptr_t> MemoryUtils::lib_base_32_timeout(std::string_view libNa
 }
 
 uintptr_t MemoryUtils::lib_base_32(std::string_view libName) {
-	if(&libName == nullptr)
-		Log::log<Log::FLUSH>("FUCKUP");
 	auto l_libBase = lib_base_32_timeout(libName, (std::chrono::milliseconds::max) ());
 	if (!l_libBase) {
 		std::string error{libName};
