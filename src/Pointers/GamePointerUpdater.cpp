@@ -5,7 +5,7 @@
 #include "GamePointerFactory.hpp"
 
 GamePointerUpdater::GamePointerUpdater()
-: m_localplayer(GamePointerFactory::get(GamePointerDef::localplayer))
+: m_localplayer(GamePointerFactory::get(GamePointerDef::localplayer()))
 , m_detour_localplayer_update()
 , m_detour_localplayer_invalidate() {
 	hook();
@@ -17,7 +17,7 @@ GamePointerUpdater::~GamePointerUpdater() {
 
 void GamePointerUpdater::hook() {
 	bool l_detour_update_success = m_detour_localplayer_update.install<GAMEPOINTERUPDATER_DETOUR_LEN_ON_UPDATE>(
-			GamePointerFactory::get(GamePointerDef::op_localplayer_update),
+			GamePointerFactory::get(GamePointerDef::op_localplayer_update()),
 			&GamePointerUpdater::hookOnLocalplayerUpdate,
 			this,
 			DetourToMethod::CODE_BEFORE_DETOUR
@@ -28,7 +28,7 @@ void GamePointerUpdater::hook() {
 	}
 
 	bool l_detour_invalidate_success = m_detour_localplayer_invalidate.install<GAMEPOINTERUPDATER_DETOUR_LEN_ON_INVALIDATE>(
-			GamePointerFactory::get(GamePointerDef::op_localplayer_invalidate),
+			GamePointerFactory::get(GamePointerDef::op_localplayer_invalidate()),
 			&GamePointerUpdater::hookOnLocalplayerInvalidate,
 			this,
 			DetourToMethod::CODE_BEFORE_DETOUR

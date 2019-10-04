@@ -38,7 +38,7 @@ namespace GamePointerFactory {
 	}
 
 	template<typename T=uintptr_t>
-	std::shared_ptr<GamePointer<T>> create(LibName const &libName,
+	std::shared_ptr<GamePointer<T>> create(std::string_view libName,
 	                                       std::vector<ptrdiff_t> const &offsets,
 	                                       OffsetType lastOffsetType = OffsetType::PLAIN_OFFSET) {
 		auto libraryPointer = std::make_shared<GamePointerBaseLibrary>(libName);

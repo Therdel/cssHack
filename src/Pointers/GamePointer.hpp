@@ -64,7 +64,7 @@ public:
 
 class GamePointerBaseLibrary : public GamePointerUntyped {
 public:
-	explicit GamePointerBaseLibrary(LibName const &libName)
+	explicit GamePointerBaseLibrary(std::string_view libName)
 			: GamePointerUntyped(MemoryUtils::lib_base_32(libName))
 			, m_libName{libName} {}
 
@@ -74,7 +74,7 @@ protected:
 	};
 
 private:
-	LibName const &m_libName;
+	std::string_view m_libName;
 };
 
 class GamePointerBaseRaw : public GamePointerUntyped {

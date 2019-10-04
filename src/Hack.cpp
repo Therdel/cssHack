@@ -121,8 +121,8 @@ void hack_loop() {
 	Log::log("Injected");
 	while (g_do_exit == false) {
 		// fixme: Crashes with nullptr on create when put at main() beginning
-		auto l_isInGame = GamePointerFactory::get(GamePointerDef::isIngame);
-		auto l_isInMenu = GamePointerFactory::get(GamePointerDef::isInMenu);
+		auto l_isInGame = GamePointerFactory::get(GamePointerDef::isIngame());
+		auto l_isInMenu = GamePointerFactory::get(GamePointerDef::isInMenu());
 
 		if (g_do_exit == false && *l_isInGame == 1) {
 			// initialize game hacks
@@ -132,7 +132,7 @@ void hack_loop() {
 			DrawHook l_drawHook;
 			GUI l_gui(l_drawHook, l_input);
 			l_gui.registerButton({"Update localplayer",
-			                      [sp_localplayer = GamePointerFactory::get(GamePointerDef::localplayer)]
+			                      [sp_localplayer = GamePointerFactory::get(GamePointerDef::localplayer())]
 					                      () mutable {
 				                      sp_localplayer.update();
 			                      }});

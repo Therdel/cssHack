@@ -26,14 +26,14 @@ Aimbot::Aimbot(GUI &gui)
 		, m_aim_fov_rad(toRadians(15))
 		, m_aim_noRecoil(true)
 		, m_aim_noVisRecoil(true)
-		, m_playerPos(GamePointerFactory::get(GamePointerDef::playerPos))
-		, m_aimAngles(GamePointerFactory::get(GamePointerDef::aimAngles))
-		, m_visualAngles(GamePointerFactory::get(GamePointerDef::visualAngles))
-		, m_punchAngles(GamePointerFactory::get(GamePointerDef::punchAngles))
-		, m_playerTeam(GamePointerFactory::get(GamePointerDef::playerTeam))
-		, m_players(GamePointerFactory::get(GamePointerDef::players))
-		, m_crosshair_target_id(GamePointerFactory::get(GamePointerDef::targetId))
-		, m_doAttack(GamePointerFactory::get(GamePointerDef::doAttack))
+		, m_playerPos(GamePointerFactory::get(GamePointerDef::playerPos()))
+		, m_aimAngles(GamePointerFactory::get(GamePointerDef::aimAngles()))
+		, m_visualAngles(GamePointerFactory::get(GamePointerDef::visualAngles()))
+		, m_punchAngles(GamePointerFactory::get(GamePointerDef::punchAngles()))
+		, m_playerTeam(GamePointerFactory::get(GamePointerDef::playerTeam()))
+		, m_players(GamePointerFactory::get(GamePointerDef::players()))
+		, m_crosshair_target_id(GamePointerFactory::get(GamePointerDef::targetId()))
+		, m_doAttack(GamePointerFactory::get(GamePointerDef::doAttack()))
 		, m_recoilFix_previous()
 		, m_currentTarget()
 		, m_doAim(false)
@@ -240,7 +240,7 @@ Vec3f const &Aimbot::getBulletPredictionAngles() const {
 
 void Aimbot::install() {
 	bool l_ang_detour_success = m_detour_viewAngles_update.install<AIMBOT_DETOUR_LEN_ON_UPDATE_ANG>(
-			GamePointerFactory::get(GamePointerDef::op_viewAngles_update),
+			GamePointerFactory::get(GamePointerDef::op_viewAngles_update()),
 			&Aimbot::hookViewAnglesUpdate,
 			this,
 			DetourToMethod::CODE_BEFORE_DETOUR
@@ -250,7 +250,7 @@ void Aimbot::install() {
 	}
 
 	bool l_vis_ang_detour_success = m_detour_viewAnglesVis_update.install<AIMBOT_DETOUR_LEN_ON_UPDATE_ANG_VIS>(
-			GamePointerFactory::get(GamePointerDef::op_viewAnglesVis_update),
+			GamePointerFactory::get(GamePointerDef::op_viewAnglesVis_update()),
 			&Aimbot::hookViewAnglesVisUpdate,
 			this,
 			DetourToMethod::CODE_BEFORE_DETOUR

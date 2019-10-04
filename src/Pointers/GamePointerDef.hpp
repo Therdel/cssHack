@@ -5,7 +5,6 @@
 
 #include <vector>
 
-#include "libNames.hpp"
 #include "GamePointer.hpp"
 #include "../Vec3f.hpp"
 #include "../Player.hpp"
@@ -13,14 +12,14 @@
 namespace GamePointerDef {
 	template<typename T=uintptr_t>
 	struct Base {
-		Base(LibName const &libName,
+		Base(std::string_view libName,
 		     std::vector<ptrdiff_t> offsets,
 		     OffsetType lastOffsetType = OffsetType::PLAIN_OFFSET)
 				: libName(libName)
 				, offsets(std::move(offsets))
 				, lastOffsetType(lastOffsetType) {}
 
-		LibName const &libName;
+		std::string_view const &libName;
 		std::vector<ptrdiff_t> offsets;
 		OffsetType lastOffsetType;
 	};
@@ -39,27 +38,29 @@ namespace GamePointerDef {
 		OffsetType lastOffsetType;
 	};
 
+	// input
+	const Base<> &op_sdl_pollEvent_call();
 	// bunnyhop
-	extern Base<int> onGround;
-	extern Base<int> doJump;
-	extern Base<> op_onGround_inc;
-	extern Base<> op_onGround_dec;
+	const Base<int> &onGround();
+	const Base<int> &doJump();
+	const Base<> &op_onGround_inc();
+	const Base<> &op_onGround_dec();
 	// aimbot
-	extern Base<> localplayer;
-	extern Base<Vec3f> playerPos;
-	extern Base<Vec3f> aimAngles;
-	extern Base<Vec3f> visualAngles;
-	extern Composite<Vec3f> punchAngles;
-	extern Composite<Player::TEAM> playerTeam;
-	extern Base<std::array<Player, 64>> players;
-	extern Composite<int> targetId;
-	extern Base<int> doAttack;
-	extern Base<> op_viewAngles_update;
-	extern Base<> op_viewAnglesVis_update;
+	const Base<> &localplayer();
+	const Base<Vec3f> &playerPos();
+	const Base<Vec3f> &aimAngles();
+	const Base<Vec3f> &visualAngles();
+	const Composite<Vec3f> &punchAngles();
+	const Composite<Player::TEAM> &playerTeam();
+	const Base<std::array<Player, 64>> &players();
+	const Composite<int> &targetId();
+	const Base<int> &doAttack();
+	const Base<> &op_viewAngles_update();
+	const Base<> &op_viewAnglesVis_update();
 	// hack
-	extern Base<uint8_t> isIngame;
-	extern Base<uint32_t> isInMenu;
+	const Base<uint8_t> &isIngame();
+	const Base<uint32_t> &isInMenu();
 	// GamePointerUpdater
-	extern Base<> op_localplayer_update;
-	extern Base<> op_localplayer_invalidate;
+	const Base<> &op_localplayer_update();
+	const Base<> &op_localplayer_invalidate();
 }

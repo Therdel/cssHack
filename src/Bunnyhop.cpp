@@ -1,6 +1,3 @@
-#include <chrono>
-#include <thread>
-
 #include "Bunnyhop.hpp"
 #include "Pointers/GamePointerFactory.hpp"
 
@@ -9,8 +6,8 @@
 #include "Log.hpp"
 
 Bunnyhop::Bunnyhop()
-		: m_on_ground(GamePointerFactory::get(GamePointerDef::onGround))
-		, m_jump(GamePointerFactory::get(GamePointerDef::doJump))
+		: m_on_ground(GamePointerFactory::get(GamePointerDef::onGround()))
+		, m_jump(GamePointerFactory::get(GamePointerDef::doJump()))
 		, m_detour_onGround_inc()
 		, m_detour_onGround_dec()
 		, m_enabled(false) {
@@ -47,7 +44,7 @@ void Bunnyhop::stop() {
 
 void Bunnyhop::hook() {
 	bool l_inc_detour_success = m_detour_onGround_inc.install<BUNNYHOP_DETOUR_LEN_ON_GROUND>(
-			GamePointerFactory::get(GamePointerDef::op_onGround_inc),
+			GamePointerFactory::get(GamePointerDef::op_onGround_inc()),
 			&Bunnyhop::hook_onGround_inc,
 			this,
 			DetourToMethod::CODE_BEFORE_DETOUR
@@ -58,7 +55,7 @@ void Bunnyhop::hook() {
 	}
 
 	bool l_dec_detour_success = m_detour_onGround_dec.install<BUNNYHOP_DETOUR_LEN_ON_GROUND>(
-			GamePointerFactory::get(GamePointerDef::op_onGround_dec),
+			GamePointerFactory::get(GamePointerDef::op_onGround_dec()),
 			&Bunnyhop::hook_onGround_dec,
 			this,
 			DetourToMethod::CODE_BEFORE_DETOUR
