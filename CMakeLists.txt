@@ -1,22 +1,29 @@
 cmake_minimum_required(VERSION 3.8)
 project("cssHack")
+
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# compiler warnings
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+if(NOT CMAKE_SYSTEM_NAME MATCHES Windows)
+  # compiler warnings
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic")
+  # set debug flags for debug build
+  set(CMAKE_CXX_FLAGS_DEBUG "-g")
+endif()
 
-# set debug flags for debug build
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+# no c++98 incompatible messages
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++98-compat -Wno-c++98-compat-pedantic")
 # enable optimization for relase build
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
     ADD_DEFINITIONS( -DCMAKE_DEBUG)
 endif()
-
-# external libraries
-find_package(Threads REQUIRED)
-
+        
+###########################
+# sources
+###########################
 set(HACK_SOURCES
         src/Log.cpp
         src/Aimbot.cpp
@@ -53,35 +60,61 @@ set(GLM_INCLUDE_DIRS
         lib/glm
         )
 
-
 add_library(cssHack SHARED
         ${HACK_SOURCES}
         ${IMGUI_SOURCES}
         )
+        
+###########################
+# external libraries
+###########################
+find_package(Threads REQUIRED)
 
+# SDL2
 # source: https://trenki2.github.io/blog/2017/06/02/using-sdl2-with-cmake/
+if(CMAKE_SYSTEM_NAME MATCHES Windows)
+# platform check
+# source: https://gitlab.kitware.com/cmake/community/wikis/doc/tutorials/How-To-Write-Platform-Checks
+set(SDL2_DIR "lib/windows/SDL2-devel-2.0.10-VC/SDL2-2.0.10")
+endif()
 find_package(SDL2 REQUIRED)
+
 #set(OpenGL_GL_PREFERENCE LEGACY)
 #find_package(OpenGL REQUIRED)
 target_include_directories(cssHack
+        PRIVATE ${CMAKE_SOURCE_DIR}/src
         PRIVATE ${IMGUI_INCLUDE_DIRS}
         PRIVATE ${GLM_INCLUDE_DIRS}
-        PRIVATE ${SDL2_INCLUDE_DIRS})
+        PRIVATE ${SDL2_INCLUDE_DIRS}
+)
+        
+if(CMAKE_SYSTEM_NAME MATCHES Windows)
+    target_link_libraries(cssHack
+            PRIVATE ${CMAKE_THREAD_LIBS_INIT}
+            PRIVATE ${SDL2_LIBRARIES}
+    )
+else()
+    target_link_libraries(cssHack
+            PRIVATE ${CMAKE_THREAD_LIBS_INIT}
+            PRIVATE "/usr/lib/i386-linux-gnu/libSDL2-2.0.so.0"
+            PRIVATE "/usr/lib/i386-linux-gnu/libGL.so.1"
+            )
+endif()
 
-target_link_libraries(cssHack
-        PRIVATE ${CMAKE_THREAD_LIBS_INIT}
-        PRIVATE "/usr/lib/i386-linux-gnu/libSDL2-2.0.so.0"
-        PRIVATE "/usr/lib/i386-linux-gnu/libGL.so.1"
-        )
-
-set_target_properties(cssHack PROPERTIES
-        # use intel syntax for inline assembly
-        # source: https://stackoverflow.com/questions/10990018/how-to-generate-assembly-code-with-clang-in-intel-syntaxhttps://stackoverflow.com/questions/10990018/how-to-generate-assembly-code-with-clang-in-intel-syntax
-        COMPILE_FLAGS "-masm=intel"
-        # force 32bit compilation
-        # source: https://stackoverflow.com/questions/5805874/the-proper-way-of-forcing-a-32-bit-compile-using-cmake
-        COMPILE_OPTIONS "-m32"
-        LINK_OPTIONS "-m32"
-        # default to hidden symbols
-        CXX_VISIBILITY_PRESET hidden
-        )
+###########################
+# compile / link flags
+###########################
+if(CMAKE_SYSTEM_NAME MATCHES Windows)
+else()
+  set_target_properties(cssHack PROPERTIES
+          # use intel syntax for inline assembly
+          # source: https://stackoverflow.com/questions/10990018/how-to-generate-assembly-code-with-clang-in-intel-syntaxhttps://stackoverflow.com/questions/10990018/how-to-generate-assembly-code-with-clang-in-intel-syntax
+          COMPILE_FLAGS "-masm=intel"
+          # force 32bit compilation
+          # source: https://stackoverflow.com/questions/5805874/the-proper-way-of-forcing-a-32-bit-compile-using-cmake
+          COMPILE_OPTIONS "-m32"
+          LINK_OPTIONS "-m32"
+          # default to hidden symbols
+          CXX_VISIBILITY_PRESET hidden
+  )
+endif()
