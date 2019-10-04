@@ -18,6 +18,7 @@ endif()
 find_package(Threads REQUIRED)
 
 set(HACK_SOURCES
+        src/Log.cpp
         src/Aimbot.cpp
         src/Bunnyhop.cpp
         src/Hack.cpp
