@@ -57,26 +57,29 @@ public:
 	};
 
 	/// find base address of a loaded shared library.
-	/// if a timeout is specified, this blocks either until the library's loaded
+	/// if a timeout is specified, this blocks until either the library's loaded
 	/// or until the timeout is reached.
 	/// \param libName filename of wanted library
 	/// \param timeout maximum time to wait for library load
 	/// \return library base address
-	static std::optional<uintptr_t> lib_base_32_timeout(const std::string &libName,
-	                                                   std::chrono::milliseconds timeout);
+	static std::optional<uintptr_t> lib_base_32_timeout(std::string_view libName,
+	                                                    std::chrono::milliseconds timeout);
 
 	/// find base address of a loaded shared library.
 	/// if the library can't be found, this blocks until it's found.
 	/// \param libName filename of wanted library
-	/// \param timeout maximum time to wait for library load
 	/// \return library base address
-	static uintptr_t lib_base_32(const std::string &libName);
+	static uintptr_t lib_base_32(std::string_view libName);
+
+	/// find absolute filepath of this loaded shared library
+	static std::string this_lib_path();
+
+	/// find absolute filepath of a loaded shared library
+	/// \param libName filename of wanted library
+	/// \return absolute filepath to library
+	static std::optional<std::string> loadedLibPath(std::string_view libName);
 
 #ifdef __linux__
-	static std::optional<std::string> loadedLibPath(LibName const &libName);
-
-	/// retrieves the path of this loaded library
-	static std::string this_lib_path();
 
 	/// reads the memory protection of given range
 	/// \param address start address
@@ -84,12 +87,12 @@ public:
 	/// \return the protection (as defined in sys/mman.h),
 	/// 		or std::nullopt, if given region spans multiple mappings or isn't contained in any
 	static std::optional<int> read_protection(uintptr_t address, size_t length);
+
 #endif
 
 	/// alters the protection of a memory area
 	/// \param address start address
 	/// \param length length of memory area
-	/// \param newProtection protection to change into
 	/// \return ScopedReProtect handle to the former protection, or std::nullopt if operation failed
 	static std::optional<ScopedReProtect> scoped_remove_memory_protection(uintptr_t address, size_t length);
 
@@ -98,7 +101,7 @@ public:
 	/// \param symbol symbol name
 	/// \return address of libName::symbol or std::nullopt if library wasn't
 	/// 		loaded or symbol wasn't found in its exported symbols
-	static std::optional<uintptr_t> getSymbolAddress(LibName const &libName, std::string const &symbol);
+	static std::optional<uintptr_t> getSymbolAddress(std::string_view libName, const std::string &symbol);
 
 private:
 
