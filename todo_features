@@ -12,7 +12,6 @@ TODO:
         x offsets
     - aimbot
         - visibility check: radar?
-        x fov restricted aim by distance
         - enemy crouch check
         - bone/hitbox aim
     - triggerbot
@@ -23,6 +22,7 @@ TODO:
         - flush() next to log()
         - remove #define DEFAULT_LOG_CHANNEL
         ? implement schwarz/nifty counter for lifetime-management
+    - use exceptions for unrecoverable errors
 
 FIXME:
     - bunnyhop sometimes won't jump. Dirtily fixed by +jump.
@@ -30,6 +30,7 @@ FIXME:
 DONE:
     x aimbot
         x aimbot update on enemy pos update
+        x fov restricted aim by distance
     x Logging should go to central, configurable space
         x silent
         x debug
