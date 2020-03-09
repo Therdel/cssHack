@@ -72,10 +72,6 @@ void normalizeHeading(Vec3f &angles) {
 }
 
 void Aimbot::aim_once() {
-	if (m_aim_noRecoil) {
-		// undo previous recoil compensation
-		*m_aimAngles -= m_recoilFix_previous;
-	}
 	findTarget();
 
 	if (m_360.m_state == Maneuver360::INIT) {
@@ -171,18 +167,6 @@ void Aimbot::aim_once() {
 				*m_doAttack = 4;
 			}
 		}
-	}
-
-	// calculate (visual and effective) recoil compensation
-	auto l_recoil_fix_new = *m_punchAngles;
-	// exclude roll axis compensation, as it doesn't affect recoil
-	l_recoil_fix_new.m_z = 0;
-	l_recoil_fix_new *= -2;
-	m_recoilFix_previous = l_recoil_fix_new;
-
-	// compensate recoil
-	if (m_aim_noRecoil) {
-		*m_aimAngles += l_recoil_fix_new;
 	}
 }
 
@@ -396,7 +380,24 @@ void Aimbot::removeVisRecoil() {
 }
 
 void Aimbot::hookViewAnglesUpdate() {
+	// undo previous recoil compensation
+	if (m_aim_noRecoil) {
+		*m_aimAngles -= m_recoilFix_previous;
+	}
+
 	aim_once();
+
+	// calculate (visual and effective) recoil compensation
+	auto l_recoil_fix_new = *m_punchAngles;
+	// exclude roll axis compensation, as it doesn't affect recoil
+	l_recoil_fix_new.m_z = 0;
+	l_recoil_fix_new *= -2;
+	m_recoilFix_previous = l_recoil_fix_new;
+
+	// compensate recoil
+	if (m_aim_noRecoil) {
+		*m_aimAngles += l_recoil_fix_new;
+	}
 }
 
 void Aimbot::hookViewAnglesVisUpdate() {
