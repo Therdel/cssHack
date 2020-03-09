@@ -7,3 +7,7 @@
 [submodule "lib/glm"]
 	path = lib/glm
 	url = https://github.com/g-truc/glm
+[submodule "lib/BoyerMoore-DontCare"]
+	path = lib/BoyerMoore-DontCare
+	url = https://github.com/Therdel/BoyerMoore-DontCare
+	branch = dontcare

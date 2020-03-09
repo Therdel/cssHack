@@ -3,28 +3,27 @@
 //
 #pragma once
 #include <regex>
+#include <iomanip>
 
 #include "Utility.hpp"
-#include "MemoryUtils.hpp"
 #include "Pointers/Signatures.hpp"
 
 class RegexSegmentScanner final {
 public:
-	explicit RegexSegmentScanner(const Signature &signature)
+	explicit RegexSegmentScanner(const SignatureAOI &signature)
 	: _signature(signature)
 	, _regex(BinaryRegex::from(signature))
 	{
 	}
 
-	void scanSegment(const MemoryUtils::LibrarySegmentRange &segment,
-	                        std::vector<uintptr_t> &matches) const {
-		auto &memoryRange = segment.memoryRange;
+	void scanSegment(std::string_view haystack,
+                     std::vector<uintptr_t> &matches) const {
 		std::cmatch results;
-		std::regex_search(memoryRange.begin(), memoryRange.end(), results, _regex);
+		std::regex_search(haystack.begin(), haystack.end(), results, _regex);
 
 		for (size_t i = 0; i < results.size(); ++i) {
 			const auto offset = results.position(i);
-			auto *matchInSegment = memoryRange.data() + offset;
+			auto *matchInSegment = haystack.data() + offset;
 			auto *signatureAoiInSegment = matchInSegment + _signature.aoi_offset;
 			auto signatureAoiInSegmentRaw = reinterpret_cast<uintptr_t>(signatureAoiInSegment);
 
@@ -33,37 +32,42 @@ public:
 	}
 
 private:
-	const Signature &_signature;
+	const SignatureAOI &_signature;
 	const std::regex _regex;
 
 	struct BinaryRegex {
 	public:
-		static std::regex from(const Signature &signature) {
+		static std::regex from(const SignatureAOI &signature) {
 			std::stringstream regex;
-			auto bytes = Utility::split(signature.sig, " ");
-			for (auto &byteDesc : bytes) {
-				if (byteDesc.size() != 2) {
-					throw std::invalid_argument("Wrong signature byte description size");
-				}
-				if (byteDesc == "??") {
-					appendUnknownByte(regex);
-				} else {
-					appendKnownByte(regex, byteDesc);
-				}
-			}
-			return std::regex(regex.str(), std::regex_constants::ECMAScript | std::regex_constants::optimize);
-		}
-	private:
-		static void appendUnknownByte(std::stringstream &regex) {
-			// "[\\S\\s]" matches any character/byte
-			regex << "[\\S\\s]";
-		}
+			auto &pattern = signature.signature.pattern();
+            auto &mask = signature.signature.mask();
+            for (size_t i = 0; i < pattern.size(); ++i) {
+                if (mask[i] == SignatureMask::DONT_CARE) {
+                    appendUnknownByte(regex);
+                } else {
+                    appendKnownByte(regex, pattern[i]);
+                }
+            }
+            return std::regex(regex.str(), std::regex_constants::ECMAScript | std::regex_constants::optimize);
+        }
 
-		static void appendKnownByte(std::stringstream &regex, std::string_view representation) {
-			// TODO: ensure passed representation is a valid hex number (throws instead)
+    private:
+        static void appendUnknownByte(std::stringstream &regex) {
+            // "[\\S\\s]" matches any character/byte
+            regex << "[\\S\\s]";
+        }
 
-			// "\xHH" matches a raw hex value HH
-			regex << "\\x" << representation;
+        static void appendKnownByte(std::stringstream &regex, uint8_t byte) {
+            // "\xHH" matches a raw hex value HH
+            regex << "\\x";
+
+            if(byte < 16) {
+                regex << '0';
+            }
+
+            regex << std::hex << std::uppercase;
+            regex << static_cast<unsigned>(byte);
+            regex << std::dec << std::nouppercase;
 		}
 	};
 };

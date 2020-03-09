@@ -54,6 +54,12 @@ if(CMAKE_SYSTEM_NAME MATCHES Windows)
 else()
     list(APPEND HACK_SOURCES ${HACK_SOURCES_LINUX})
 endif()
+
+###########################
+# external libraries
+###########################
+add_subdirectory(lib/BoyerMoore-DontCare)
+
 set(IMGUI_SOURCES
         lib/imgui/imgui.cpp
         lib/imgui/imgui_demo.cpp
@@ -73,14 +79,6 @@ set(GLM_INCLUDE_DIRS
         lib/glm
         )
 
-add_library(cssHack SHARED
-        ${HACK_SOURCES}
-        ${IMGUI_SOURCES}
-        )
-        
-###########################
-# external libraries
-###########################
 find_package(Threads REQUIRED)
 
 # SDL2
@@ -92,11 +90,18 @@ set(SDL2_DIR "lib/windows/SDL2-devel-2.0.10-VC/SDL2-2.0.10")
 endif()
 find_package(SDL2 REQUIRED)
 
+add_library(cssHack SHARED
+        ${HACK_SOURCES}
+        ${IMGUI_SOURCES}
+        ${BOYERMOOREDONTCARE_SOURCES}
+        )
+
 #set(OpenGL_GL_PREFERENCE LEGACY)
 #find_package(OpenGL REQUIRED)
 target_include_directories(cssHack
         PRIVATE ${CMAKE_SOURCE_DIR}/src
         PRIVATE ${IMGUI_INCLUDE_DIRS}
+        PRIVATE ${BOYERMOOREDONTCARE_INCLUDE_DIRS}
         PRIVATE ${GLM_INCLUDE_DIRS}
         PRIVATE ${SDL2_INCLUDE_DIRS}
 )
