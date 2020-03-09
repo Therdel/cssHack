@@ -1,5 +1,7 @@
 #include "Bunnyhop.hpp"
 #include "Pointers/GamePointerFactory.hpp"
+#include "Pointers/Signatures.hpp"
+#include "MemoryScanner/MemoryScanner.hpp"
 
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
 
@@ -43,27 +45,41 @@ void Bunnyhop::stop() {
 }
 
 void Bunnyhop::hook() {
-	bool l_inc_detour_success = m_detour_onGround_inc.install<BUNNYHOP_DETOUR_LEN_ON_GROUND>(
-			GamePointerFactory::get(GamePointerDef::op_onGround_inc()),
-			&Bunnyhop::hook_onGround_inc,
-			this,
-			DetourToMethod::CODE_BEFORE_DETOUR
-	);
+    {
+        auto results = MemoryScanner::scanSignature<BoyerMooreSegmentScanner>(Signatures::onGround_op_land);
+        if (results.size() != 1) {
+            Log::log("SigScan insuccessful");
+            return;
+        }
+        bool l_inc_detour_success = m_detour_onGround_inc.install<BUNNYHOP_DETOUR_LEN_ON_GROUND>(
+                results.front(),
+                &Bunnyhop::hook_onGround_inc,
+                this,
+                DetourToMethod::CODE_BEFORE_DETOUR
+        );
 
-	if (!l_inc_detour_success) {
-		Log::log("Bunnyhop failed to detour inc on_ground");
-	}
+        if (!l_inc_detour_success) {
+            Log::log("Bunnyhop failed to detour inc on_ground");
+        }
+    }
 
-	bool l_dec_detour_success = m_detour_onGround_dec.install<BUNNYHOP_DETOUR_LEN_ON_GROUND>(
-			GamePointerFactory::get(GamePointerDef::op_onGround_dec()),
-			&Bunnyhop::hook_onGround_dec,
-			this,
-			DetourToMethod::CODE_BEFORE_DETOUR
-	);
+    {
+        auto results = MemoryScanner::scanSignature<BoyerMooreSegmentScanner>(Signatures::onGround_op_leave);
+        if (results.size() != 1) {
+            Log::log("SigScan insuccessful");
+            return;
+        }
+        bool l_dec_detour_success = m_detour_onGround_dec.install<BUNNYHOP_DETOUR_LEN_ON_GROUND>(
+                results.front(),
+                &Bunnyhop::hook_onGround_dec,
+                this,
+                DetourToMethod::CODE_BEFORE_DETOUR
+        );
 
-	if (!l_dec_detour_success) {
-		Log::log("Bunnyhop failed to detour dec on_ground");
-	}
+        if (!l_dec_detour_success) {
+            Log::log("Bunnyhop failed to detour dec on_ground");
+        }
+    }
 }
 
 void Bunnyhop::unhook() {
