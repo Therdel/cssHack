@@ -86,7 +86,9 @@ find_package(Threads REQUIRED)
 if(CMAKE_SYSTEM_NAME MATCHES Windows)
 # platform check
 # source: https://gitlab.kitware.com/cmake/community/wikis/doc/tutorials/How-To-Write-Platform-Checks
-set(SDL2_DIR "lib/windows/SDL2-devel-2.0.10-VC/SDL2-2.0.10")
+    set(SDL2_DIR "lib/windows/SDL2-devel-2.0.10-VC/SDL2-2.0.10")
+else()
+    set(SDL2_DIR "/usr/lib/i386-linux-gnu/cmake/SDL2")
 endif()
 find_package(SDL2 REQUIRED)
 
@@ -114,8 +116,8 @@ if(CMAKE_SYSTEM_NAME MATCHES Windows)
 else()
     target_link_libraries(cssHack
             PRIVATE ${CMAKE_THREAD_LIBS_INIT}
-            PRIVATE "/usr/lib/i386-linux-gnu/libSDL2-2.0.so.0"
-            PRIVATE "/usr/lib/i386-linux-gnu/libGL.so.1"
+            PRIVATE ${SDL2_LIBRARIES}
+            #PRIVATE "/usr/lib/i386-linux-gnu/libGL.so.1"
             )
 endif()
 
