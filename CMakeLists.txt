@@ -80,8 +80,6 @@ set(GLM_INCLUDE_DIRS
         lib/glm
         )
 
-find_package(Threads REQUIRED)
-
 # SDL2
 # source: https://trenki2.github.io/blog/2017/06/02/using-sdl2-with-cmake/
 if(CMAKE_SYSTEM_NAME MATCHES Windows)
@@ -92,6 +90,7 @@ else()
     set(SDL2_DIR "/usr/lib/i386-linux-gnu/cmake/SDL2")
 endif()
 find_package(SDL2 REQUIRED)
+find_package(Threads REQUIRED)
 
 add_library(cssHack SHARED
         ${HACK_SOURCES}
@@ -110,9 +109,14 @@ target_include_directories(cssHack
 )
         
 if(CMAKE_SYSTEM_NAME MATCHES Windows)
+    find_package(OpenGL REQUIRED)
     target_link_libraries(cssHack
             PRIVATE ${CMAKE_THREAD_LIBS_INIT}
             PRIVATE ${SDL2_LIBRARIES}
+            PRIVATE ${OPENGL_LIBRARIES}
+    )
+    target_include_directories(cssHack
+        PRIVATE ${OPENGL_INCLUDE_DIRS}
     )
 else()
     target_link_libraries(cssHack
