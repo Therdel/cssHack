@@ -8,6 +8,7 @@
 #include "Utility.hpp"
 #include "Pointers/Signatures.hpp"
 #include "BoyerMooreSegmentScanner.hpp"
+#include "MemoryUtils.hpp"
 
 class MemoryScanner {
 public:
@@ -89,7 +90,7 @@ private:
                 }
 
                 candidates_left_for_thread -= candidates_this_workload;
-                work_for_this_thread.emplace_back(segment.memoryRange.begin() + begin_offset, candidates_this_workload + (patternLength - 1));
+                work_for_this_thread.emplace_back(segment.memoryRange.data() + begin_offset, candidates_this_workload + (patternLength - 1));
 
                 if(!isLastThread && candidates_left_for_thread == 0) {
                     break; // move to next thread

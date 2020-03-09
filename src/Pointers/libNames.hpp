@@ -4,7 +4,6 @@
 #pragma once
 
 #include <string_view>
-#include "Log.hpp"
 
 namespace libNames {
 #ifdef __linux__

@@ -40,6 +40,7 @@ set(HACK_SOURCES
         src/Visuals/Gui_imgui_impl_sdl.cpp
         src/Pointers/GamePointerDef.cpp
         src/Pointers/GamePointerUpdater.cpp)
+        src/Pointers/Signatures.cpp
 
 set(HACK_SOURCES_LINUX
         src/MemoryUtils_Linux.cpp
