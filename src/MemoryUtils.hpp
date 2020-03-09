@@ -5,31 +5,27 @@
 #include <string>
 
 #include "Utility.hpp"
-#include "Pointers/libNames.hpp"
 
 class MemoryUtils {
-private:
-	/// describes a memory area protection
+public:
+/// describes a memory area protection
 	struct MemoryProtection {
+		using protection_t = uintmax_t;
+
 		uintptr_t address;
 		size_t length;
-#ifdef __linux__
-		int protection;
-#else // windows
-		uintptr_t protection;
-#endif
-	};// TODO? remove unused
+		protection_t protection;
 
-//
-//public:
-//	enum class PROT : uint8_t {
-//		NONE = 0x0,
-//		READ = 0x1,
-//		WRITE = 0x2,
-//		EXEC = 0x4,
-//		READ_WRITE_EXEC = READ | WRITE | EXEC
-//	};
-public:
+		static protection_t noProtection();
+	};
+
+	struct LibrarySegmentRange {
+		uintmax_t protection;
+		std::string_view memoryRange;
+		bool isReadable() const;
+		bool isWritable() const;
+		bool isExecutable() const;
+	};
 
 	/// temporary memory protection change, RAII auto-restores the former protection.
 	class ScopedReProtect : public Utility::NonCopyable {
@@ -57,7 +53,7 @@ public:
 	};
 
 	/// find base address of a loaded shared library.
-	/// if a timeout is specified, this blocks until either the library's loaded
+	/// Blocks until either the library's loaded
 	/// or until the timeout is reached.
 	/// \param libName filename of wanted library
 	/// \param timeout maximum time to wait for library load
@@ -79,17 +75,6 @@ public:
 	/// \return absolute filepath to library
 	static std::optional<std::string> loadedLibPath(std::string_view libName);
 
-#ifdef __linux__
-
-	/// reads the memory protection of given range
-	/// \param address start address
-	/// \param length length of memory region
-	/// \return the protection (as defined in sys/mman.h),
-	/// 		or std::nullopt, if given region spans multiple mappings or isn't contained in any
-	static std::optional<int> read_protection(uintptr_t address, size_t length);
-
-#endif
-
 	/// alters the protection of a memory area
 	/// \param address start address
 	/// \param length length of memory area
@@ -102,6 +87,12 @@ public:
 	/// \return address of libName::symbol or std::nullopt if library wasn't
 	/// 		loaded or symbol wasn't found in its exported symbols
 	static std::optional<uintptr_t> getSymbolAddress(std::string_view libName, const std::string &symbol);
+
+	/// reads allocated memory ranges and their respective protections
+	/// of a loaded dynamic library
+	/// \param libName library of interest's filename
+	/// \return allocated memory ranges and their respective protections of specified library
+	static std::vector<LibrarySegmentRange> lib_segment_ranges(std::string_view libName);
 
 private:
 

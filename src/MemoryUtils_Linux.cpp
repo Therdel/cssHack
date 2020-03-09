@@ -10,6 +10,7 @@
 #include <unistd.h>     // getpagesize
 #include <dlfcn.h>      // dlopen, dlsym, dlclose, dladdr, Dl_info
 #include <memory>       // std::unique_ptr
+#include <iostream>
 
 
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
@@ -23,6 +24,10 @@ MemoryUtils::MemoryProtection::protection_t
 MemoryUtils::MemoryProtection::noProtection() {
 	return PROT_READ | PROT_WRITE | PROT_EXEC;
 }
+
+bool MemoryUtils::LibrarySegmentRange::isReadable() const { return protection | PF_R; }
+bool MemoryUtils::LibrarySegmentRange::isWritable() const { return protection | PF_W; }
+bool MemoryUtils::LibrarySegmentRange::isExecutable() const { return protection | PF_X; }
 
 // upon construction creates a snapshot of all currently loaded shared objects
 struct LibrarySnapshot {
@@ -138,6 +143,40 @@ std::optional<uintptr_t> MemoryUtils::getSymbolAddress(std::string_view libName,
 	return result;
 }
 
+std::vector<MemoryUtils::LibrarySegmentRange>
+MemoryUtils::lib_segment_ranges(std::string_view libName) {
+	std::vector<MemoryUtils::LibrarySegmentRange> ranges;
+
+	// find library
+	dl_phdr_info library{};
+	while (true) {
+		auto predicate = [&](dl_phdr_info const &info) {
+			return Utility::get_filename(info.dlpi_name) == libName;
+		};
+		auto optionalLib = find_library(std::move(predicate));
+		if (optionalLib.has_value()) {
+			library = *optionalLib;
+			break;
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+	}
+
+	// read library segment ranges
+	for (int i = 0; i < library.dlpi_phnum; ++i) {
+		const auto &programHeader = library.dlpi_phdr[i];
+		const auto protection = programHeader.p_flags;
+
+		const auto libBase = library.dlpi_addr;
+		const char *segmentBase = reinterpret_cast<const char *>(libBase + programHeader.p_vaddr);
+		size_t segmentSize = programHeader.p_memsz;
+		std::string_view memoryRange(segmentBase, segmentSize);
+
+		ranges.push_back({protection, memoryRange});
+	}
+
+	return ranges;
+}
+
 /// reads the memory protection of given range
 /// \param address start address
 /// \param length length of memory region
@@ -211,7 +250,7 @@ MemoryUtils::set_memory_protection(MemoryUtils::MemoryProtection newProtection) 
 		if (formerProtection.has_value()) {
 			return formerProtection;
 		} else {
-			std::string error{"reading memory protection failed (address, length): "};
+			std::string error{"  reading memory protection failed (address, length): "};
 			error += address;
 			error += ", ";
 			error += length;

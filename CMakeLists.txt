@@ -41,6 +41,19 @@ set(HACK_SOURCES
         src/Pointers/GamePointerDef.cpp
         src/Pointers/GamePointerUpdater.cpp)
 
+set(HACK_SOURCES_LINUX
+        src/MemoryUtils_Linux.cpp
+        )
+
+set(HACK_SOURCES_WINDOWS
+        src/MemoryUtils_Win.cpp
+        )
+
+if(CMAKE_SYSTEM_NAME MATCHES Windows)
+    list(APPEND HACK_SOURCES ${HACK_SOURCES_WINDOWS})
+else()
+    list(APPEND HACK_SOURCES ${HACK_SOURCES_LINUX})
+endif()
 set(IMGUI_SOURCES
         lib/imgui/imgui.cpp
         lib/imgui/imgui_demo.cpp

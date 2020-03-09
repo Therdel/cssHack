@@ -98,11 +98,12 @@ std::string MemoryUtils::this_lib_path() {
 	return library->szExePath;
 }
 
-std::optional<std::string> MemoryUtils::loadedLibPath(LibName const &libName) {
+std::optional<std::string> MemoryUtils::loadedLibPath(std::string_view libName) {
 	std::optional<std::string> l_libPath;
 
-	auto predicate = [name = libName.name()](const MODULEENTRY32 &module) {
-		return Utility::get_filename(module.szModule) == name;
+
+    auto predicate = [&libName](const MODULEENTRY32& module) {
+        return Utility::get_filename(module.szModule) == libName;
 	};
 	auto library = find_library(std::move(predicate));
 	if (library.has_value()) {
@@ -112,10 +113,10 @@ std::optional<std::string> MemoryUtils::loadedLibPath(LibName const &libName) {
 	return l_libPath;
 }
 
-std::optional<uintptr_t> MemoryUtils::getSymbolAddress(LibName const &libName, std::string const &symbol) {
+std::optional<uintptr_t> MemoryUtils::getSymbolAddress(std::string_view libName, std::string const& symbol) {
 	std::optional<uintptr_t> result;
 
-	HMODULE l_hModule = GetModuleHandle(libName);
+    HMODULE l_hModule = GetModuleHandle(libName.data());
 	if (l_hModule == nullptr) {
 		// no library loaded with that name
 		Log::log("getSymbolAddress: No library \"", libName, "\" loaded");
