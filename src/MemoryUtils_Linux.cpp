@@ -25,9 +25,9 @@ MemoryUtils::MemoryProtection::noProtection() {
 	return PROT_READ | PROT_WRITE | PROT_EXEC;
 }
 
-bool MemoryUtils::LibrarySegmentRange::isReadable() const { return protection | PF_R; }
-bool MemoryUtils::LibrarySegmentRange::isWritable() const { return protection | PF_W; }
-bool MemoryUtils::LibrarySegmentRange::isExecutable() const { return protection | PF_X; }
+bool MemoryUtils::LibrarySegmentRange::isReadable() const { return protection & PF_R; }
+bool MemoryUtils::LibrarySegmentRange::isWritable() const { return protection & PF_W; }
+bool MemoryUtils::LibrarySegmentRange::isExecutable() const { return protection & PF_X; }
 
 // upon construction creates a snapshot of all currently loaded shared objects
 struct LibrarySnapshot {
