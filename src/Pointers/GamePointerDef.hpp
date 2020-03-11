@@ -13,11 +13,8 @@ namespace GamePointerDef {
 	template<typename T=uintptr_t>
 	struct Base {
 		Base(std::string_view libName,
-		     std::vector<ptrdiff_t> offsets,
-		     OffsetType lastOffsetType = OffsetType::PLAIN_OFFSET)
-				: libName(libName)
-				, offsets(std::move(offsets))
-				, lastOffsetType(lastOffsetType) {}
+			 std::vector<ptrdiff_t> offsets,
+			 OffsetType lastOffsetType = OffsetType::PLAIN_OFFSET);
 
 		std::string_view libName;
 		std::vector<ptrdiff_t> offsets;
@@ -26,12 +23,9 @@ namespace GamePointerDef {
 
 	template<typename T=uintptr_t, typename BaseT=uintptr_t>
 	struct Composite {
-		Composite(Base<BaseT> const &base,
-		          std::vector<ptrdiff_t> offsets,
-		          OffsetType lastOffsetType = OffsetType::PLAIN_OFFSET)
-				: base(base)
-				, offsets(std::move(offsets))
-				, lastOffsetType(lastOffsetType) {}
+		Composite(Base<BaseT> const& base,
+				  std::vector<ptrdiff_t> offsets,
+				  OffsetType lastOffsetType = OffsetType::PLAIN_OFFSET);
 
 		Base<BaseT> const &base;
 		std::vector<ptrdiff_t> offsets;
@@ -39,28 +33,28 @@ namespace GamePointerDef {
 	};
 
 	// input
-	const Base<> &op_sdl_pollEvent_call();
+	auto op_sdl_pollEvent_call() -> const Base<>&;
 	// bunnyhop
-	const Base<int> &onGround();
-	const Base<int> &doJump();
-	const Base<> &op_onGround_inc();
-	const Base<> &op_onGround_dec();
+	auto onGround() -> const Base<int>&;
+	auto doJump() -> const Base<int>&;
+	auto op_onGround_inc() -> const Base<>&;
+	auto op_onGround_dec() -> const Base<>&;
 	// aimbot
-	const Base<> &localplayer();
-	const Base<Vec3f> &playerPos();
-	const Base<Vec3f> &aimAngles();
-	const Base<Vec3f> &visualAngles();
-	const Composite<Vec3f> &punchAngles();
-	const Composite<Player::TEAM> &playerTeam();
-	const Base<std::array<Player, 64>> &players();
-	const Composite<int> &targetId();
-	const Base<int> &doAttack();
-	const Base<> &op_viewAngles_update();
-	const Base<> &op_viewAnglesVis_update();
+	auto localplayer() -> const Base<>&;
+	auto playerPos() -> const Base<Vec3f>&;
+	auto aimAngles() -> const Base<Vec3f>&;
+	auto visualAngles() -> const Base<Vec3f>&;
+	auto punchAngles() -> const Composite<Vec3f>&;
+	auto playerTeam() -> const Composite<Player::TEAM>&;
+	auto players() -> const Base<std::array<Player, 64>>&;
+	auto targetId() -> const Composite<int>&;
+	auto doAttack() -> const Base<int>&;
+	auto op_viewAngles_update() -> const Base<>&;
+	auto op_viewAnglesVis_update() -> const Base<>&;
 	// hack
-	const Base<uint8_t> &isIngame();
-	const Base<uint32_t> &isInMenu();
+	auto isIngame() -> const Base<uint8_t>&;
+	auto isInMenu() -> const Base<uint32_t> &;
 	// GamePointerUpdater
-	const Base<> &op_localplayer_update();
-	const Base<> &op_localplayer_invalidate();
+	auto op_localplayer_update() -> const Base<> &;
+	auto op_localplayer_invalidate() -> const Base<> &;
 }

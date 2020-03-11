@@ -6,120 +6,120 @@
 #include "Offsets.hpp"
 #include <array>
 
-using namespace GamePointerDef;
 using namespace libNames;
 using namespace Offsets;
 
+namespace GamePointerDef {
+template<typename T>
+Base<T>::Base(std::string_view libName,
+			  std::vector<ptrdiff_t> offsets,
+			  OffsetType lastOffsetType)
+: libName(libName)
+, offsets(std::move(offsets))
+, lastOffsetType(lastOffsetType) {}
+
+template<typename T, typename BaseT>
+Composite<T, BaseT>::Composite(Base<BaseT> const& base,
+							   std::vector<ptrdiff_t> offsets,
+							   OffsetType lastOffsetType)
+: base(base)
+, offsets(std::move(offsets))
+, lastOffsetType(lastOffsetType) {}
+
 // TODO: Find out why we need the explicit namespace here for linking
 // input
-const Base<> &
-GamePointerDef::op_sdl_pollEvent_call() {
+auto op_sdl_pollEvent_call() -> const Base<>& {
 	static auto def =
 #ifdef __linux__
-		Base{launcher,{launcher_sdl_pollEvent_caller}};
+		Base{launcher, {launcher_sdl_pollEvent_caller}};
 #else
-		Base{inputsystem,   {inputsystem_sdl_pollEvent_caller}};
+		Base{inputsystem, {inputsystem_sdl_pollEvent_caller}};
 #endif
 	return def;
 };
+
 // bunnyhop
-const Base<int> &GamePointerDef::onGround() {
+auto onGround() -> const Base<int>& {
 	static Base<int> def{client, {client_onGround}};
 	return def;
 }
-
-const Base<int> &GamePointerDef::doJump() {
+auto doJump() -> const Base<int>& {
 	static Base<int> def{client, {client_doJump}};
 	return def;
 }
-
-const Base<> &
-		GamePointerDef::op_onGround_inc() {
+auto op_onGround_inc() -> const Base<>& {
 	static Base<> def{client, {client_onGround_op_inc}};
 	return def;
 }
-const Base<> &
-		GamePointerDef::op_onGround_dec() {
+auto op_onGround_dec() -> const Base<>& {
 	static Base<> def{client, {client_onGround_op_dec}};
 	return def;
 }
 
 // aimbot
-const Base<> &
-		GamePointerDef::localplayer() {
+auto localplayer() -> const Base<>& {
 	static Base<> def{client, {client_localplayer}, OffsetType::DEREFERENCE};
 	return def;
 }
-const Base<Vec3f> &
-		GamePointerDef::playerPos() {
+auto playerPos() -> const Base<Vec3f>& {
 	static Base<Vec3f> def{engine, {engine_player_pos}};
 	return def;
 }
-const Base<Vec3f> &
-		GamePointerDef::aimAngles() {
+auto aimAngles() -> const Base<Vec3f>& {
 	static Base<Vec3f> def{engine, {engine_viewAngles}};
 	return def;
 }
-const Base<Vec3f> &
-		GamePointerDef::visualAngles() {
+auto visualAngles() -> const Base<Vec3f>& {
 	static Base<Vec3f> def{client, {client_viewAngleVis}};
 	return def;
 }
-const Composite<Vec3f> &
-		GamePointerDef::punchAngles() {
+auto punchAngles() -> const Composite<Vec3f>& {
 	static Composite<Vec3f> def{localplayer(), {client_punch_p_off}};
 	return def;
 }
-const Composite<Player::TEAM> &
-		GamePointerDef::playerTeam() {
+auto playerTeam() -> const Composite<Player::TEAM>& {
 	static Composite<Player::TEAM> def{localplayer(), {client_player_team_p_off}};
 	return def;
 }
-const Base<std::array<Player, 64>> &
-		GamePointerDef::players() {
+auto players() -> const Base<std::array<Player, 64>>& {
 	static Base<std::array<Player, 64>> def{client, {client_player_p_base, client_player_p_off}};
 	return def;
 }
-const Composite<int> &
-		GamePointerDef::targetId() {
+auto targetId() -> const Composite<int>& {
 	static Composite<int> def{localplayer(), {client_target_id_p_off}};
 	return def;
 }
-const Base<int> &
-		GamePointerDef::doAttack() {
+auto doAttack() -> const Base<int>& {
 	static Base<int> def{client, {client_doAttack}};
 	return def;
 }
-const Base<> &
-		GamePointerDef::op_viewAngles_update() {
+auto op_viewAngles_update() -> const Base<>& {
 	static Base<> def{engine, {engine_op_viewAngle_update}};
 	return def;
 
 }
-const Base<> &
-		GamePointerDef::op_viewAnglesVis_update() {
+auto op_viewAnglesVis_update() -> const Base<>& {
 	static Base<> def{client, {client_op_viewAngleVis_update}};
 	return def;
 }
+
 // hack
-const Base<uint8_t> &
-		GamePointerDef::isIngame() {
+auto isIngame() -> const Base<uint8_t>& {
 	static Base<uint8_t> def{materialsystem, {materialsystem_isIngame}};
 	return def;
 }
-const Base<uint32_t> &
-		GamePointerDef::isInMenu() {
+auto isInMenu() -> const Base<uint32_t>& {
 	static Base<uint32_t> def{vgui2, {vgui2_isInMenu}};
 	return def;
 }
+
 // GamePointerUpdater
-const Base<> &
-		GamePointerDef::op_localplayer_update() {
+auto op_localplayer_update() -> const Base<>& {
 	static Base<> def{client, {client_op_localplayer_update}};
 	return def;
 }
-const Base<> &
-		GamePointerDef::op_localplayer_invalidate() {
+auto op_localplayer_invalidate() -> const Base<>& {
 	static Base<> def{client, {client_op_localplayer_invalidate}};
 	return def;
+}
 }
