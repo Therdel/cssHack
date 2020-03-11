@@ -49,6 +49,13 @@ public:
 		NO_EXEC
 	};
 
+	enum MethodCallingConvention {
+		push_on_stack,
+		pass_by_ecx,
+		linux = push_on_stack,
+		windows = pass_by_ecx
+	};
+
 	DetourToMethod()
 			: m_enabled(false)
 			, m_object_ptr(0)
@@ -206,6 +213,12 @@ private:
 
 		auto &codeBuf = m_trampolineCodeBuf;
 
+#ifdef __linux__
+		MethodCallingConvention callingConvention = linux;
+#else // windows
+		MethodCallingConvention callingConvention = windows;
+#endif
+
 		// if policy demands CODE_BEFORE_DETOUR
 		// the by detour overwritten code will be inserted before the handler call
 		if (policy == CODE_BEFORE_DETOUR) {
@@ -222,11 +235,20 @@ private:
 		// modification: no push/pop of return address, since the trampoline wasn't called, but jumped to
 		// this leaves no necessity of tweaking any return addresses at this point
 
-		// push object-pointer
-		// 68 EFBEADDE      - push DEADBEEF (DEADBEEF examplifies an actual address)
-		codeBuf[nextIdx++] = 0x68; // push
-		*(uintptr_t *) &codeBuf[nextIdx] = m_object_ptr;
-		nextIdx += 4;
+		if (callingConvention == linux) {
+			// push object-pointer on stack
+			// 68 EFBEADDE      - push DEADBEEF (DEADBEEF examplifies an actual address)
+			codeBuf[nextIdx++] = 0x68; // push
+			*(uintptr_t *) &codeBuf[nextIdx] = m_object_ptr;
+			nextIdx += 4;
+		}
+		else { // windows
+			// pass object-pointer on ecx register
+			// B9 EFBEADDE      - mov ecx, DEADBEEF (DEADBEEF examplifies an actual address)
+			codeBuf[nextIdx++] = 0xB9; // mov ecx, ...
+			*(uintptr_t*)&codeBuf[nextIdx] = m_object_ptr;
+			nextIdx += 4;
+		}
 
 		// call method by address relative operation after call instruction
 		// E8 EFBEADDE    - call[DEADBEEF] call relative to next instruction
@@ -235,11 +257,13 @@ private:
 		*(uintptr_t *) &codeBuf[nextIdx] = method_relative_address;
 		nextIdx += 4;
 
-		// pop object-pointer - increment stack pointer by size of this ptr
-		// 83 C4 08         - add esp, 04
-		codeBuf[nextIdx++] = 0x83;
-		codeBuf[nextIdx++] = 0xC4;
-		codeBuf[nextIdx++] = 0x04;
+		if (callingConvention == linux) {
+			// pop object-pointer - increment stack pointer by size of this ptr
+			// 83 C4 08         - add esp, 04
+			codeBuf[nextIdx++] = 0x83;
+			codeBuf[nextIdx++] = 0xC4;
+			codeBuf[nextIdx++] = 0x04;
+		}
 
 		// restore all general-purpose registers
 		PopAllRegisters::writeOpcodes(&codeBuf[nextIdx]);
