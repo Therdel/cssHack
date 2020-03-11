@@ -10,6 +10,18 @@
 #include "../Player.hpp"
 
 namespace GamePointerDef {
+	template<typename T = uintptr_t>
+	struct RawPointer {
+		RawPointer(uintptr_t address);
+		uintptr_t _address;
+	};
+
+	template<typename T = uintptr_t>
+	struct RawOffset {
+		RawOffset(ptrdiff_t offset);
+		ptrdiff_t _offset;
+	};
+
 	template<typename T=uintptr_t>
 	struct Base {
 		Base(std::string_view libName,

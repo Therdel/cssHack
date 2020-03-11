@@ -1,15 +1,28 @@
 //
 // Created by therdel on 05.09.19.
 //
+#include <array>
 
 #include "GamePointerDef.hpp"
 #include "Offsets.hpp"
-#include <array>
+#include "MemoryScanner/MemoryScanner.hpp"
+#include "Signatures.hpp"
+
+#define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
+#include "Log.hpp"
 
 using namespace libNames;
 using namespace Offsets;
 
 namespace GamePointerDef {
+template<typename T>
+RawPointer<T>::RawPointer(uintptr_t address)
+: _address(address) {}
+
+template<typename T>
+RawOffset<T>::RawOffset(ptrdiff_t offset)
+: _offset(offset) {}
+
 template<typename T>
 Base<T>::Base(std::string_view libName,
 			  std::vector<ptrdiff_t> offsets,
@@ -25,6 +38,15 @@ Composite<T, BaseT>::Composite(Base<BaseT> const& base,
 : base(base)
 , offsets(std::move(offsets))
 , lastOffsetType(lastOffsetType) {}
+
+auto scanSignatureExpectOneResult(const SignatureAOI& signature) -> uintptr_t {
+	auto results = MemoryScanner::scanSignature(signature);
+	if (results.size() != 1) {
+		Log::log("SigScan insuccessful");
+		throw std::runtime_error("SigScan insuccessful");
+	}
+	return results.front();
+}
 
 // TODO: Find out why we need the explicit namespace here for linking
 // input
