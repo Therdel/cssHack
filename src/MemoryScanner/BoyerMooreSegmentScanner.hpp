@@ -9,8 +9,8 @@
 
 class BoyerMooreSegmentScanner final {
 public:
-	explicit BoyerMooreSegmentScanner(SignatureAOI signatureAOI)
-	: _signatureAOI(std::move(signatureAOI))
+	explicit BoyerMooreSegmentScanner(const SignatureAOI &signatureAOI)
+	: _signatureAOI(signatureAOI)
 	, _searcher(_signatureAOI.signature)
 	{
 	}
