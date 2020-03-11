@@ -3,6 +3,7 @@
 #include <optional>
 #include <chrono>
 #include <string>
+#include <functional>
 
 #include "Utility.hpp"
 
@@ -91,8 +92,10 @@ public:
 	/// reads allocated memory ranges and their respective protections
 	/// of a loaded dynamic library
 	/// \param libName library of interest's filename
+	/// \param predicate user-defined filter, for protection checks for example.
 	/// \return allocated memory ranges and their respective protections of specified library
-	static std::vector<LibrarySegmentRange> lib_segment_ranges(std::string_view libName);
+	static std::vector<LibrarySegmentRange> lib_segment_ranges(std::string_view libName,
+                                                               std::function<bool(const LibrarySegmentRange&)> predicate = [](auto&) { return true; });
 
 private:
 

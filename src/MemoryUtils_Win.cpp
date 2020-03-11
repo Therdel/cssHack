@@ -22,6 +22,22 @@ MemoryUtils::MemoryProtection::noProtection() {
 	return PAGE_EXECUTE_READWRITE;
 }
 
+bool MemoryUtils::LibrarySegmentRange::isReadable() const {
+	bool readable = protection & (PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_READONLY | PAGE_READWRITE);
+	bool accessible = !(protection & PAGE_NOACCESS);
+	return accessible && readable;
+}
+bool MemoryUtils::LibrarySegmentRange::isWritable() const {
+	bool writable = protection & (PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY | PAGE_READWRITE | PAGE_WRITECOPY);
+	bool accessible = !(protection & PAGE_NOACCESS);
+	return accessible && writable;
+}
+bool MemoryUtils::LibrarySegmentRange::isExecutable() const {
+	bool executable = protection & (PAGE_EXECUTE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY);
+	bool accessible = !(protection & PAGE_NOACCESS);
+	return accessible && executable;
+}
+
 static std::optional<MODULEENTRY32> find_library(std::function< bool(MODULEENTRY32 const &)> predicate) {
 	// get snapshot of all modules of current process
 	auto l_snapshot_h = RAIIHandle(CreateToolhelp32Snapshot(TH32CS_SNAPMODULE32 | TH32CS_SNAPMODULE, 0));
@@ -131,6 +147,49 @@ std::optional<uintptr_t> MemoryUtils::getSymbolAddress(std::string_view libName,
 	}
 
 	return result;
+}
+
+std::vector<MemoryUtils::LibrarySegmentRange>
+MemoryUtils::lib_segment_ranges(std::string_view libName,
+                                std::function<bool(const LibrarySegmentRange&)> predicate) {
+	std::vector<MemoryUtils::LibrarySegmentRange> ranges;
+
+	auto libraryPredicate = [&libName](const MODULEENTRY32& module) {
+		return Utility::get_filename(module.szModule) == libName;
+	};
+	auto library = find_library(std::move(libraryPredicate));
+	if (!library.has_value()) {
+		auto message = "MemoryUtils::lib_segment_ranges library not found";
+		Log::log<Log::FLUSH>(message);
+		throw std::runtime_error(message);
+	}
+
+	// walk regions inside dll mapping
+	auto *modBaseAddr = reinterpret_cast<const char*>(library->modBaseAddr);
+	auto modSize = library->modBaseSize;
+
+	MEMORY_BASIC_INFORMATION currentRange;
+
+	for (const char *rangeBaseAddr = modBaseAddr; rangeBaseAddr < (modBaseAddr + modSize);) {
+		bool success = VirtualQuery(rangeBaseAddr, &currentRange, sizeof(currentRange)) != 0;
+		if (!success) {
+			auto message = "MemoryUtils::lib_segment_ranges memory range couldn't be retrieved";
+			Log::log<Log::FLUSH>(message);
+			throw std::runtime_error(message);
+		}
+
+		auto protection = currentRange.Protect;
+		auto regionSize = currentRange.RegionSize;
+		auto range = MemoryUtils::LibrarySegmentRange{ protection, {rangeBaseAddr, regionSize} };
+
+		if (predicate(range)) {
+			ranges.push_back(range);
+		}
+
+		rangeBaseAddr += regionSize;
+	}
+
+	return ranges;
 }
 
 std::optional<MemoryUtils::MemoryProtection>
