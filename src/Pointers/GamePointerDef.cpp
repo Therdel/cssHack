@@ -61,21 +61,21 @@ auto op_sdl_pollEvent_call() -> const Base<>& {
 };
 
 // bunnyhop
-auto onGround() -> const Base<int>& {
-	static Base<int> def{client, {client_onGround}};
-	return def;
+auto onGround() -> const RawPointer<int>& {
+	static RawPointer<int> address = { scanSignatureExpectOneResult(Signatures::onGround) };
+	return address;
 }
 auto doJump() -> const Base<int>& {
 	static Base<int> def{client, {client_doJump}};
 	return def;
 }
-auto op_onGround_inc() -> const Base<>& {
-	static Base<> def{client, {client_onGround_op_inc}};
-	return def;
+auto op_onGround_inc() -> const RawPointer<>& {
+	static RawPointer address = { scanSignatureExpectOneResult(Signatures::onGround_op_land) };
+	return address;
 }
-auto op_onGround_dec() -> const Base<>& {
-	static Base<> def{client, {client_onGround_op_dec}};
-	return def;
+auto op_onGround_dec() -> const RawPointer<>& {
+	static RawPointer address = { scanSignatureExpectOneResult(Signatures::onGround_op_leave) };
+	return address;
 }
 
 // aimbot
