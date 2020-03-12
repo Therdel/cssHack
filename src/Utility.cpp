@@ -19,12 +19,13 @@ namespace Utility {
 		std::vector<std::string_view> output;
 		//output.reserve(str.size() / 2);
 
-		for (auto first = str.data(), second = str.data(), last = first + str.size();
+		for (const char *first = str.data(), *second = str.data(), *last = first + str.size();
 		     second != last && first != last; first = second + 1) {
 			second = std::find_first_of(first, last, std::cbegin(delims), std::cend(delims));
 
-			if (first != second)
+			if (first != second) {
 				output.emplace_back(first, second - first);
+			}
 		}
 
 		return output;
@@ -43,7 +44,7 @@ namespace Utility {
 
 		size_t i = path.rfind(sep, path.length());
 		if (i != std::string_view::npos) {
-			return (path.substr(i + 1, path.length() - i));
+			return path.substr(i + 1, path.length() - i);
 		} else {
 			return path;
 		}
