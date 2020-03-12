@@ -143,10 +143,6 @@ std::optional<uintptr_t> MemoryUtils::getSymbolAddress(std::string_view libName,
 	return result;
 }
 
-std::vector<LibrarySegmentRange>
-lib_segment_ranges(std::string_view libName,
-	std::function<bool(const LibrarySegmentRange&)> predicate
-
 std::vector<MemoryUtils::LibrarySegmentRange>
 MemoryUtils::lib_segment_ranges(std::string_view libName,
                                 std::function<bool(const LibrarySegmentRange&)> predicate) {

@@ -72,11 +72,9 @@ void *eject_hack(void *) {
 		g_do_exit = true;
 
 		// wait for hack termination
-#ifdef __linux__
 		if (pthread_join(g_nix_hack_thread, nullptr) != 0) {
 			Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "Join hack main failed");
 		}
-#endif
 		Log::stop();
 
 		if (g_ejectingFromWithinGame) {

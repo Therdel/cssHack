@@ -52,9 +52,7 @@ public:
 
 	enum MethodCallingConvention {
 		push_on_stack,
-		pass_by_ecx,
-		linux = push_on_stack,
-		windows = pass_by_ecx
+		pass_by_ecx
 	};
 
 	DetourToMethod()
@@ -233,9 +231,9 @@ private:
 		auto &codeBuf = m_trampolineCodeBuf;
 
 #ifdef __linux__
-		MethodCallingConvention callingConvention = linux;
+		MethodCallingConvention callingConvention = push_on_stack;
 #else // windows
-		MethodCallingConvention callingConvention = windows;
+		MethodCallingConvention callingConvention = pass_by_ecx;
 #endif
 
 		// if policy demands CODE_BEFORE_DETOUR
@@ -254,7 +252,7 @@ private:
 		// modification: no push/pop of return address, since the trampoline wasn't called, but jumped to
 		// this leaves no necessity of tweaking any return addresses at this point
 
-		if (callingConvention == linux) {
+		if (callingConvention == push_on_stack) {
 			// push object-pointer on stack
 			// 68 EFBEADDE      - push DEADBEEF (DEADBEEF examplifies an actual address)
 			codeBuf[nextIdx++] = 0x68; // push
@@ -276,7 +274,7 @@ private:
 		*(uintptr_t *) &codeBuf[nextIdx] = method_relative_address;
 		nextIdx += 4;
 
-		if (callingConvention == linux) {
+		if (callingConvention == push_on_stack) {
 			// pop object-pointer - increment stack pointer by size of this ptr
 			// 83 C4 08         - add esp, 04
 			codeBuf[nextIdx++] = 0x83;

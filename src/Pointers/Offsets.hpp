@@ -8,15 +8,10 @@
 namespace Offsets {
 	// Bunnyhop
 #ifdef __linux__
-	constexpr ptrdiff_t client_onGround = 0xB9C5B0;
-	constexpr ptrdiff_t client_doJump = 0xBEC388;
-	constexpr ptrdiff_t client_onGround_op_inc = 0x40B76A;
-	constexpr ptrdiff_t client_onGround_op_dec = 0x40B816;
+	// 2019.10.9
+	constexpr ptrdiff_t client_doJump = 0xBEC968;
 #else
-	constexpr ptrdiff_t client_onGround = 0x4F60C4;
 	constexpr ptrdiff_t client_doJump = 0x4f3b3c;
-	constexpr ptrdiff_t client_onGround_op_inc = 0x168C6E;
-	constexpr ptrdiff_t client_onGround_op_dec = 0x16A7C0;
 #endif
 
 	// Aimbot
@@ -68,7 +63,9 @@ namespace Offsets {
 #endif
 	// Input
 #ifdef __linux__
-	constexpr ptrdiff_t launcher_sdl_pollEvent_caller = 0x32F5B;
+//	constexpr ptrdiff_t launcher_sdl_pollEvent_caller = 0x32F5B;
+	// 2019.10.11
+	constexpr ptrdiff_t launcher_sdl_pollEvent_caller = 0x32F7B;
 #else
 	constexpr ptrdiff_t inputsystem_sdl_pollEvent_caller = 0x3A22;
 #endif
