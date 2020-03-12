@@ -6,6 +6,7 @@
 
 #include "Utility.hpp"
 #include "Detour.hpp"
+#include "MemoryScanner/MemoryScanner.hpp"
 
 // stores all general purpose registers
 // source http://sparksandflames.com/files/x86InstructionChart.html
@@ -101,13 +102,17 @@ public:
 	// process is still executing the handling methods code.
 	// this is by principle thread-UNSAFE behavior in a thread-safety demanding environment...
 	// to minimize the risk of undefined behavior, handling methods should thus execute _quickly_
-	template<size_t opcodes_len, typename HandlerClass,
-			// we need at least 1 byte for the jump opcode and 4 for the detour function address
-			typename std::enable_if_t<(opcodes_len >= 5), int> = 0>
+	template<typename HandlerClass>
 	bool install(uintptr_t insertion_addr,
+				 int opcodes_len,
 	             void (HandlerClass::*pMethod)(void),
 	             HandlerClass *pObject,
 	             OLD_CODE_EXEC policy = CODE_AFTER_DETOUR) {
+		// we need at least 1 byte for the jump opcode and 4 for the detour function address
+		if (opcodes_len < 5) {
+			Log::log<Log::FLUSH>("DetourToMethod: not enough opcode bytes to detour");
+			throw std::runtime_error("DetourToMethod: not enough opcode bytes to detour");
+		}
 		// remove current detour, if present
 		remove();
 
@@ -134,8 +139,9 @@ public:
 		}
 
 		// install detour to our trampoline
-		bool l_success = m_detourToTrampoline.install<opcodes_len>(insertion_addr,
-		                                                           (uintptr_t) m_trampolineCodeBuf.data());
+		bool l_success = m_detourToTrampoline.install(insertion_addr,
+													  opcodes_len,
+													  (uintptr_t) m_trampolineCodeBuf.data());
 		if (!l_success) {
 			Log::log("DetourToMethod: Failed to detour to trampoline");
 
@@ -150,6 +156,20 @@ public:
 		}
 
 		return true;
+	}
+
+	template<typename HandlerClass>
+	bool install(const SignatureAOI& signature,
+				 void (HandlerClass::* pMethod)(void),
+				 HandlerClass* pObject,
+				 OLD_CODE_EXEC policy = CODE_AFTER_DETOUR) {
+		uintptr_t insertion_addr = MemoryScanner::scanSignatureExpectOneResult(signature);
+		int opcodes_len = signature.aoi_length;
+		return install(insertion_addr,
+					   opcodes_len,
+					   pMethod,
+					   pObject,
+					   policy);
 	}
 
 	// returns true for the detour was successfully disabled or already disabled before
@@ -202,10 +222,9 @@ private:
 
 	// do runtime code assembly that calls object.method()
 	// ?somewhat? from: https://stackoverflow.com/questions/14346576/calling-c-member-function-with-reference-argument-from-asm
-	void buildTrampoline(
-			size_t opcodes_len,
-			uintptr_t insertion_addr,
-			OLD_CODE_EXEC policy) {
+	void buildTrampoline(size_t opcodes_len,
+						 uintptr_t insertion_addr,
+						 OLD_CODE_EXEC policy) {
 		const uint8_t NOP = 0x90;
 		const size_t l_trampolineSize = 21 + opcodes_len + sizeof(PushAllRegisters) + sizeof(PopAllRegisters);
 		m_trampolineCodeBuf = std::vector(l_trampolineSize, NOP);

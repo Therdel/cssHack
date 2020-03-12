@@ -42,11 +42,12 @@ public:
 		return *this;
 	}
 
-	// TODO: clarify SFINAE
-	template<size_t opcodes_len,
-			// we need at least 1 byte for the jump opcode and 4 for the detour function address
-			typename std::enable_if_t<(opcodes_len >= 5), int> = 0>
-	bool install(uintptr_t insertion_addr, uintptr_t detour_addr) {
+	bool install(uintptr_t insertion_addr, int opcodes_len, uintptr_t detour_addr) {
+		// we need at least 1 byte for the jump opcode and 4 for the detour function address
+		if (opcodes_len < 5) {
+			Log::log<Log::FLUSH>("Detour: not enough opcode bytes to detour");
+			throw std::runtime_error("Detour: not enough opcode bytes to detour");
+		}
 		remove();
 
 		m_enabled = true;
