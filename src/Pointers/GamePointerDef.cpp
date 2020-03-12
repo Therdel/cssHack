@@ -39,15 +39,6 @@ Composite<T, BaseT>::Composite(Base<BaseT> const& base,
 , offsets(std::move(offsets))
 , lastOffsetType(lastOffsetType) {}
 
-auto scanSignatureExpectOneResult(const SignatureAOI& signature) -> uintptr_t {
-	auto results = MemoryScanner::scanSignature(signature);
-	if (results.size() != 1) {
-		Log::log("SigScan insuccessful");
-		throw std::runtime_error("SigScan insuccessful");
-	}
-	return results.front();
-}
-
 // TODO: Find out why we need the explicit namespace here for linking
 // input
 auto op_sdl_pollEvent_call() -> const Base<>& {
@@ -62,20 +53,12 @@ auto op_sdl_pollEvent_call() -> const Base<>& {
 
 // bunnyhop
 auto onGround() -> const RawPointer<int>& {
-	static RawPointer<int> address = { scanSignatureExpectOneResult(Signatures::onGround) };
+	static RawPointer<int> address = { MemoryScanner::scanSignatureExpectOneResult(Signatures::onGround) };
 	return address;
 }
 auto doJump() -> const Base<int>& {
 	static Base<int> def{client, {client_doJump}};
 	return def;
-}
-auto op_onGround_inc() -> const RawPointer<>& {
-	static RawPointer address = { scanSignatureExpectOneResult(Signatures::onGround_op_land) };
-	return address;
-}
-auto op_onGround_dec() -> const RawPointer<>& {
-	static RawPointer address = { scanSignatureExpectOneResult(Signatures::onGround_op_leave) };
-	return address;
 }
 
 // aimbot

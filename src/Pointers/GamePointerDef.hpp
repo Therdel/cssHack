@@ -49,8 +49,6 @@ namespace GamePointerDef {
 	// bunnyhop
 	auto onGround() -> const RawPointer<int>&;
 	auto doJump() -> const Base<int>&;
-	auto op_onGround_inc() -> const RawPointer<>&;
-	auto op_onGround_dec() -> const RawPointer<>&;
 	// aimbot
 	auto localplayer() -> const Base<>&;
 	auto playerPos() -> const Base<Vec3f>&;
