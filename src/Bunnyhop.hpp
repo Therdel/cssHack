@@ -4,12 +4,6 @@
 #include "DetourToMethod.hpp"
 #include "Pointers/SharedGamePointer.hpp"
 
-#ifdef __linux__
-#define BUNNYHOP_DETOUR_LEN_ON_GROUND 7
-#else
-#define BUNNYHOP_DETOUR_LEN_ON_GROUND 6
-#endif
-
 class Bunnyhop : public Utility::NonCopyable, public Utility::NonMovable {
 public:
 	Bunnyhop();

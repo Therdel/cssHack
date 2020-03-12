@@ -1,8 +1,8 @@
 #include "Bunnyhop.hpp"
 #include "Pointers/GamePointerFactory.hpp"
+#include "Pointers/Signatures.hpp"
 
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
-
 #include "Log.hpp"
 
 using namespace GamePointerDef;
@@ -45,25 +45,21 @@ void Bunnyhop::stop() {
 }
 
 void Bunnyhop::hook() {
-	auto p_onGround_land = GamePointerFactory::get(op_onGround_inc());
-    bool l_inc_detour_success = m_detour_onGround_inc.install<BUNNYHOP_DETOUR_LEN_ON_GROUND>(
-            p_onGround_land,
+    bool l_inc_detour_success = m_detour_onGround_inc.install(
+			Signatures::onGround_op_land,
             &Bunnyhop::hook_onGround_inc,
             this,
-            DetourToMethod::CODE_BEFORE_DETOUR
-    );
+            DetourToMethod::CODE_BEFORE_DETOUR);
 
     if (!l_inc_detour_success) {
         Log::log("Bunnyhop failed to detour inc on_ground");
     }
 
-	auto p_onGround_leave = GamePointerFactory::get(op_onGround_dec());
-    bool l_dec_detour_success = m_detour_onGround_dec.install<BUNNYHOP_DETOUR_LEN_ON_GROUND>(
-            p_onGround_leave,
+    bool l_dec_detour_success = m_detour_onGround_dec.install(
+			Signatures::onGround_op_leave,
             &Bunnyhop::hook_onGround_dec,
             this,
-            DetourToMethod::CODE_BEFORE_DETOUR
-    );
+            DetourToMethod::CODE_BEFORE_DETOUR);
 
     if (!l_dec_detour_success) {
         Log::log("Bunnyhop failed to detour dec on_ground");
