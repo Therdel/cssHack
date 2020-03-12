@@ -10,6 +10,9 @@
 #include "BoyerMooreSegmentScanner.hpp"
 #include "MemoryUtils.hpp"
 
+#define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
+#include "Log.hpp"
+
 namespace MemoryScanner {
     /// find occurances of a signature in the address space
     /// \returns matching locations after applying the signatures offset
@@ -35,6 +38,16 @@ namespace MemoryScanner {
          */
 
         return matches;
+    }
+
+    template<typename unused=void>
+    auto scanSignatureExpectOneResult(const SignatureAOI& signature) -> uintptr_t {
+        auto results = scanSignature(signature);
+        if (results.size() != 1) {
+            Log::log("Signature Scan insuccessful");
+            throw std::runtime_error("Signature Scan insuccessful");
+        }
+        return results.front();
     }
 }
 namespace {
