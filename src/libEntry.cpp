@@ -55,7 +55,7 @@ void nix_init_hack() {
 }
 
 void eject_from_within_hack() {
-	std::lock_guard<std::mutex> l_lock(g_ejectingFromWithinGameMutex);
+	std::scoped_lock l_lock(g_ejectingFromWithinGameMutex);
 	if (!g_ejectingFromWithinGame) {
 		g_do_exit = true;
 		g_ejectingFromWithinGame = true;
@@ -89,7 +89,7 @@ void *eject_hack(void *) {
 
 			// call dlclose in a thread so this library code can be
 			// safely deallocated during dlclose
-			std::lock_guard<std::mutex> l_lock(g_ejectingFromWithinGameMutex);
+			std::scoped_lock l_lock(g_ejectingFromWithinGameMutex);
 			pthread_attr_t tAttr;
 			pthread_t closeThread;
 			pthread_attr_init(&tAttr);
@@ -178,7 +178,7 @@ DWORD WINAPI win_eject_hack(LPVOID) {
 }
 
 void eject_from_within_hack() {
-  std::lock_guard<std::mutex> l_lock(g_ejectingFromWithinGameMutex);
+  std::scoped_lock l_lock(g_ejectingFromWithinGameMutex);
   if (!g_ejectingFromWithinGame) {
 	g_do_exit = true;
 	g_ejectingFromWithinGame = true;

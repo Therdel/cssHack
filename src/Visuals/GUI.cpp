@@ -50,32 +50,32 @@ GUI::~GUI() {
 }
 
 void GUI::registerFloatSlider(FloatSlider slider) {
-	std::lock_guard<std::mutex> l_lock(m_debugFloatSlidersMutex);
+	std::scoped_lock l_lock(m_debugFloatSlidersMutex);
 	m_debugFloatSliders.push_back(std::move(slider));
 }
 
 void GUI::registerCheckbox(Checkbox checkBox) {
-	std::lock_guard<std::mutex> l_lock(m_debugCheckboxesMutex);
+	std::scoped_lock l_lock(m_debugCheckboxesMutex);
 	m_debugCheckboxes.push_back(std::move(checkBox));
 }
 
 void GUI::registerIntSlider(IntSlider slider) {
-	std::lock_guard<std::mutex> l_lock(m_debugIntSlidersMutex);
+	std::scoped_lock l_lock(m_debugIntSlidersMutex);
 	m_debugIntSliders.push_back(std::move(slider));
 }
 
 void GUI::registerAngleRadSlider(AngleRadSlider slider) {
-	std::lock_guard<std::mutex> l_lock(m_debugAngleSlidersMutex);
+	std::scoped_lock l_lock(m_debugAngleSlidersMutex);
 	m_debugAngleSliders.push_back(std::move(slider));
 }
 
 void GUI::registerComboBox(ComboBox comboBox) {
-	std::lock_guard<std::mutex> l_lock(m_debugComboBoxesMutex);
+	std::scoped_lock l_lock(m_debugComboBoxesMutex);
 	m_debugComboBoxes.push_back(std::move(comboBox));
 }
 
 void GUI::registerButton(Button button) {
-	std::lock_guard<std::mutex> l_lock(m_debugButtonsMutex);
+	std::scoped_lock l_lock(m_debugButtonsMutex);
 	m_debugButtons.push_back(std::move(button));
 }
 
@@ -185,7 +185,7 @@ void GUI::imGuiNewFrame(SDL_Window *window) {
 		io.MouseDrawCursor = true;
 		ImGui::Begin("Knerz");                          // Create a window called "Hello, world!" and append into it.
 		{
-			std::lock_guard<std::mutex> l_lock(m_debugFloatSlidersMutex);
+			std::scoped_lock l_lock(m_debugFloatSlidersMutex);
 			for (auto &slider : m_debugFloatSliders) {
 				ImGui::SliderFloat(slider.m_description.c_str(),
 				                   &slider.m_value,
@@ -194,7 +194,7 @@ void GUI::imGuiNewFrame(SDL_Window *window) {
 			}
 		}
 		{
-			std::lock_guard<std::mutex> l_lock(m_debugCheckboxesMutex);
+			std::scoped_lock l_lock(m_debugCheckboxesMutex);
 			if (!m_debugCheckboxes.empty()) {
 				ImGui::Text("Debug checkboxes:");
 				for (auto &checkbox : m_debugCheckboxes) {
@@ -204,7 +204,7 @@ void GUI::imGuiNewFrame(SDL_Window *window) {
 			}
 		}
 		{
-			std::lock_guard<std::mutex> l_lock(m_debugIntSlidersMutex);
+			std::scoped_lock l_lock(m_debugIntSlidersMutex);
 			for (auto &slider : m_debugIntSliders) {
 				ImGui::SliderInt(slider.m_description.c_str(),
 				                 &slider.m_value,
@@ -213,7 +213,7 @@ void GUI::imGuiNewFrame(SDL_Window *window) {
 			}
 		}
 		{
-			std::lock_guard<std::mutex> l_lock(m_debugAngleSlidersMutex);
+			std::scoped_lock l_lock(m_debugAngleSlidersMutex);
 			for (auto &slider : m_debugAngleSliders) {
 				ImGui::SliderAngle(slider.m_description.c_str(),
 				                   &slider.m_value,
@@ -222,7 +222,7 @@ void GUI::imGuiNewFrame(SDL_Window *window) {
 			}
 		}
 		{
-			std::lock_guard<std::mutex> l_lock(m_debugComboBoxesMutex);
+			std::scoped_lock l_lock(m_debugComboBoxesMutex);
 			for (auto &comboBox : m_debugComboBoxes) {
 				if (ImGui::BeginCombo(comboBox.m_description.c_str(),
 				                      comboBox.m_currentSelection->c_str())) {
@@ -245,7 +245,7 @@ void GUI::imGuiNewFrame(SDL_Window *window) {
 			}
 		}
 		{
-			std::lock_guard<std::mutex> l_lock(m_debugButtonsMutex);
+			std::scoped_lock l_lock(m_debugButtonsMutex);
 			for (auto &button : m_debugButtons) {
 				if (ImGui::Button(button.m_description.c_str())) {
 					button.m_callback();

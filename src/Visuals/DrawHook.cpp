@@ -31,12 +31,12 @@ DrawHook::~DrawHook() {
 }
 
 void DrawHook::attachSubscriber(DrawHookSubscriber *sub) {
-	std::lock_guard<std::mutex> l_lock(m_subscribersMutex);
+	std::scoped_lock l_lock(m_subscribersMutex);
 	m_subscribers.push_back(sub);
 }
 
 void DrawHook::detachSubscriber(DrawHookSubscriber *sub) {
-	std::lock_guard<std::mutex> l_lock(m_subscribersMutex);
+	std::scoped_lock l_lock(m_subscribersMutex);
 	m_subscribers.erase(std::remove(m_subscribers.begin(),
 	                                m_subscribers.end(),
 	                                sub),
@@ -71,7 +71,7 @@ void DrawHook::removeSwapWindowHook() {
 }
 
 void DrawHook::callSubscribers(SDL_Window *window) {
-	std::lock_guard<std::mutex> l_lock(m_subscribersMutex);
+	std::scoped_lock l_lock(m_subscribersMutex);
 	for (auto &subscriber : m_subscribers) {
 		subscriber->onDraw(window);
 	}

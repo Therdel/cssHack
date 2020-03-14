@@ -41,19 +41,19 @@ bool Input::isDown(SDL_Keycode key) const {
 }
 
 void Input::setKeyHandler(KeyStroke key, keyHandler callback) {
-	std::lock_guard<std::mutex> lock(m_keyHandlersMutex);
+	std::scoped_lock lock(m_keyHandlersMutex);
 	m_keyHandlers[key] = std::move(callback);
 }
 
 bool Input::removeKeyHandler(KeyStroke key) {
-	std::lock_guard<std::mutex> lock(m_keyHandlersMutex);
+	std::scoped_lock lock(m_keyHandlersMutex);
 
 	auto amountErased = m_keyHandlers.erase(key);
 	return amountErased != 0;
 }
 
 void Input::setMouseHandler(Input::mouseHandler callback) {
-	std::lock_guard<std::mutex> l_lock(m_mouseHandlerMutex);
+	std::scoped_lock l_lock(m_mouseHandlerMutex);
 	m_mouseHandler = std::move(callback);
 }
 
@@ -99,7 +99,7 @@ void Input::removePollEventHook() {
 std::optional<bool> Input::callKeyHandlerIfExists(SDL_KeyboardEvent const &event) {
 	KeyStroke keyStroke{event.keysym.sym, event.keysym.mod};
 
-	std::lock_guard<std::mutex> l_lock(m_keyHandlersMutex);
+	std::scoped_lock l_lock(m_keyHandlersMutex);
 	// check if handler exists
 	auto handlerIt = g_keyboard->m_keyHandlers.find(keyStroke);
 	if (handlerIt != g_keyboard->m_keyHandlers.end()) {
@@ -112,12 +112,12 @@ std::optional<bool> Input::callKeyHandlerIfExists(SDL_KeyboardEvent const &event
 }
 
 void Input::setAllEventConsumer(Input::eventHandler callback) {
-	std::lock_guard<std::mutex> l_lock(m_allEventConsumerMutex);
+	std::scoped_lock l_lock(m_allEventConsumerMutex);
 	m_allEventConsumer = std::move(callback);
 }
 
 void Input::removeAllEventConsumer() {
-	std::lock_guard<std::mutex> l_lock(m_allEventConsumerMutex);
+	std::scoped_lock l_lock(m_allEventConsumerMutex);
 	m_allEventConsumer.reset();
 }
 
@@ -177,7 +177,7 @@ int Input::detour_SDL_PollEvent(SDL_Event *callerEvent) {
 	int eventExists = g_pOrigSDL_PollEvent(&event);
 	if (eventExists == 1) {
 		{
-			std::lock_guard<std::mutex> l_lock(m_allEventConsumerMutex);
+			std::scoped_lock l_lock(m_allEventConsumerMutex);
 			if (m_allEventConsumer) {
 				(*m_allEventConsumer)(event);
 				steal = true;
@@ -189,7 +189,7 @@ int Input::detour_SDL_PollEvent(SDL_Event *callerEvent) {
 				case SDL_MOUSEWHEEL:
 				case SDL_MOUSEBUTTONDOWN:
 				case SDL_MOUSEBUTTONUP: {
-					std::lock_guard<std::mutex> lock(m_mouseHandlerMutex);
+					std::scoped_lock lock(m_mouseHandlerMutex);
 					if (m_mouseHandler.has_value()) {
 						steal = (*m_mouseHandler)(event);
 					}

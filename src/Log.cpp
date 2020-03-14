@@ -19,7 +19,7 @@ void Log::stop() {
 	if (!s_log.m_stopped) {
 		// send stopEventProcessing signal
 		{
-			std::lock_guard<std::mutex> l_lock(s_log.m_queueMutex);
+			std::scoped_lock l_lock(s_log.m_queueMutex);
 			s_log.m_do_stop = true;
 		}
 		s_log.m_queueCondition.notify_all();
@@ -100,7 +100,7 @@ void Log::doLog(const LogJob &job) {
 void Log::logLater(LogJob job) {
 	// TODO throw exception or something when trying to log async whilst stopped
 	{
-		std::lock_guard<std::mutex> l_lock(m_queueMutex);
+		std::scoped_lock l_lock(m_queueMutex);
 		m_messageQueue.push(std::move(job));
 	}
 	m_queueCondition.notify_all();
