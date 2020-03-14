@@ -16,22 +16,22 @@ GamePointerUpdater::~GamePointerUpdater() {
 }
 
 void GamePointerUpdater::hook() {
-	bool l_detour_update_success = m_detour_localplayer_update.install<GAMEPOINTERUPDATER_DETOUR_LEN_ON_UPDATE>(
-			GamePointerFactory::get(GamePointerDef::op_localplayer_update()),
-			&GamePointerUpdater::hookOnLocalplayerUpdate,
-			this,
-			DetourToMethod::CODE_BEFORE_DETOUR
-	);
+	bool l_detour_update_success = m_detour_localplayer_update.install(
+		GamePointerFactory::get(GamePointerDef::op_localplayer_update()),
+		GAMEPOINTERUPDATER_DETOUR_LEN_ON_UPDATE,
+		[this] { hookOnLocalplayerUpdate(); },
+		DetourToMethod::CODE_BEFORE_DETOUR
+		);
 
 	if (!l_detour_update_success) {
 		Log::log("GamePointerUpdater failed to detour localplayer update");
 	}
 
-	bool l_detour_invalidate_success = m_detour_localplayer_invalidate.install<GAMEPOINTERUPDATER_DETOUR_LEN_ON_INVALIDATE>(
-			GamePointerFactory::get(GamePointerDef::op_localplayer_invalidate()),
-			&GamePointerUpdater::hookOnLocalplayerInvalidate,
-			this,
-			DetourToMethod::CODE_BEFORE_DETOUR
+	bool l_detour_invalidate_success = m_detour_localplayer_invalidate.install(
+		GamePointerFactory::get(GamePointerDef::op_localplayer_invalidate()),
+		GAMEPOINTERUPDATER_DETOUR_LEN_ON_INVALIDATE,
+		[this] { hookOnLocalplayerInvalidate(); },
+		DetourToMethod::CODE_BEFORE_DETOUR
 	);
 
 	if (!l_detour_invalidate_success) {

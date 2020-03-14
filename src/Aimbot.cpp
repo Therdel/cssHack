@@ -223,21 +223,21 @@ Vec3f const &Aimbot::getBulletPredictionAngles() const {
 }
 
 void Aimbot::install() {
-	bool l_ang_detour_success = m_detour_viewAngles_update.install<AIMBOT_DETOUR_LEN_ON_UPDATE_ANG>(
-			GamePointerFactory::get(GamePointerDef::op_viewAngles_update()),
-			&Aimbot::hookViewAnglesUpdate,
-			this,
-			DetourToMethod::CODE_BEFORE_DETOUR
+	bool l_ang_detour_success = m_detour_viewAngles_update.install(
+		GamePointerFactory::get(GamePointerDef::op_viewAngles_update()),
+		AIMBOT_DETOUR_LEN_ON_UPDATE_ANG,
+		[this] { hookViewAnglesUpdate(); },
+		DetourToMethod::CODE_BEFORE_DETOUR
 	);
 	if (!l_ang_detour_success) {
 		Log::log("Aimbot failed to detour update_ang");
 	}
 
-	bool l_vis_ang_detour_success = m_detour_viewAnglesVis_update.install<AIMBOT_DETOUR_LEN_ON_UPDATE_ANG_VIS>(
-			GamePointerFactory::get(GamePointerDef::op_viewAnglesVis_update()),
-			&Aimbot::hookViewAnglesVisUpdate,
-			this,
-			DetourToMethod::CODE_BEFORE_DETOUR
+	bool l_vis_ang_detour_success = m_detour_viewAnglesVis_update.install(
+		GamePointerFactory::get(GamePointerDef::op_viewAnglesVis_update()),
+		AIMBOT_DETOUR_LEN_ON_UPDATE_ANG_VIS,
+		[this] { hookViewAnglesVisUpdate(); },
+		DetourToMethod::CODE_BEFORE_DETOUR
 	);
 	if (!l_vis_ang_detour_success) {
 		Log::log("Aimbot failed to detour update_vis_ang");
