@@ -28,6 +28,7 @@ set(HACK_SOURCES
         src/Log.cpp
         src/Aimbot.cpp
         src/Bunnyhop.cpp
+        src/Detour.cpp
         src/Hack.cpp
         src/MemoryUtils.cpp
         src/libEntry.cpp
