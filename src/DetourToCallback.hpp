@@ -8,7 +8,7 @@
 #include "Detour.hpp"
 #include "MemoryUtils.hpp"
 
-class SignatureAOI;
+struct SignatureAOI;
 
 // stores all general purpose registers
 // source http://sparksandflames.com/files/x86InstructionChart.html

@@ -13,11 +13,12 @@
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
 #include "Log.hpp"
 
-namespace MemoryScanner {
+class MemoryScanner final {
+public:
     /// find occurances of a signature in the address space
     /// \returns matching locations after applying the signatures offset
     template<typename Scanner = BoyerMooreSegmentScanner>
-    std::vector<uintptr_t> scanSignature(const SignatureAOI& signatureAOI, std::optional<std::string_view> description = std::nullopt) {
+    static auto scanSignature(const SignatureAOI& signatureAOI, std::optional<std::string_view> description = std::nullopt) -> std::vector<uintptr_t> {
         constexpr auto now = [] { return std::chrono::system_clock::now(); };
         auto start = now();
 
@@ -40,8 +41,7 @@ namespace MemoryScanner {
         return matches;
     }
 
-    template<typename unused=void>
-    auto scanSignatureExpectOneResult(const SignatureAOI& signature) -> uintptr_t {
+    static auto scanSignatureExpectOneResult(const SignatureAOI& signature) -> uintptr_t {
         auto results = scanSignature(signature);
         if (results.size() != 1) {
             Log::log("Signature Scan insuccessful");
@@ -49,19 +49,11 @@ namespace MemoryScanner {
         }
         return results.front();
     }
-}
-namespace {
+private:
     template<typename Scanner>
-    auto _thread_work(const Scanner& scanner, const std::vector<std::string_view> &haystacks, std::vector<uintptr_t>& matches) {
-        for (auto& haystack : haystacks) {
-            scanner.scanSegment(haystack, matches);
-        }
-    }
-
-    template<typename Scanner>
-    auto _scan_parallel(const Scanner& scanner,
-                        const SignatureAOI& signatureAOI,
-                        size_t amountThreads = std::thread::hardware_concurrency()) -> std::vector<uintptr_t> {
+    static auto _scan_parallel(const Scanner& scanner,
+                               const SignatureAOI& signatureAOI,
+                               size_t amountThreads = std::thread::hardware_concurrency()) -> std::vector<uintptr_t> {
         auto executableAndReadable = [](const auto& range) {
             // skip segments that aren't code or are not readable
             return range.isReadable() && range.isExecutable();
@@ -77,7 +69,7 @@ namespace {
         for (size_t threadIdx = 0; threadIdx < amountThreads; ++threadIdx) {
             threads.emplace_back([threadIdx, &scanner, &thread_work_chunks, &allThreadMatches] {
                 _thread_work(scanner, thread_work_chunks[threadIdx], allThreadMatches[threadIdx]);
-                });
+            });
         }
         for (auto &thread : threads) {
             thread.join();
@@ -93,22 +85,10 @@ namespace {
         return matches;
     }
 
-    auto _get_amount_candidates(const std::vector<MemoryUtils::LibrarySegmentRange>& segments, size_t patternLength) -> int {
-        int candidates = 0;
-        for (auto& segment : segments) {
-            int segmentSize = static_cast<int>(segment.memoryRange.size());
-            auto segmentCandidates = segmentSize - (static_cast<int>(patternLength) - 1);
-            if (segmentCandidates > 0) {
-                candidates += segmentCandidates;
-            }
-        }
-        return candidates;
-    }
-
     // split memory into evenly sized chunks
-    auto _get_thread_work_chunks(const std::vector<MemoryUtils::LibrarySegmentRange>& segments,
-                                 size_t patternLength,
-                                 size_t amount_threads) -> std::vector<std::vector<std::string_view>> {
+    static auto _get_thread_work_chunks(const std::vector<MemoryUtils::LibrarySegmentRange>& segments,
+                                        size_t patternLength,
+                                        size_t amount_threads) -> std::vector<std::vector<std::string_view>> {
         std::vector<std::vector<std::string_view>> per_thread_haystacks(amount_threads);
         int candidates_per_thread = _get_amount_candidates(segments, patternLength) / amount_threads;
 
@@ -146,4 +126,25 @@ namespace {
         }
         return per_thread_haystacks;
     }
-}
+
+    static auto _get_amount_candidates(const std::vector<MemoryUtils::LibrarySegmentRange>& segments, size_t patternLength) -> int {
+        int candidates = 0;
+        for (auto& segment : segments) {
+            int segmentSize = static_cast<int>(segment.memoryRange.size());
+            auto segmentCandidates = segmentSize - (static_cast<int>(patternLength) - 1);
+            if (segmentCandidates > 0) {
+                candidates += segmentCandidates;
+            }
+        }
+        return candidates;
+    }
+
+    template<typename Scanner>
+    static auto _thread_work(const Scanner& scanner,
+                             const std::vector<std::string_view> &haystacks,
+                             std::vector<uintptr_t>& matches) {
+        for (auto& haystack : haystacks) {
+            scanner.scanSegment(haystack, matches);
+        }
+    }
+};
