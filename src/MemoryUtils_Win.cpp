@@ -12,33 +12,31 @@
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
 
 #include "Log.hpp"
-
 #include "RAIIHandle.hpp"
 
 using namespace std::chrono_literals; // std::chrono::seconds(1) == 1s
 
-MemoryUtils::MemoryProtection::protection_t
-MemoryUtils::MemoryProtection::noProtection() {
+auto MemoryUtils::MemoryRange::noProtection() -> protection_t {
 	return PAGE_EXECUTE_READWRITE;
 }
 
-bool MemoryUtils::LibrarySegmentRange::isReadable() const {
+auto MemoryUtils::MemoryRange::isReadable() const -> bool {
 	bool readable = protection & (PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_READONLY | PAGE_READWRITE);
 	bool accessible = !(protection & PAGE_NOACCESS);
 	return accessible && readable;
 }
-bool MemoryUtils::LibrarySegmentRange::isWritable() const {
+auto MemoryUtils::MemoryRange::isWritable() const -> bool {
 	bool writable = protection & (PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY | PAGE_READWRITE | PAGE_WRITECOPY);
 	bool accessible = !(protection & PAGE_NOACCESS);
 	return accessible && writable;
 }
-bool MemoryUtils::LibrarySegmentRange::isExecutable() const {
+auto MemoryUtils::MemoryRange::isExecutable() const -> bool {
 	bool executable = protection & (PAGE_EXECUTE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY);
 	bool accessible = !(protection & PAGE_NOACCESS);
 	return accessible && executable;
 }
 
-static std::optional<MODULEENTRY32> find_library(std::function< bool(MODULEENTRY32 const &)> predicate) {
+static auto find_library(std::function< bool(MODULEENTRY32 const &)> predicate) -> std::optional<MODULEENTRY32> {
 	// get snapshot of all modules of current process
 	auto l_snapshot_h = RAIIHandle(CreateToolhelp32Snapshot(TH32CS_SNAPMODULE32 | TH32CS_SNAPMODULE, 0));
 
@@ -69,8 +67,8 @@ static std::optional<MODULEENTRY32> find_library(std::function< bool(MODULEENTRY
 	l_me32;
 }
 
-std::optional<uintptr_t> MemoryUtils::lib_base_32_timeout(std::string_view libName,
-                                                          std::chrono::milliseconds timeout) {
+auto MemoryUtils::lib_base_32_timeout(std::string_view libName,
+                                      std::chrono::milliseconds timeout) -> std::optional<uintptr_t> {
 	std::optional<uintptr_t> base_addr;
 
 	auto now = []() { return std::chrono::steady_clock::now(); };
@@ -90,7 +88,7 @@ std::optional<uintptr_t> MemoryUtils::lib_base_32_timeout(std::string_view libNa
 	return base_addr;
 }
 
-std::string MemoryUtils::this_lib_path() {
+auto MemoryUtils::this_lib_path() -> std::string {
 	HMODULE l_hModule;
 	DWORD dwFlags = GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS
 	                | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT;
@@ -114,7 +112,7 @@ std::string MemoryUtils::this_lib_path() {
 	return library->szExePath;
 }
 
-std::optional<std::string> MemoryUtils::loadedLibPath(std::string_view libName) {
+auto MemoryUtils::loadedLibPath(std::string_view libName) -> std::optional<std::string> {
 	std::optional<std::string> l_libPath;
 
 
@@ -129,7 +127,7 @@ std::optional<std::string> MemoryUtils::loadedLibPath(std::string_view libName) 
 	return l_libPath;
 }
 
-std::optional<uintptr_t> MemoryUtils::getSymbolAddress(std::string_view libName, std::string const& symbol) {
+auto MemoryUtils::getSymbolAddress(std::string_view libName, std::string const& symbol) -> std::optional<uintptr_t> {
 	std::optional<uintptr_t> result;
 
     HMODULE l_hModule = GetModuleHandle(libName.data());
@@ -149,10 +147,9 @@ std::optional<uintptr_t> MemoryUtils::getSymbolAddress(std::string_view libName,
 	return result;
 }
 
-std::vector<MemoryUtils::LibrarySegmentRange>
-MemoryUtils::lib_segment_ranges(std::string_view libName,
-                                std::function<bool(const LibrarySegmentRange&)> predicate) {
-	std::vector<MemoryUtils::LibrarySegmentRange> ranges;
+auto MemoryUtils::lib_segment_ranges(std::string_view libName,
+									 std::function<bool(const MemoryRange&)> predicate) -> std::vector<MemoryRange> {
+	std::vector<MemoryRange> ranges;
 
 	auto libraryPredicate = [&libName](const MODULEENTRY32& module) {
 		return Utility::get_filename(module.szModule) == libName;
@@ -180,7 +177,7 @@ MemoryUtils::lib_segment_ranges(std::string_view libName,
 
 		auto protection = currentRange.Protect;
 		auto regionSize = currentRange.RegionSize;
-		auto range = MemoryUtils::LibrarySegmentRange{ protection, {rangeBaseAddr, regionSize} };
+		auto range = MemoryRange{ {rangeBaseAddr, regionSize}, protection};
 
 		if (predicate(range)) {
 			ranges.push_back(range);
@@ -192,18 +189,19 @@ MemoryUtils::lib_segment_ranges(std::string_view libName,
 	return ranges;
 }
 
-std::optional<MemoryUtils::MemoryProtection>
-MemoryUtils::set_memory_protection(MemoryUtils::MemoryProtection newProtection) {
+auto MemoryUtils::set_memory_protection(MemoryProtection newProtection) -> std::optional<MemoryProtection> {
 	DWORD old_protection;
 	DWORD new_protection = newProtection.protection;
+	const void* rawConstAddress = reinterpret_cast<const void*>(newProtection.memoryRange.data());
+	void* rawAddress = const_cast<void*>(rawConstAddress);
 	if (VirtualProtect(
-			reinterpret_cast<void *>(newProtection.address),
-			newProtection.length,
+			rawAddress,
+			newProtection.memoryRange.size(),
 			new_protection,
 			&old_protection) == 0) {
 		// unable to change memory protection of code segment
 		return std::nullopt;
 	} else {
-		return MemoryProtection{newProtection.address, newProtection.length, old_protection};
+		return MemoryProtection{ newProtection.memoryRange, old_protection };
 	}
 }

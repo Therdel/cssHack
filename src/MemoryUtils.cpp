@@ -6,37 +6,45 @@
 
 #include "Log.hpp"
 
-using ScopedReProtect = MemoryUtils::ScopedReProtect;
-
-ScopedReProtect::ScopedReProtect(MemoryProtection oldProtection)
-		: m_active(true)
-		, m_formerProtection(oldProtection) {}
-
-ScopedReProtect::ScopedReProtect(ScopedReProtect &&other) noexcept
-		: m_active(other.m_active)
-		, m_formerProtection(other.m_formerProtection) {
-	other.m_active = false;
+auto MemoryUtils::MemoryRange::address() const -> uintptr_t {
+    return reinterpret_cast<uintptr_t>(memoryRange.data());
 }
 
-ScopedReProtect &ScopedReProtect::operator=(ScopedReProtect &&other) noexcept {
-	m_active = other.m_active;
-	other.m_active = false;
-	m_formerProtection = other.m_formerProtection;
+using ScopedReProtect = MemoryUtils::ScopedReProtect;
+
+ScopedReProtect::ScopedReProtect(MemoryRange oldProtection)
+		: _active(true)
+		, _oldProtection(oldProtection) {}
+
+ScopedReProtect::ScopedReProtect(ScopedReProtect &&other) noexcept
+		: _active(other._active)
+		, _oldProtection(other._oldProtection) {
+	other._active = false;
+}
+
+auto ScopedReProtect::operator=(ScopedReProtect &&other) noexcept -> ScopedReProtect& {
+	_active = other._active;
+	other._active = false;
+	_oldProtection = other._oldProtection;
 	return *this;
 }
 
-bool ScopedReProtect::restore() {
-	if (m_active) {
-		auto result = set_memory_protection(m_formerProtection);
+ScopedReProtect::~ScopedReProtect() {
+	restore();
+}
+
+auto ScopedReProtect::restore() -> bool {
+	if (_active) {
+		auto result = set_memory_protection(_oldProtection);
 		if (result.has_value()) {
-			m_active = false;
+			_active = false;
 		}
 	}
 
-	return !m_active;
+	return !_active;
 }
 
-uintptr_t MemoryUtils::lib_base_32(std::string_view libName) {
+auto MemoryUtils::lib_base_32(std::string_view libName) -> uintptr_t {
 	auto l_libBase = lib_base_32_timeout(libName, (std::chrono::milliseconds::max) ());
 	if (!l_libBase) {
 		std::string error{libName};
@@ -47,9 +55,9 @@ uintptr_t MemoryUtils::lib_base_32(std::string_view libName) {
 	return *l_libBase;
 }
 
-std::optional<MemoryUtils::ScopedReProtect>
-MemoryUtils::scoped_remove_memory_protection(uintptr_t address, size_t length) {
-	MemoryProtection newProtection{address, length, MemoryProtection::noProtection()};
+auto MemoryUtils::scoped_remove_memory_protection(uintptr_t address, size_t length) -> std::optional<ScopedReProtect> {
+	auto *charAddress = reinterpret_cast<char*>(address);
+	MemoryRange newProtection{ { charAddress, length}, MemoryRange::noProtection() };
 	auto formerProtection = set_memory_protection(newProtection);
 
 	if (formerProtection.has_value()) {

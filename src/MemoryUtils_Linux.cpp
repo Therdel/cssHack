@@ -12,22 +12,19 @@
 #include <memory>       // std::unique_ptr
 #include <iostream>
 
-
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
-
 #include "Log.hpp"
 #include "Utility.hpp"  // Utility::split, Utility::get_filename
 
 using namespace std::chrono_literals; // std::chrono::seconds(1) == 1s
 
-MemoryUtils::MemoryProtection::protection_t
-MemoryUtils::MemoryProtection::noProtection() {
+auto MemoryUtils::MemoryRange::noProtection() -> protection_t {
 	return PROT_READ | PROT_WRITE | PROT_EXEC;
 }
 
-bool MemoryUtils::LibrarySegmentRange::isReadable() const { return protection & PF_R; }
-bool MemoryUtils::LibrarySegmentRange::isWritable() const { return protection & PF_W; }
-bool MemoryUtils::LibrarySegmentRange::isExecutable() const { return protection & PF_X; }
+auto MemoryUtils::MemoryRange::isReadable() const -> bool { return protection & PF_R; }
+auto MemoryUtils::MemoryRange::isWritable() const -> bool { return protection & PF_W; }
+auto MemoryUtils::MemoryRange::isExecutable() const -> bool { return protection & PF_X; }
 
 // upon construction creates a snapshot of all currently loaded shared objects
 struct LibrarySnapshot {
@@ -36,10 +33,10 @@ struct LibrarySnapshot {
 		dl_iterate_phdr(&dl_iterate_phdr_callback, this);
 	}
 
-	static int dl_iterate_phdr_callback(struct dl_phdr_info *info,
-	                                    size_t,
-	                                    void *data) {
-		auto *phdr_infos = reinterpret_cast<LibrarySnapshot *>(data);
+	static auto dl_iterate_phdr_callback(struct dl_phdr_info *info,
+										 size_t,
+										 void *data) -> int {
+		auto *phdr_infos = reinterpret_cast<LibrarySnapshot*>(data);
 		phdr_infos->phdr_infos.emplace_back(*info);
 		return 0;
 	}
@@ -47,7 +44,7 @@ struct LibrarySnapshot {
 	std::vector<dl_phdr_info> phdr_infos;
 };
 
-static std::optional<dl_phdr_info> find_library(std::function<bool(dl_phdr_info const &)> predicate) {
+auto find_library(std::function<bool(dl_phdr_info const &)> predicate) -> std::optional<dl_phdr_info> {
 	std::optional<dl_phdr_info> result;
 
 	LibrarySnapshot snapshot;
@@ -61,8 +58,8 @@ static std::optional<dl_phdr_info> find_library(std::function<bool(dl_phdr_info 
 	return result;
 }
 
-std::optional<uintptr_t> MemoryUtils::lib_base_32_timeout(std::string_view libName,
-                                                          std::chrono::milliseconds timeout) {
+auto MemoryUtils::lib_base_32_timeout(std::string_view libName,
+									  std::chrono::milliseconds timeout) -> std::optional<uintptr_t> {
 	std::optional<uintptr_t> base_addr;
 
 	auto now = []() { return std::chrono::steady_clock::now(); };
@@ -84,7 +81,7 @@ std::optional<uintptr_t> MemoryUtils::lib_base_32_timeout(std::string_view libNa
 	return base_addr;
 }
 
-std::string MemoryUtils::this_lib_path() {
+auto MemoryUtils::this_lib_path() -> std::string {
 	// get library path without its name
 	// https://www.unknowncheats.me/forum/counterstrike-global-offensive/248039-linux-unloading-cheat.html
 	Dl_info info;
@@ -92,7 +89,7 @@ std::string MemoryUtils::this_lib_path() {
 	return {info.dli_fname};
 }
 
-std::optional<std::string> MemoryUtils::loadedLibPath(std::string_view libName) {
+auto MemoryUtils::loadedLibPath(std::string_view libName) -> std::optional<std::string> {
 	std::optional<std::string> l_libPath;
 
 	auto predicate = [&](dl_phdr_info const &info) {
@@ -107,7 +104,7 @@ std::optional<std::string> MemoryUtils::loadedLibPath(std::string_view libName) 
 }
 
 // link with -ldl
-std::optional<uintptr_t> MemoryUtils::getSymbolAddress(std::string_view libName, const std::string &symbol) {
+auto MemoryUtils::getSymbolAddress(std::string_view libName, const std::string &symbol) -> std::optional<uintptr_t> {
 	std::optional<uintptr_t> result;
 
 	auto libPath = loadedLibPath(libName);
@@ -143,10 +140,9 @@ std::optional<uintptr_t> MemoryUtils::getSymbolAddress(std::string_view libName,
 	return result;
 }
 
-std::vector<MemoryUtils::LibrarySegmentRange>
-MemoryUtils::lib_segment_ranges(std::string_view libName,
-                                std::function<bool(const LibrarySegmentRange&)> predicate) {
-	std::vector<MemoryUtils::LibrarySegmentRange> ranges;
+auto MemoryUtils::lib_segment_ranges(std::string_view libName,
+									 std::function<bool(const MemoryRange&)> predicate) -> std::vector<MemoryRange> {
+	std::vector<MemoryRange> ranges;
 
 	// find library
 	dl_phdr_info library{};
@@ -170,8 +166,8 @@ MemoryUtils::lib_segment_ranges(std::string_view libName,
 		const auto libBase = library.dlpi_addr;
 		const char *segmentBase = reinterpret_cast<const char *>(libBase + programHeader.p_vaddr);
 		size_t segmentSize = programHeader.p_memsz;
-		std::string_view memoryRange(segmentBase, segmentSize);
-		LibrarySegmentRange range{protection, memoryRange};
+		std::string_view segmentRange(segmentBase, segmentSize);
+		MemoryRange range{segmentRange, protection};
 
 		if (predicate(range)) {
 			ranges.push_back(range);
@@ -186,12 +182,13 @@ MemoryUtils::lib_segment_ranges(std::string_view libName,
 /// \param length length of memory region
 /// \return the protection (as defined in sys/mman.h),
 /// 		or std::nullopt, if given region spans multiple mappings or isn't contained in any
-static std::optional<MemoryUtils::MemoryProtection> read_protection(uintptr_t address, size_t length) {
-	std::optional<MemoryUtils::MemoryProtection> protection;
+auto read_protection(uintptr_t address, size_t length) -> std::optional<MemoryUtils::MemoryProtection> {
+    using MemoryProtection = MemoryUtils::MemoryProtection;
+	std::optional<MemoryProtection> protection;
 
 	auto parse_prot_string =
 			[](const std::string_view &protection_string) {
-				MemoryUtils::MemoryProtection::protection_t protection = 0;
+				MemoryProtection::protection_t protection = 0;
 				if (protection_string[0] == 'r')
 					protection |= PROT_READ;
 				if (protection_string[1] == 'w')
@@ -223,7 +220,8 @@ static std::optional<MemoryUtils::MemoryProtection> read_protection(uintptr_t ad
 			std::string_view &protection_string = mapping[1];
 
 			if (map_range_contains(map_range)) {
-				protection = {address, length, parse_prot_string(protection_string)};
+			    const char *charAddress = reinterpret_cast<const char*>(address);
+				protection = MemoryProtection{ { charAddress, length }, parse_prot_string(protection_string)};
 				break;
 			}
 		}
@@ -236,10 +234,9 @@ static std::optional<MemoryUtils::MemoryProtection> read_protection(uintptr_t ad
 	return protection;
 }
 
-std::optional<MemoryUtils::MemoryProtection>
-MemoryUtils::set_memory_protection(MemoryUtils::MemoryProtection newProtection) {
-	auto &address = newProtection.address;
-	auto &length = newProtection.length;
+auto MemoryUtils::set_memory_protection(MemoryProtection newProtection) -> std::optional<MemoryProtection> {
+	auto address = newProtection.address();
+	auto length = newProtection.memoryRange.size();
 
 	// mprotect accepts page-aligned addresses
 	// starting address of containing page can be optained by this important magic:

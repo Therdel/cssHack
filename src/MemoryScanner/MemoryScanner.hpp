@@ -86,7 +86,7 @@ private:
     }
 
     // split memory into evenly sized chunks
-    static auto _get_thread_work_chunks(const std::vector<MemoryUtils::LibrarySegmentRange>& segments,
+    static auto _get_thread_work_chunks(const std::vector<MemoryUtils::MemoryRange>& segments,
                                         size_t patternLength,
                                         size_t amount_threads) -> std::vector<std::vector<std::string_view>> {
         std::vector<std::vector<std::string_view>> per_thread_haystacks(amount_threads);
@@ -127,7 +127,7 @@ private:
         return per_thread_haystacks;
     }
 
-    static auto _get_amount_candidates(const std::vector<MemoryUtils::LibrarySegmentRange>& segments, size_t patternLength) -> int {
+    static auto _get_amount_candidates(const std::vector<MemoryUtils::MemoryRange>& segments, size_t patternLength) -> int {
         int candidates = 0;
         for (auto& segment : segments) {
             int segmentSize = static_cast<int>(segment.memoryRange.size());
