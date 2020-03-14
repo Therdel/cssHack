@@ -3,7 +3,7 @@
 #include <atomic>
 
 #include "Utility.hpp"
-#include "DetourToMethod.hpp"
+#include "DetourToCallback.hpp"
 #include "Vec3f.hpp"
 #include "Player.hpp"
 #include "Pointers/SharedGamePointer.hpp"
@@ -96,8 +96,8 @@ private:
 	std::atomic_bool m_doAim;
 	std::atomic_bool m_doTrigger;
 
-	DetourToMethod m_detour_viewAngles_update;
-	DetourToMethod m_detour_viewAnglesVis_update;
+	DetourToCallback m_detour_viewAngles_update;
+	DetourToCallback m_detour_viewAnglesVis_update;
 
 	struct Maneuver360 {
 		enum State {

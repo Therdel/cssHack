@@ -44,7 +44,7 @@ struct PopAllRegisters {
 	}
 };
 
-class DetourToMethod : public Utility::NonCopyable, public Utility::NonMovable {
+class DetourToCallback : public Utility::NonCopyable, public Utility::NonMovable {
 public:
 	using callback = std::function<void()>;
 
@@ -54,8 +54,8 @@ public:
 		NO_EXEC
 	};
 
-	DetourToMethod();
-	~DetourToMethod();
+	DetourToCallback();
+	~DetourToCallback();
 
 	auto install(const SignatureAOI& signature,
 				 callback callback,
@@ -103,7 +103,7 @@ private:
 
 // raw address of a non-static callbackMethod
 template<typename Class>
-auto DetourToMethod::_rawMethodAddress(void (Class::* method)(void)) -> uintptr_t {
+auto DetourToCallback::_rawMethodAddress(void (Class::* method)(void)) -> uintptr_t {
 	// clearly insane magic to get MSVC to hand the addresses of member functions
 	// https://stackoverflow.com/questions/8121320/get-memory-address-of-member-function
 	// simplified by

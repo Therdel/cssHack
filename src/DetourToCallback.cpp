@@ -1,4 +1,4 @@
-#include "DetourToMethod.hpp"
+#include "DetourToCallback.hpp"
 
 #include <cstring>  // std::memcpy
 
@@ -6,7 +6,7 @@
 #include "Detour.hpp"
 #include "MemoryScanner/MemoryScanner.hpp"
 
-DetourToMethod::DetourToMethod()
+DetourToCallback::DetourToCallback()
 : _enabled(false)
 , _callback{ []{} }
 , _trampolineCodeBuf()
@@ -15,7 +15,7 @@ DetourToMethod::DetourToMethod()
 }
 
 // returns true for the detour was successfully disabled or already disabled before
-auto DetourToMethod::remove() -> bool {
+auto DetourToCallback::remove() -> bool {
 	bool l_success = true;
 
 	if (isEnabled()) {
@@ -34,7 +34,7 @@ auto DetourToMethod::remove() -> bool {
 		// remove trampoline execution rights
 		if (!_scopedTrampolineProtection->restore()) {
 			// restoring old memory protection failed
-			Log::log("DetourToMethod: Failed to restore"
+			Log::log("DetourToCallback: Failed to restore"
 				"previous permissions on trampoline");
 			l_success = false;
 		}
@@ -44,15 +44,15 @@ auto DetourToMethod::remove() -> bool {
 	return l_success;
 }
 
-auto DetourToMethod::isEnabled() const -> bool {
+auto DetourToCallback::isEnabled() const -> bool {
 	return _enabled;
 }
 
-DetourToMethod::~DetourToMethod() {
+DetourToCallback::~DetourToCallback() {
 	remove();
 }
 
-auto DetourToMethod::install(const SignatureAOI& signature,
+auto DetourToCallback::install(const SignatureAOI& signature,
 							 callback callback,
 							 OLD_CODE_EXEC policy) -> bool {
 	uintptr_t insertion_addr = MemoryScanner::scanSignatureExpectOneResult(signature);
@@ -71,14 +71,14 @@ auto DetourToMethod::install(const SignatureAOI& signature,
 // process is still executing the handling methods code.
 // this is by principle thread-UNSAFE behavior in a thread-safety demanding environment...
 // to minimize the risk of undefined behavior, handling methods should thus execute _quickly_
-auto DetourToMethod::install(uintptr_t insertion_addr,
+auto DetourToCallback::install(uintptr_t insertion_addr,
 							 int opcodes_len,
 							 callback callback,
 							 OLD_CODE_EXEC policy) -> bool {
 	// we need at least 1 byte for the jump opcode and 4 for the detour function address
 	if (opcodes_len < 5) {
-		Log::log<Log::FLUSH>("DetourToMethod: not enough opcode bytes to detour");
-		throw std::runtime_error("DetourToMethod: not enough opcode bytes to detour");
+		Log::log<Log::FLUSH>("DetourToCallback: not enough opcode bytes to detour");
+		throw std::runtime_error("DetourToCallback: not enough opcode bytes to detour");
 	}
 	// remove current detour, if present
 	remove();
@@ -94,7 +94,7 @@ auto DetourToMethod::install(uintptr_t insertion_addr,
 		_trampolineCodeBuf.size());
 	if (!_scopedTrampolineProtection.has_value()) {
 		// unable to change memory protection of code segment
-		Log::log("DetourToMethod::install: Failed to enable execute permissions on trampoline");
+		Log::log("DetourToCallback::install: Failed to enable execute permissions on trampoline");
 		return false;
 	}
 
@@ -103,13 +103,13 @@ auto DetourToMethod::install(uintptr_t insertion_addr,
 		opcodes_len,
 		(uintptr_t)_trampolineCodeBuf.data());
 	if (!l_success) {
-		Log::log("DetourToMethod: Failed to detour to trampoline");
+		Log::log("DetourToCallback: Failed to detour to trampoline");
 
 		// restore old trampoline permissions before failing
 		// TODO reuse remove code
 		if (!_scopedTrampolineProtection->restore()) {
 			// restoring old memory protection failed
-			Log::log("DetourToMethod: Failed to restore "
+			Log::log("DetourToCallback: Failed to restore "
 				"previous permissions on trampoline");
 		}
 		return false;
@@ -119,7 +119,7 @@ auto DetourToMethod::install(uintptr_t insertion_addr,
 }
 
 // ?somewhat? from: https://stackoverflow.com/questions/14346576/calling-c-member-function-with-reference-argument-from-asm
-auto DetourToMethod::_buildTrampoline(size_t opcodes_len,
+auto DetourToCallback::_buildTrampoline(size_t opcodes_len,
 									  uintptr_t insertion_addr,
 									  OLD_CODE_EXEC policy) -> void {
 	uintptr_t callbackMethodAddress = _rawMethodAddress(&Callback::operator());

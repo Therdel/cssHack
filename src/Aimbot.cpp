@@ -227,7 +227,7 @@ void Aimbot::install() {
 		GamePointerFactory::get(GamePointerDef::op_viewAngles_update()),
 		AIMBOT_DETOUR_LEN_ON_UPDATE_ANG,
 		[this] { hookViewAnglesUpdate(); },
-		DetourToMethod::CODE_BEFORE_DETOUR
+		DetourToCallback::CODE_BEFORE_DETOUR
 	);
 	if (!l_ang_detour_success) {
 		Log::log("Aimbot failed to detour update_ang");
@@ -237,7 +237,7 @@ void Aimbot::install() {
 		GamePointerFactory::get(GamePointerDef::op_viewAnglesVis_update()),
 		AIMBOT_DETOUR_LEN_ON_UPDATE_ANG_VIS,
 		[this] { hookViewAnglesVisUpdate(); },
-		DetourToMethod::CODE_BEFORE_DETOUR
+		DetourToCallback::CODE_BEFORE_DETOUR
 	);
 	if (!l_vis_ang_detour_success) {
 		Log::log("Aimbot failed to detour update_vis_ang");

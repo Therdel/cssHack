@@ -20,7 +20,7 @@ void GamePointerUpdater::hook() {
 		GamePointerFactory::get(GamePointerDef::op_localplayer_update()),
 		GAMEPOINTERUPDATER_DETOUR_LEN_ON_UPDATE,
 		[this] { hookOnLocalplayerUpdate(); },
-		DetourToMethod::CODE_BEFORE_DETOUR
+		DetourToCallback::CODE_BEFORE_DETOUR
 		);
 
 	if (!l_detour_update_success) {
@@ -31,7 +31,7 @@ void GamePointerUpdater::hook() {
 		GamePointerFactory::get(GamePointerDef::op_localplayer_invalidate()),
 		GAMEPOINTERUPDATER_DETOUR_LEN_ON_INVALIDATE,
 		[this] { hookOnLocalplayerInvalidate(); },
-		DetourToMethod::CODE_BEFORE_DETOUR
+		DetourToCallback::CODE_BEFORE_DETOUR
 	);
 
 	if (!l_detour_invalidate_success) {

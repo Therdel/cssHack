@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Utility.hpp"
-#include "DetourToMethod.hpp"
+#include "DetourToCallback.hpp"
 #include "Pointers/SharedGamePointer.hpp"
 
 class Bunnyhop : public Utility::NonCopyable, public Utility::NonMovable {
@@ -23,8 +23,8 @@ private:
 	SharedGamePointer<int> m_on_ground;
 	SharedGamePointer<int> m_jump;
 
-	DetourToMethod m_detour_onGround_inc;
-	DetourToMethod m_detour_onGround_dec;
+	DetourToCallback m_detour_onGround_inc;
+	DetourToCallback m_detour_onGround_dec;
 
 	bool m_enabled;
 
