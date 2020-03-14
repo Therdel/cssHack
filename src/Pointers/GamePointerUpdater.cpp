@@ -3,6 +3,8 @@
 //
 #include "GamePointerUpdater.hpp"
 #include "GamePointerFactory.hpp"
+#define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
+#include "Log.hpp"
 
 GamePointerUpdater::GamePointerUpdater()
 : m_localplayer(GamePointerFactory::get(GamePointerDef::localplayer()))
