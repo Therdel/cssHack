@@ -12,19 +12,25 @@ namespace Utility {
 	class NonCopyable {
 	public:
 		NonCopyable() = default;
+		virtual ~NonCopyable() noexcept = default;
 
-		NonCopyable(NonCopyable const &) = delete;
+		NonCopyable(const NonCopyable&) = delete;
+		NonCopyable(NonCopyable&&) = default;
 
-		NonCopyable &operator=(NonCopyable const &) = delete;
+		NonCopyable& operator=(const NonCopyable&) = delete;
+		NonCopyable& operator=(NonCopyable&&) = default;
 	};
 
 	class NonMovable {
 	public:
 		NonMovable() = default;
+		virtual ~NonMovable() noexcept = default;
 
-		NonMovable(NonMovable &&) = delete;
+		NonMovable(const NonMovable&) = default;
+		NonMovable(NonMovable&&) = delete;
 
-		NonMovable &operator=(NonMovable &&) = delete;
+		NonMovable &operator=(const NonMovable&) = default;
+		NonMovable &operator=(NonMovable&&) = delete;
 	};
 
 // simple string split
