@@ -26,8 +26,12 @@ struct SignatureAOI {
 };
 
 namespace Signatures {
+	// bunnyhop
 	extern SignatureAOI onGround;
 	extern SignatureAOI onGround_op_land;
 	extern SignatureAOI onGround_op_leave;
+	extern SignatureAOI doJump;
+
+	// aimbot
 }
 

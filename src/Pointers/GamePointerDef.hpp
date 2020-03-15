@@ -48,7 +48,7 @@ namespace GamePointerDef {
 	auto op_sdl_pollEvent_call() -> const Base<>&;
 	// bunnyhop
 	auto onGround() -> const RawPointer<int>&;
-	auto doJump() -> const Base<int>&;
+	auto doJump() -> const RawPointer<int>&;
 	// aimbot
 	auto localplayer() -> const Base<>&;
 	auto playerPos() -> const Base<Vec3f>&;

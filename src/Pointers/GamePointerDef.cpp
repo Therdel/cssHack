@@ -53,12 +53,14 @@ auto op_sdl_pollEvent_call() -> const Base<>& {
 
 // bunnyhop
 auto onGround() -> const RawPointer<int>& {
-	static RawPointer<int> address = { MemoryScanner::scanSignatureExpectOneResult(Signatures::onGround) };
+	static int** pointer_to_address_in_code = reinterpret_cast<int**>(MemoryScanner::scanSignatureExpectOneResult(Signatures::onGround));
+	static RawPointer<int> address = { reinterpret_cast<uintptr_t>(*pointer_to_address_in_code) };
 	return address;
 }
-auto doJump() -> const Base<int>& {
-	static Base<int> def{client, {client_doJump}};
-	return def;
+auto doJump() -> const RawPointer<int>& {
+	static int** pointer_to_address_in_code = reinterpret_cast<int**>(MemoryScanner::scanSignatureExpectOneResult(Signatures::doJump));
+	static RawPointer<int> address = { reinterpret_cast<uintptr_t>(*pointer_to_address_in_code) };
+	return address;
 }
 
 // aimbot

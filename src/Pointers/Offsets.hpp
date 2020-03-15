@@ -6,14 +6,6 @@
 #include <array>
 
 namespace Offsets {
-	// Bunnyhop
-#ifdef __linux__
-	// 2019.10.9
-	constexpr ptrdiff_t client_doJump = 0xBEC968;
-#else
-	constexpr ptrdiff_t client_doJump = 0x4f3b3c;
-#endif
-
 	// Aimbot
 #ifdef __linux__
 //	constexpr ptrdiff_t client_localplayer = 0xBA3E74;
