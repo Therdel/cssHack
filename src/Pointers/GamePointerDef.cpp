@@ -51,63 +51,62 @@ auto op_sdl_pollEvent_call() -> const Base<>& {
 	return def;
 };
 
+auto extractAddressFromCode(const SignatureAOI& signature) -> uintptr_t {
+	uintptr_t* pointer_to_address_in_code = reinterpret_cast<uintptr_t*>(MemoryScanner::scanSignatureExpectOneResult(signature));
+	return *pointer_to_address_in_code;
+}
+
 // bunnyhop
 auto onGround() -> const RawPointer<int>& {
-	static int** pointer_to_address_in_code = reinterpret_cast<int**>(MemoryScanner::scanSignatureExpectOneResult(Signatures::onGround));
-	static RawPointer<int> address = { reinterpret_cast<uintptr_t>(*pointer_to_address_in_code) };
-	return address;
+	static RawPointer<int> rawPointer = { extractAddressFromCode(Signatures::onGround) };
+	return rawPointer;
 }
 auto doJump() -> const RawPointer<int>& {
-	static int** pointer_to_address_in_code = reinterpret_cast<int**>(MemoryScanner::scanSignatureExpectOneResult(Signatures::doJump));
-	static RawPointer<int> address = { reinterpret_cast<uintptr_t>(*pointer_to_address_in_code) };
-	return address;
+	static RawPointer<int> rawPointer = { extractAddressFromCode(Signatures::doJump) };
+	return rawPointer;
 }
 
 // aimbot
-auto localplayer() -> const Base<>& {
-	static Base<> def{client, {client_localplayer}, OffsetType::DEREFERENCE};
-	return def;
+auto localplayer() -> const RawPointer<>& {
+	// the signature contains an address to our wanted pointer to the localplayer base.
+	static auto* pointerToPointer = reinterpret_cast<uintptr_t*>(extractAddressFromCode(Signatures::localplayer_base));
+	static RawPointer<> rawPointer = { *pointerToPointer };
+	return rawPointer;
 }
-auto playerPos() -> const Base<Vec3f>& {
-	static Base<Vec3f> def{engine, {engine_player_pos}};
-	return def;
+auto playerPos() -> const RawPointer<Vec3f>& {
+	static RawPointer<Vec3f> rawPointer = { extractAddressFromCode(Signatures::playerPos) };
+	return rawPointer;
 }
-auto aimAngles() -> const Base<Vec3f>& {
-	static Base<Vec3f> def{engine, {engine_viewAngles}};
-	return def;
+auto aimAngles() -> const RawPointer<Vec3f>& {
+	static RawPointer<Vec3f> rawPointer = { extractAddressFromCode(Signatures::aimAngles) };
+	return rawPointer;
 }
-auto visualAngles() -> const Base<Vec3f>& {
+auto aimAnglesVisual() -> const Base<Vec3f>& {
 	static Base<Vec3f> def{client, {client_viewAngleVis}};
 	return def;
 }
-auto punchAngles() -> const Composite<Vec3f>& {
-	static Composite<Vec3f> def{localplayer(), {client_punch_p_off}};
+auto punchAngles() -> const Composite<Vec3f, RawPointer<>>& {
+	static Composite<Vec3f, RawPointer<>> def{localplayer(), {localplayer_off_punch}};
 	return def;
 }
-auto playerTeam() -> const Composite<Player::TEAM>& {
-	static Composite<Player::TEAM> def{localplayer(), {client_player_team_p_off}};
+auto playerTeam() -> const Composite<Player::TEAM, RawPointer<>>& {
+	static Composite<Player::TEAM, RawPointer<>> def{localplayer(), {localplayer_off_team}};
 	return def;
 }
-auto players() -> const Base<std::array<Player, 64>>& {
-	static Base<std::array<Player, 64>> def{client, {client_player_p_base, client_player_p_off}};
+auto players() -> const Composite<std::array<Player, 64>, RawPointer<>>& {
+	// the signature contains an address to our wanted pointer to the playerArray base.
+	static auto* pointerToPointer = reinterpret_cast<uintptr_t*>(extractAddressFromCode(Signatures::playerArray_base));
+	static RawPointer<> rawPointer = { *pointerToPointer };
+	static Composite<std::array<Player, 64>, RawPointer<>> def{ rawPointer, {playerArray_off} };
 	return def;
 }
-auto targetId() -> const Composite<int>& {
-	static Composite<int> def{localplayer(), {client_target_id_p_off}};
+auto targetId() -> const Composite<int, RawPointer<>>& {
+	static Composite<int, RawPointer<>> def{localplayer(), {localplayer_off_targetId}};
 	return def;
 }
-auto doAttack() -> const Base<int>& {
-	static Base<int> def{client, {client_doAttack}};
-	return def;
-}
-auto op_viewAngles_update() -> const Base<>& {
-	static Base<> def{engine, {engine_op_viewAngle_update}};
-	return def;
-
-}
-auto op_viewAnglesVis_update() -> const Base<>& {
-	static Base<> def{client, {client_op_viewAngleVis_update}};
-	return def;
+auto doAttack() -> const RawPointer<int>& {
+	static RawPointer<int> rawPointer = { extractAddressFromCode(Signatures::doAttack) };
+	return rawPointer;
 }
 
 // hack

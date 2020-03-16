@@ -4,6 +4,7 @@
     <CheatEntry>
       <ID>8</ID>
       <Description>"sp_cross_idx"</Description>
+      <LastState Value="0" RealAddress="3912F8A0"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+4C6708</Address>
       <Offsets>
@@ -13,6 +14,7 @@
     <CheatEntry>
       <ID>12</ID>
       <Description>"sp_cross_idx"</Description>
+      <LastState Value="0" RealAddress="3912F8A0"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+4D3904</Address>
       <Offsets>
@@ -22,7 +24,7 @@
     <CheatEntry>
       <ID>13</ID>
       <Description>"sp_cross_idx"</Description>
-      <LastState Value="0" RealAddress="3E8552D0"/>
+      <LastState Value="0" RealAddress="3912F8A0"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+50228C</Address>
       <Offsets>
@@ -32,7 +34,7 @@
     <CheatEntry>
       <ID>14</ID>
       <Description>"sp_cross_idx"</Description>
-      <LastState Value="0" RealAddress="3E8552D0"/>
+      <LastState Value="0" RealAddress="3912F8A0"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+503128</Address>
       <Offsets>
@@ -42,56 +44,56 @@
     <CheatEntry>
       <ID>31</ID>
       <Description>"s_on_ground"</Description>
-      <LastState Value="0" RealAddress="7A5660C4"/>
+      <LastState Value="1" RealAddress="254A60C4"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+0x4F60C4</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>85</ID>
       <Description>"s_jump"</Description>
-      <LastState Value="4" RealAddress="7A563B3C"/>
+      <LastState Value="4" RealAddress="254A3B3C"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+0x4f3b3c</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>86</ID>
       <Description>"s_jump_key"</Description>
-      <LastState Value="0" RealAddress="7A563B34"/>
+      <LastState Value="0" RealAddress="254A3B34"/>
       <VariableType>Byte</VariableType>
       <Address>client.dll+0x4f3b34</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>114</ID>
       <Description>"s_attack"</Description>
-      <LastState Value="0" RealAddress="7A563B48"/>
+      <LastState Value="4" RealAddress="254A3B48"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+4F3B48</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>113</ID>
       <Description>"s_attack_key"</Description>
-      <LastState Value="0" RealAddress="7A563B40"/>
+      <LastState Value="0" RealAddress="254A3B40"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+4F3B40</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>87</ID>
       <Description>"s_player_pos_(aimbot uses)"</Description>
-      <LastState Value="0" RealAddress="794164BC"/>
+      <LastState Value="0" RealAddress="7AC564BC"/>
       <VariableType>Float</VariableType>
       <Address>engine.dll+0x3D64BC</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>88</ID>
       <Description>"s_player_view_angles_(aimbot uses)"</Description>
-      <LastState Value="0" RealAddress="794BF1B4"/>
+      <LastState Value="0" RealAddress="7ACFF1B4"/>
       <VariableType>Float</VariableType>
       <Address>engine.dll +0x47F1B4</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>15</ID>
       <Description>"sp_player_base"</Description>
-      <LastState Value="0" RealAddress="30AFE878"/>
+      <LastState Value="0" RealAddress="2BE06220"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+50C150</Address>
       <Offsets>
@@ -101,7 +103,7 @@
     <CheatEntry>
       <ID>30</ID>
       <Description>"sp_localplayer_base"</Description>
-      <LastState Value="0" RealAddress="3E853DE0"/>
+      <LastState Value="624373156" RealAddress="3912E3B0"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+503128</Address>
       <Offsets>
@@ -111,7 +113,7 @@
     <CheatEntry>
       <ID>84</ID>
       <Description>"sp_localplayer_some_matrix"</Description>
-      <LastState Value="0" RealAddress="3E8540E8"/>
+      <LastState Value="0.8424421549" RealAddress="3912E6B8"/>
       <VariableType>Float</VariableType>
       <Address>client.dll+503128</Address>
       <Offsets>
@@ -121,6 +123,7 @@
     <CheatEntry>
       <ID>27</ID>
       <Description>"sp_localplayer_hp"</Description>
+      <LastState Value="92" RealAddress="3912E444"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+4C6708</Address>
       <Offsets>
@@ -130,6 +133,7 @@
     <CheatEntry>
       <ID>32</ID>
       <Description>"sp_localplayer_team"</Description>
+      <LastState Value="2" RealAddress="3912E44C"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+4C6708</Address>
       <Offsets>
@@ -139,6 +143,7 @@
     <CheatEntry>
       <ID>28</ID>
       <Description>"sp_localplayer_team"</Description>
+      <LastState Value="2" RealAddress="3912E44C"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+4D3904</Address>
       <Offsets>
@@ -148,7 +153,7 @@
     <CheatEntry>
       <ID>33</ID>
       <Description>"sp_localplayer_team"</Description>
-      <LastState Value="0" RealAddress="3E853E7C"/>
+      <LastState Value="2" RealAddress="3912E44C"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+50228C</Address>
       <Offsets>
@@ -158,7 +163,7 @@
     <CheatEntry>
       <ID>29</ID>
       <Description>"sp_localplayer_team"</Description>
-      <LastState Value="0" RealAddress="3E853E7C"/>
+      <LastState Value="2" RealAddress="3912E44C"/>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll+503128</Address>
       <Offsets>
@@ -168,7 +173,7 @@
     <CheatEntry>
       <ID>109</ID>
       <Description>"s_client_base"</Description>
-      <LastState Value="00905A4D" RealAddress="7A070000"/>
+      <LastState Value="00905A4D" RealAddress="24FB0000"/>
       <ShowAsHex>1</ShowAsHex>
       <VariableType>4 Bytes</VariableType>
       <Address>client.dll</Address>
@@ -176,6 +181,7 @@
     <CheatEntry>
       <ID>105</ID>
       <Description>"sp_localplayer_punch_x"</Description>
+      <LastState Value="0" RealAddress="3912F1F8"/>
       <VariableType>Float</VariableType>
       <Address>client.dll+4C6708</Address>
       <Offsets>
@@ -185,6 +191,7 @@
     <CheatEntry>
       <ID>106</ID>
       <Description>"sp_localplayer_punch_x"</Description>
+      <LastState Value="0" RealAddress="3912F1F8"/>
       <VariableType>Float</VariableType>
       <Address>client.dll+4D3904</Address>
       <Offsets>
@@ -194,7 +201,7 @@
     <CheatEntry>
       <ID>107</ID>
       <Description>"sp_localplayer_punch_x_after_ingame"</Description>
-      <LastState Value="0" RealAddress="3E854C28"/>
+      <LastState Value="0" RealAddress="3912F1F8"/>
       <VariableType>Float</VariableType>
       <Address>client.dll+50228C</Address>
       <Offsets>
@@ -204,7 +211,7 @@
     <CheatEntry>
       <ID>108</ID>
       <Description>"sp_localplayer_punch_x_after_ingame"</Description>
-      <LastState Value="0" RealAddress="3E854C28"/>
+      <LastState Value="0" RealAddress="3912F1F8"/>
       <VariableType>Float</VariableType>
       <Address>client.dll+503128</Address>
       <Offsets>
@@ -252,93 +259,25 @@ fstp dword ptr [eax]
 </AssemblerScript>
     </CheatEntry>
     <CheatEntry>
-      <ID>66</ID>
-      <Description>"s_player_aim_effective_nopunch_writable"</Description>
-      <LastState Value="0" RealAddress="794BF1B4"/>
+      <ID>458</ID>
+      <Description>"s_engine_ang_nopunch_writable"</Description>
+      <LastState Value="-0.2910892665" RealAddress="7ACF91B4"/>
       <VariableType>Float</VariableType>
-      <Address>engine.dll+47F1B4</Address>
+      <Address>engine.dll+4791B4</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>79</ID>
-      <Description>"s_player_aim_vis_with_punch_writable"</Description>
-      <LastState Value="0" RealAddress="7A574644"/>
+      <Description>"s_client_ang_vis_punch_writable"</Description>
+      <DropDownList DescriptionOnly="1" DisplayValueAsItem="1">knerz:sizr
+</DropDownList>
+      <LastState Value="-0.2910892665" RealAddress="254B4644"/>
       <VariableType>Float</VariableType>
       <Address>client.dll+504644</Address>
     </CheatEntry>
     <CheatEntry>
-      <ID>73</ID>
-      <Description>"s_player_aim_effective_with_punch"</Description>
-      <LastState Value="0" RealAddress="7A511F6C"/>
-      <VariableType>Float</VariableType>
-      <Address>client.dll+4A1F6C</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>74</ID>
-      <Description>"s_player_aim_effective_with_punch"</Description>
-      <LastState Value="0" RealAddress="7A511F78"/>
-      <VariableType>Float</VariableType>
-      <Address>client.dll+4A1F78</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>82</ID>
-      <Description>"s_player_aim_vis_with_punch"</Description>
-      <LastState Value="0" RealAddress="7A5748B8"/>
-      <VariableType>Float</VariableType>
-      <Address>client.dll+5048B8</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>65</ID>
-      <Description>"s_player_aim_vis_with_punch"</Description>
-      <LastState Value="0" RealAddress="79403734"/>
-      <VariableType>Float</VariableType>
-      <Address>engine.dll+3C3734</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>67</ID>
-      <Description>"s_player_aim_vis_with_punch"</Description>
-      <LastState Value="0" RealAddress="79679F74"/>
-      <VariableType>Float</VariableType>
-      <Address>engine.dll+639F74</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>75</ID>
-      <Description>"s_player_aim_vis_with_punch"</Description>
-      <LastState Value="0" RealAddress="7A56A8F8"/>
-      <VariableType>Float</VariableType>
-      <Address>client.dll+4FA8F8</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>76</ID>
-      <Description>"s_player_aim_vis_with_punch"</Description>
-      <LastState Value="0" RealAddress="7A56A910"/>
-      <VariableType>Float</VariableType>
-      <Address>client.dll+4FA910</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>77</ID>
-      <Description>"s_player_aim_vis_with_punch"</Description>
-      <LastState Value="0" RealAddress="7A56DAD4"/>
-      <VariableType>Float</VariableType>
-      <Address>client.dll+4FDAD4</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>80</ID>
-      <Description>"s_player_aim_vis_with_punch"</Description>
-      <LastState Value="0" RealAddress="7A57470C"/>
-      <VariableType>Float</VariableType>
-      <Address>client.dll+50470C</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>81</ID>
-      <Description>"s_player_aim_vis_with_punch"</Description>
-      <LastState Value="0" RealAddress="7A5747D4"/>
-      <VariableType>Float</VariableType>
-      <Address>client.dll+5047D4</Address>
-    </CheatEntry>
-    <CheatEntry>
       <ID>104</ID>
       <Description>"sp_local_server_client_hp"</Description>
-      <LastState Value="2370894965" RealAddress="2A1DD834"/>
+      <LastState Value="2370894965" RealAddress="2575D834"/>
       <VariableType>4 Bytes</VariableType>
       <Address>server.dll+4F3FCC</Address>
       <Offsets>
@@ -452,16 +391,96 @@ mov ecx,[client.dll+4F3B48]
     <CheatEntry>
       <ID>115</ID>
       <Description>"s_isIngame"</Description>
-      <LastState Value="0" RealAddress="78DE15C9"/>
+      <LastState Value="1" RealAddress="7B5715C9"/>
       <VariableType>Byte</VariableType>
       <Address>materialsystem.dll+1215C9</Address>
     </CheatEntry>
     <CheatEntry>
-      <ID>118</ID>
-      <Description>"No description"</Description>
-      <LastState Value="0" RealAddress="7A5660C4"/>
+      <ID>468</ID>
+      <Description>"s_client_players"</Description>
+      <LastState Value="00000000" RealAddress="2BE06220"/>
+      <ShowAsHex>1</ShowAsHex>
       <VariableType>4 Bytes</VariableType>
-      <Address>client.dll+4F60C4</Address>
+      <Address>client.dll+50C150</Address>
+      <Offsets>
+        <Offset>28</Offset>
+      </Offsets>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>474</ID>
+      <Description>"s_engine_pos"</Description>
+      <LastState Value="-598.6784668" RealAddress="7AD26F30"/>
+      <VariableType>Float</VariableType>
+      <Address>engine.dll+4A6F30</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>475</ID>
+      <Description>"No description"</Description>
+      <LastState Value="7B56EB30" RealAddress="7B571448"/>
+      <ShowAsHex>1</ShowAsHex>
+      <VariableType>4 Bytes</VariableType>
+      <Address>materialsystem.dll+121448</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>476</ID>
+      <Description>"No description"</Description>
+      <LastState Value="33 C0 39 0D 08 67 47 25 0F 94 C0 C3" RealAddress="25052870"/>
+      <ShowAsHex>1</ShowAsHex>
+      <VariableType>Array of byte</VariableType>
+      <ByteLength>12</ByteLength>
+      <Address>client.dll+A2870</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>477</ID>
+      <Description>"p_localplayer"</Description>
+      <VariableType>4 Bytes</VariableType>
+      <Address>24076708</Address>
+      <Offsets>
+        <Offset>0</Offset>
+      </Offsets>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>478</ID>
+      <Description>"No description"</Description>
+      <LastState Value="55 8B EC 8B 45 08 F3 0F 10 05 80 E6 BC 25 F3 0F 11 00" RealAddress="25673BB0"/>
+      <ShowAsHex>1</ShowAsHex>
+      <VariableType>Array of byte</VariableType>
+      <ByteLength>18</ByteLength>
+      <Address>server.dll+43BB0</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>479</ID>
+      <Description>"No description"</Description>
+      <LastState Value="55 8B EC 8B 45 08 E9 15 8E EE BD 90 90 90 F3 0F 11 00" RealAddress="7A924BF0"/>
+      <ShowAsHex>1</ShowAsHex>
+      <VariableType>Array of byte</VariableType>
+      <ByteLength>18</ByteLength>
+      <Address>engine.dll+A4BF0</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>480</ID>
+      <Description>"No description"</Description>
+      <LastState Value="55 8B EC 8B 45 08 E9 15 8E EE BD 90 90 90 F3 0F 11 00" RealAddress="7A924BF0"/>
+      <ShowAsHex>1</ShowAsHex>
+      <VariableType>Array of byte</VariableType>
+      <ByteLength>18</ByteLength>
+      <Address>engine.dll+A4BF0</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>481</ID>
+      <Description>"No description"</Description>
+      <LastState Value="55 8B EC 8B 45 08 F3 0F 10 05 88 D9 C3 7A F3 0F 11 00" RealAddress="7A9BEC10"/>
+      <ShowAsHex>1</ShowAsHex>
+      <VariableType>Array of byte</VariableType>
+      <ByteLength>18</ByteLength>
+      <Address>engine.dll+13EC10</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>482</ID>
+      <Description>"No description"</Description>
+      <LastState Value="1" RealAddress="7AC3D988"/>
+      <VariableType>Float</VariableType>
+      <Address>7AC3D988</Address>
     </CheatEntry>
   </CheatEntries>
   <CheatCodes>
@@ -858,123 +877,6 @@ mov ecx,[client.dll+4F3B48]
       </After>
     </CodeEntry>
     <CodeEntry>
-      <Description>update client vis ang x</Description>
-      <AddressString>client.dll+68E57</AddressString>
-      <Before>
-        <Byte>8B</Byte>
-        <Byte>5D</Byte>
-        <Byte>0C</Byte>
-        <Byte>D9</Byte>
-        <Byte>00</Byte>
-      </Before>
-      <Actual>
-        <Byte>D9</Byte>
-        <Byte>1B</Byte>
-      </Actual>
-      <After>
-        <Byte>D9</Byte>
-        <Byte>40</Byte>
-        <Byte>04</Byte>
-        <Byte>D9</Byte>
-        <Byte>5B</Byte>
-      </After>
-    </CodeEntry>
-    <CodeEntry>
-      <Description>update client vis ang y</Description>
-      <AddressString>client.dll+68E5C</AddressString>
-      <Before>
-        <Byte>D9</Byte>
-        <Byte>1B</Byte>
-        <Byte>D9</Byte>
-        <Byte>40</Byte>
-        <Byte>04</Byte>
-      </Before>
-      <Actual>
-        <Byte>D9</Byte>
-        <Byte>5B</Byte>
-        <Byte>04</Byte>
-      </Actual>
-      <After>
-        <Byte>D9</Byte>
-        <Byte>40</Byte>
-        <Byte>08</Byte>
-        <Byte>D9</Byte>
-        <Byte>5B</Byte>
-      </After>
-    </CodeEntry>
-    <CodeEntry>
-      <Description>update client vis ang z</Description>
-      <AddressString>client.dll+68E62</AddressString>
-      <Before>
-        <Byte>5B</Byte>
-        <Byte>04</Byte>
-        <Byte>D9</Byte>
-        <Byte>40</Byte>
-        <Byte>08</Byte>
-      </Before>
-      <Actual>
-        <Byte>D9</Byte>
-        <Byte>5B</Byte>
-        <Byte>08</Byte>
-      </Actual>
-      <After>
-        <Byte>8B</Byte>
-        <Byte>0D</Byte>
-        <Byte>18</Byte>
-        <Byte>1F</Byte>
-        <Byte>F8</Byte>
-      </After>
-    </CodeEntry>
-    <CodeEntry>
-      <Description>load update client vis ang z</Description>
-      <AddressString>client.dll+68E5F</AddressString>
-      <Before>
-        <Byte>40</Byte>
-        <Byte>04</Byte>
-        <Byte>D9</Byte>
-        <Byte>5B</Byte>
-        <Byte>04</Byte>
-      </Before>
-      <Actual>
-        <Byte>D9</Byte>
-        <Byte>40</Byte>
-        <Byte>08</Byte>
-      </Actual>
-      <After>
-        <Byte>90</Byte>
-        <Byte>90</Byte>
-        <Byte>90</Byte>
-        <Byte>8B</Byte>
-        <Byte>0D</Byte>
-      </After>
-    </CodeEntry>
-    <CodeEntry>
-      <Description>write crosshair target id (if some found)</Description>
-      <AddressString>client.dll+1D2C0E</AddressString>
-      <Before>
-        <Byte>4B</Byte>
-        <Byte>08</Byte>
-        <Byte>FF</Byte>
-        <Byte>50</Byte>
-        <Byte>24</Byte>
-      </Before>
-      <Actual>
-        <Byte>89</Byte>
-        <Byte>87</Byte>
-        <Byte>F0</Byte>
-        <Byte>14</Byte>
-        <Byte>00</Byte>
-        <Byte>00</Byte>
-      </Actual>
-      <After>
-        <Byte>8D</Byte>
-        <Byte>8F</Byte>
-        <Byte>04</Byte>
-        <Byte>15</Byte>
-        <Byte>00</Byte>
-      </After>
-    </CodeEntry>
-    <CodeEntry>
       <Description>read attack</Description>
       <AddressString>client.dll+147010</AddressString>
       <Before>
@@ -1050,6 +952,209 @@ mov ecx,[client.dll+4F3B48]
         <Byte>74</Byte>
         <Byte>0D</Byte>
         <Byte>8B</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>s_client_ang_vis_x update</Description>
+      <AddressString>client.dll+68DC7</AddressString>
+      <Before>
+        <Byte>8B</Byte>
+        <Byte>5D</Byte>
+        <Byte>0C</Byte>
+        <Byte>D9</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>D9</Byte>
+        <Byte>1B</Byte>
+      </Actual>
+      <After>
+        <Byte>D9</Byte>
+        <Byte>40</Byte>
+        <Byte>04</Byte>
+        <Byte>D9</Byte>
+        <Byte>5B</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>s_client_ang_vis apply punch x</Description>
+      <AddressString>client.dll+68E02</AddressString>
+      <Before>
+        <Byte>00</Byte>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>58</Byte>
+        <Byte>03</Byte>
+      </Before>
+      <Actual>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>11</Byte>
+        <Byte>03</Byte>
+      </Actual>
+      <After>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>10</Byte>
+        <Byte>86</Byte>
+        <Byte>4C</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>s_engine_aim_nopunch writeTo</Description>
+      <AddressString>engine.dll+A5492</AddressString>
+      <Before>
+        <Byte>E8</Byte>
+        <Byte>EE</Byte>
+        <Byte>6A</Byte>
+        <Byte>19</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>D9</Byte>
+        <Byte>1D</Byte>
+        <Byte>B4</Byte>
+        <Byte>91</Byte>
+        <Byte>B8</Byte>
+        <Byte>7B</Byte>
+      </Actual>
+      <After>
+        <Byte>D9</Byte>
+        <Byte>46</Byte>
+        <Byte>04</Byte>
+        <Byte>D9</Byte>
+        <Byte>1C</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>s_engine_aim_nopunch readFrom</Description>
+      <AddressString>engine.dll+A4BF6</AddressString>
+      <Before>
+        <Byte>8B</Byte>
+        <Byte>EC</Byte>
+        <Byte>8B</Byte>
+        <Byte>45</Byte>
+        <Byte>08</Byte>
+      </Before>
+      <Actual>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>10</Byte>
+        <Byte>05</Byte>
+        <Byte>B4</Byte>
+        <Byte>91</Byte>
+        <Byte>B8</Byte>
+        <Byte>7B</Byte>
+      </Actual>
+      <After>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>11</Byte>
+        <Byte>00</Byte>
+        <Byte>F3</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>s_jump update cyclic</Description>
+      <AddressString>client.dll+147299</AddressString>
+      <Before>
+        <Byte>FF</Byte>
+        <Byte>74</Byte>
+        <Byte>08</Byte>
+        <Byte>23</Byte>
+        <Byte>CA</Byte>
+      </Before>
+      <Actual>
+        <Byte>89</Byte>
+        <Byte>0D</Byte>
+        <Byte>3C</Byte>
+        <Byte>3B</Byte>
+        <Byte>CA</Byte>
+        <Byte>26</Byte>
+      </Actual>
+      <After>
+        <Byte>8B</Byte>
+        <Byte>0D</Byte>
+        <Byte>84</Byte>
+        <Byte>2C</Byte>
+        <Byte>CA</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>s_client_pos_x update</Description>
+      <AddressString>client.dll+68DAC</AddressString>
+      <Before>
+        <Byte>08</Byte>
+        <Byte>8B</Byte>
+        <Byte>CE</Byte>
+        <Byte>D9</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>D9</Byte>
+        <Byte>1F</Byte>
+      </Actual>
+      <After>
+        <Byte>D9</Byte>
+        <Byte>40</Byte>
+        <Byte>04</Byte>
+        <Byte>D9</Byte>
+        <Byte>5F</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>s_ang_vis_x punch load</Description>
+      <AddressString>client.dll+68DF6</AddressString>
+      <Before>
+        <Byte>E8</Byte>
+        <Byte>6A</Byte>
+        <Byte>03</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>10</Byte>
+        <Byte>86</Byte>
+        <Byte>48</Byte>
+        <Byte>0E</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>58</Byte>
+        <Byte>03</Byte>
+        <Byte>F3</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>s_engine_pos_x update</Description>
+      <AddressString>engine.dll+F9D98</AddressString>
+      <Before>
+        <Byte>00</Byte>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>10</Byte>
+        <Byte>07</Byte>
+      </Before>
+      <Actual>
+        <Byte>0F</Byte>
+        <Byte>2E</Byte>
+        <Byte>05</Byte>
+        <Byte>30</Byte>
+        <Byte>6F</Byte>
+        <Byte>3F</Byte>
+        <Byte>56</Byte>
+      </Actual>
+      <After>
+        <Byte>9F</Byte>
+        <Byte>F6</Byte>
+        <Byte>C4</Byte>
+        <Byte>44</Byte>
+        <Byte>7A</Byte>
       </After>
     </CodeEntry>
   </CheatCodes>

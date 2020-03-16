@@ -8,16 +8,8 @@
 #include "Player.hpp"
 #include "Pointers/SharedGamePointer.hpp"
 
-#ifdef __linux__
-#define AIMBOT_DETOUR_LEN_ON_UPDATE_ANG 6
-#define AIMBOT_DETOUR_LEN_ON_UPDATE_ANG_VIS 8
-#else
-#define AIMBOT_DETOUR_LEN_ON_UPDATE_ANG 6
-#define AIMBOT_DETOUR_LEN_ON_UPDATE_ANG_VIS 6
-#endif
-
 struct Player;
-class GUI;
+//class GUI;
 
 class Aimbot : public Utility::NonCopyable, public Utility::NonMovable {
 public:
@@ -32,7 +24,8 @@ public:
 		Vec3f anglesToTarget;
 	};
 
-	explicit Aimbot(GUI &gui);
+	//explicit Aimbot(GUI &gui);
+	explicit Aimbot();
 
 	~Aimbot();
 
@@ -65,7 +58,7 @@ private:
 		BY_DISTANCE
 	};
 
-	GUI &m_gui;
+	//GUI &m_gui;
 
 	// TODO: read max players value from memory
 	// how long between attack action start and end

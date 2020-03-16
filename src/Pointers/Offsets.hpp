@@ -28,22 +28,11 @@ namespace Offsets {
 	constexpr ptrdiff_t client_op_viewAngleVis_update = 0x3B0E1A;
 
 #else
-	constexpr ptrdiff_t client_localplayer = 0x4C6708;
-	constexpr ptrdiff_t engine_viewAngles = 0x47F1B4;
 	constexpr ptrdiff_t client_viewAngleVis = 0x504644;
-	constexpr ptrdiff_t client_punch_p_base = client_localplayer;
-	constexpr ptrdiff_t client_punch_p_off = 0xE48;
-	constexpr ptrdiff_t engine_player_pos = 0x3D64BC;
-	constexpr ptrdiff_t client_player_team_p_base = client_localplayer;
-	constexpr ptrdiff_t client_player_team_p_off = 0x9c;
-	constexpr ptrdiff_t client_player_p_base = 0x50C150;
-	constexpr ptrdiff_t client_player_p_off = 0x28;
-	constexpr ptrdiff_t client_target_id_p_base = client_localplayer;
-	constexpr ptrdiff_t client_target_id_p_off = 0x14f0;
-	constexpr ptrdiff_t client_doAttack = 0x4F3B48;
-
-	constexpr ptrdiff_t engine_op_viewAngle_update = 0xA5447;
-	constexpr ptrdiff_t client_op_viewAngleVis_update = 0x68E5F;
+	constexpr ptrdiff_t localplayer_off_punch= 0xE48;
+	constexpr ptrdiff_t localplayer_off_team = 0x9c;
+	constexpr ptrdiff_t playerArray_off = 0x28;
+	constexpr ptrdiff_t localplayer_off_targetId = 0x14f0;
 #endif
 
 	// Hack

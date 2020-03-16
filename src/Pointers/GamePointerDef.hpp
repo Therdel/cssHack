@@ -4,6 +4,7 @@
 #pragma once
 
 #include <vector>
+#include <array>
 
 #include "GamePointer.hpp"
 #include "../Vec3f.hpp"
@@ -50,17 +51,15 @@ namespace GamePointerDef {
 	auto onGround() -> const RawPointer<int>&;
 	auto doJump() -> const RawPointer<int>&;
 	// aimbot
-	auto localplayer() -> const Base<>&;
-	auto playerPos() -> const Base<Vec3f>&;
-	auto aimAngles() -> const Base<Vec3f>&;
-	auto visualAngles() -> const Base<Vec3f>&;
-	auto punchAngles() -> const Composite<Vec3f>&;
-	auto playerTeam() -> const Composite<Player::TEAM>&;
-	auto players() -> const Base<std::array<Player, 64>>&;
-	auto targetId() -> const Composite<int>&;
-	auto doAttack() -> const Base<int>&;
-	auto op_viewAngles_update() -> const Base<>&;
-	auto op_viewAnglesVis_update() -> const Base<>&;
+	auto localplayer() -> const RawPointer<>&;
+	auto playerPos() -> const RawPointer<Vec3f>&;
+	auto aimAngles() -> const RawPointer<Vec3f>&;
+	auto aimAnglesVisual() -> const Base<Vec3f>&;
+	auto punchAngles() -> const Composite<Vec3f, RawPointer<>>&;
+	auto playerTeam() -> const Composite<Player::TEAM, RawPointer<>>&;
+	auto players() -> const Composite<std::array<Player, 64>, RawPointer<>>&;
+	auto targetId() -> const Composite<int, RawPointer<>>&;
+	auto doAttack() -> const RawPointer<int>&;
 	// hack
 	auto isIngame() -> const Base<uint8_t>&;
 	auto isInMenu() -> const Base<uint32_t> &;

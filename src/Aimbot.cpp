@@ -10,24 +10,25 @@
 #include "Player.hpp"
 
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
-
 #include "Log.hpp"
 #include "Visuals/GUI.hpp"
 #include "Utility.hpp"
 #include "Pointers/GamePointerFactory.hpp"
+#include "Pointers/Signatures.hpp"
 
 using namespace Utility;
 
-Aimbot::Aimbot(GUI &gui)
-		: m_gui(gui)
-		, m_aim_type(AIM_TYPE::BY_ANGLE)
+//Aimbot::Aimbot(GUI& gui)
+Aimbot::Aimbot()
+		//: m_gui(gui)
+		: m_aim_type(AIM_TYPE::BY_ANGLE)
 		, m_friendly_fire(false)
 		, m_aim_fov_rad(toRadians(15))
 		, m_aim_noRecoil(true)
 		, m_aim_noVisRecoil(true)
 		, m_playerPos(GamePointerFactory::get(GamePointerDef::playerPos()))
 		, m_aimAngles(GamePointerFactory::get(GamePointerDef::aimAngles()))
-		, m_visualAngles(GamePointerFactory::get(GamePointerDef::visualAngles()))
+		, m_visualAngles(GamePointerFactory::get(GamePointerDef::aimAnglesVisual()))
 		, m_punchAngles(GamePointerFactory::get(GamePointerDef::punchAngles()))
 		, m_playerTeam(GamePointerFactory::get(GamePointerDef::playerTeam()))
 		, m_players(GamePointerFactory::get(GamePointerDef::players()))
@@ -40,6 +41,7 @@ Aimbot::Aimbot(GUI &gui)
 		, m_detour_viewAngles_update()
 		, m_detour_viewAnglesVis_update()
 		, m_360() {
+	/*
 	m_gui.registerCheckbox({m_friendly_fire, "Aim Friendly Fire"});
 	m_gui.registerAngleRadSlider({0, 180, m_aim_fov_rad, "Aim FOV"});
 	m_gui.registerCheckbox({m_aim_noRecoil, "Aim NoRecoil"});
@@ -55,6 +57,7 @@ Aimbot::Aimbot(GUI &gui)
 		                                   }
 	                                   });
 	m_gui.registerComboBox(std::move(aimTypeComboBox));
+	*/
 
 	install();
 }
@@ -223,18 +226,16 @@ Vec3f const &Aimbot::getBulletPredictionAngles() const {
 
 void Aimbot::install() {
 	bool l_ang_detour_success = m_detour_viewAngles_update.install(
-		GamePointerFactory::get(GamePointerDef::op_viewAngles_update()),
-		AIMBOT_DETOUR_LEN_ON_UPDATE_ANG,
+		Signatures::aimAngles_x_op_read,
 		[this] { hookViewAnglesUpdate(); },
-		DetourToCallback::CODE_BEFORE_DETOUR
+		DetourToCallback::CODE_AFTER_DETOUR
 	);
 	if (!l_ang_detour_success) {
 		Log::log("Aimbot failed to detour update_ang");
 	}
 
 	bool l_vis_ang_detour_success = m_detour_viewAnglesVis_update.install(
-		GamePointerFactory::get(GamePointerDef::op_viewAnglesVis_update()),
-		AIMBOT_DETOUR_LEN_ON_UPDATE_ANG_VIS,
+		Signatures::aimAnglesVisual_update,
 		[this] { hookViewAnglesVisUpdate(); },
 		DetourToCallback::CODE_BEFORE_DETOUR
 	);
