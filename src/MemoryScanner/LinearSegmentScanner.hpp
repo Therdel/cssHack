@@ -15,8 +15,8 @@ public:
 
     void scanSegment(std::string_view haystack,
                      std::vector<uintptr_t> &matches) const {
-        auto &pattern = _signature.signature.pattern();
-		const char *lastCandidate = haystack.end() - pattern.size();
+		auto &pattern = _signature.signature.pattern();
+		const char *lastCandidate = &haystack.back() - (pattern.size() - 1);
 		for(const char &position : haystack) {
 			if(&position > lastCandidate) {
 				break;
