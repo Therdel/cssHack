@@ -7,14 +7,14 @@ struct Vec3f {
 	float m_y;
 	float m_z;
 
-	Vec3f(float x, float y, float z) noexcept {
-		m_x = x;
-		m_y = y;
-		m_z = z;
+	constexpr Vec3f(float x, float y, float z)
+	: m_x(x)
+	, m_y(y)
+	, m_z(z) {
 	}
 
-	Vec3f() noexcept
-			: Vec3f(0, 0, 0) {
+	constexpr Vec3f()
+	: Vec3f(0, 0, 0) {
 	}
 
 	Vec3f operator-(const Vec3f &other) const {

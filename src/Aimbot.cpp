@@ -17,7 +17,6 @@
 #include "Pointers/GamePointerFactory.hpp"
 
 using namespace Utility;
-const Vec3f Aimbot::AIM_TARGET_OFFSET_HEAD{9.141f, -3.828, 0.078};
 
 Aimbot::Aimbot(GUI &gui)
 		: m_gui(gui)

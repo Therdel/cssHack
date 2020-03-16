@@ -69,10 +69,10 @@ private:
 
 	// TODO: read max players value from memory
 	// how long between attack action start and end
-	constexpr static int ATTACK_SLEEP_BETWEEN_MS = 20;
-	constexpr static int MAX_PLAYERS = 64;
-	constexpr static float AIM_MIN_DISTANCE = 10;
-	static const Vec3f AIM_TARGET_OFFSET_HEAD;
+	static constexpr int ATTACK_SLEEP_BETWEEN_MS = 20;
+	static constexpr int MAX_PLAYERS = 64;
+	static constexpr float AIM_MIN_DISTANCE = 10;
+	static constexpr Vec3f AIM_TARGET_OFFSET_HEAD{ 9.141f, -3.828, 0.078 };
 
 	AIM_TYPE m_aim_type;
 	bool m_friendly_fire;
