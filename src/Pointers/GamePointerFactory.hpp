@@ -101,9 +101,9 @@ namespace GamePointerFactory {
 		return result;
 	}
 
-	template<typename T, typename BaseT>
-	auto get(GamePointerDef::Composite<T, BaseT> const &composite) -> SharedGamePointer<T> {
-		using CompositePointerStorage = std::map<GamePointerDef::Composite<T, BaseT> const *, std::shared_ptr<GamePointer<T>>>;
+	template<typename T, typename BaseDef>
+	auto get(GamePointerDef::Composite<T, BaseDef> const &composite) -> SharedGamePointer<T> {
+		using CompositePointerStorage = std::map<GamePointerDef::Composite<T, BaseDef> const *, std::shared_ptr<GamePointer<T>>>;
 
 		std::shared_ptr<GamePointer<T>> result;
 
@@ -115,7 +115,7 @@ namespace GamePointerFactory {
 			result = composite_it->second;
 		} else {
 			// get base pointer
-			std::shared_ptr<GamePointer<BaseT>> basePointer{get(composite.base).getGamePointer()};
+			auto basePointer = get(composite.base).getGamePointer();
 
 			// create pointer and return
 			result = create<T>(basePointer, composite.offsets, composite.lastOffsetType);

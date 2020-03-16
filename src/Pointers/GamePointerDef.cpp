@@ -31,8 +31,8 @@ Base<T>::Base(std::string_view libName,
 , offsets(std::move(offsets))
 , lastOffsetType(lastOffsetType) {}
 
-template<typename T, typename BaseT>
-Composite<T, BaseT>::Composite(Base<BaseT> const& base,
+template<typename T, typename BaseDef>
+Composite<T, BaseDef>::Composite(BaseDef const& base,
 							   std::vector<ptrdiff_t> offsets,
 							   OffsetType lastOffsetType)
 : base(base)

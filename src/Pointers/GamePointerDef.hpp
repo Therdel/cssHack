@@ -33,13 +33,13 @@ namespace GamePointerDef {
 		OffsetType lastOffsetType;
 	};
 
-	template<typename T=uintptr_t, typename BaseT=uintptr_t>
+	template<typename T=uintptr_t, typename BaseDef = Base<uintptr_t>>
 	struct Composite {
-		Composite(Base<BaseT> const& base,
+		Composite(BaseDef const& base,
 				  std::vector<ptrdiff_t> offsets,
 				  OffsetType lastOffsetType = OffsetType::PLAIN_OFFSET);
 
-		Base<BaseT> const &base;
+		BaseDef const &base;
 		std::vector<ptrdiff_t> offsets;
 		OffsetType lastOffsetType;
 	};
