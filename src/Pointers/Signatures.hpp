@@ -36,8 +36,10 @@ namespace Signatures {
 	extern SignatureAOI aimAngles_x_op_read;
 	extern SignatureAOI aimAngles;
 	extern SignatureAOI aimAnglesVisual_update;
+	    // search for targetID instead
 	extern SignatureAOI localplayer_base;
 	extern SignatureAOI playerArray_base;
+	    // search for head pos, so you can duck/stand while scanning
 	extern SignatureAOI playerPos;
 	extern SignatureAOI doAttack_op_read;
 	extern SignatureAOI doAttack;

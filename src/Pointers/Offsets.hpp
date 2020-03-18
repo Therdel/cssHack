@@ -8,24 +8,12 @@
 namespace Offsets {
 	// Aimbot
 #ifdef __linux__
-//	constexpr ptrdiff_t client_localplayer = 0xBA3E74;
-	constexpr ptrdiff_t client_localplayer = 0xBCE5F0;
-	constexpr ptrdiff_t engine_viewAngles = 0xB37058;
-	constexpr ptrdiff_t client_viewAngleVis = 0xBC1CB4;
-	constexpr ptrdiff_t client_punch_p_base = client_localplayer;
-	constexpr ptrdiff_t client_punch_p_off = 0xE28;
+    constexpr ptrdiff_t client_viewAngleVis = 0xBC2294;
 
-	constexpr ptrdiff_t engine_player_pos = 0xB74F30;
-	constexpr ptrdiff_t client_player_team_p_base = client_localplayer;
-	constexpr ptrdiff_t client_player_team_p_off = 0x8c;
-	constexpr ptrdiff_t client_player_p_base = 0xBE7220;
-	constexpr ptrdiff_t client_player_p_off = 0x28;
-	constexpr ptrdiff_t client_target_id_p_base = client_localplayer;
-	constexpr ptrdiff_t client_target_id_p_off = 0x14D0;
-	constexpr ptrdiff_t client_doAttack = 0xBEC418;
-
-	constexpr ptrdiff_t engine_op_viewAngle_update = 0x38AFE6;
-	constexpr ptrdiff_t client_op_viewAngleVis_update = 0x3B0E1A;
+    constexpr ptrdiff_t localplayer_off_punch = 0xE28;
+    constexpr ptrdiff_t localplayer_off_team = 0x8c;
+    constexpr ptrdiff_t playerArray_off = 0x28;
+    constexpr ptrdiff_t localplayer_off_targetId = 0x14D0;
 
 #else
 	constexpr ptrdiff_t client_viewAngleVis = 0x504644;
