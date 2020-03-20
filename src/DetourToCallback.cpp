@@ -120,9 +120,9 @@ auto DetourToCallback::install(uintptr_t insertion_addr,
 
 // ?somewhat? from: https://stackoverflow.com/questions/14346576/calling-c-member-function-with-reference-argument-from-asm
 auto DetourToCallback::_buildTrampoline(size_t opcodes_len,
-									  uintptr_t insertion_addr,
-									  OLD_CODE_EXEC policy) -> void {
-	uintptr_t callbackMethodAddress = _rawMethodAddress(&Callback::operator());
+										uintptr_t insertion_addr,
+										OLD_CODE_EXEC policy) -> void {
+	uintptr_t callbackMethodAddress = _rawMethodAddress(&callback::operator());
 	uintptr_t callbackInstanceAddress = reinterpret_cast<uintptr_t>(&_callback);
 
 	const uint8_t NOP = 0x90;

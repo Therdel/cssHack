@@ -71,29 +71,20 @@ public:
 	auto isEnabled() const -> bool;
 
 private:
-	struct Callback {
-		Callback(callback callback)
-		: _callback(std::move(callback)) { }
-
-		auto operator()() -> void { _callback(); }
-
-		callback _callback;
-	};
-
 	enum MethodCallingConvention {
 		push_on_stack,
 		pass_by_ecx
 	};
 
 	bool _enabled;
-	Callback _callback;
+	callback _callback;
 	std::vector<uint8_t> _trampolineCodeBuf;
 	std::optional<MemoryUtils::ScopedReProtect> _scopedTrampolineProtection;
 	Detour _detourToTrampoline;
 
 	// raw address of a non-static method
 	template<typename Class>
-	auto _rawMethodAddress(void (Class::* method)(void)) -> uintptr_t;
+	static auto _rawMethodAddress(void (Class::* method)(void) const) -> uintptr_t;
 
 	// build assembly code that calls object.callbackMethod() at runtime
 	auto _buildTrampoline(size_t opcodes_len,
@@ -103,7 +94,7 @@ private:
 
 // raw address of a non-static callbackMethod
 template<typename Class>
-auto DetourToCallback::_rawMethodAddress(void (Class::* method)(void)) -> uintptr_t {
+auto DetourToCallback::_rawMethodAddress(void (Class::* method)() const) -> uintptr_t {
 	// clearly insane magic to get MSVC to hand the addresses of member functions
 	// https://stackoverflow.com/questions/8121320/get-memory-address-of-member-function
 	// simplified by
