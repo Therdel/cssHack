@@ -17,6 +17,8 @@
     - *Real* Crosshair / Effective Bullet Angles
     - Draw effective FOV
     - Player Position/Orientation
+- Ingame Cheat Menu
+- Panic Key (disable everything on button press)
     
 ### Media
 - FOV Aimbot
