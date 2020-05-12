@@ -1,3 +1,5 @@
 # Set the default behavior, in case people don't have core.autocrlf set.
 # source: https://help.github.com/en/articles/configuring-git-to-handle-line-endings
 * text=auto
+
+lib/* linguist-vendored # github language statistics: Exclude foreign code
