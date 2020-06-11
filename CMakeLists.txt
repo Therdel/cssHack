@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.8)
 project("cssHack")
-        
+
 ###########################
-# sources
+# shared library target
 ###########################
-set(HACK_SOURCES
+add_library(cssHack SHARED
     src/Log.cpp
     src/Aimbot.cpp
     src/Bunnyhop.cpp
@@ -25,18 +25,19 @@ set(HACK_SOURCES
     src/Pointers/Signatures.cpp
 )
 
-set(HACK_SOURCES_LINUX
-    src/MemoryUtils_Linux.cpp
+target_include_directories(cssHack
+    PRIVATE src
 )
 
-set(HACK_SOURCES_WINDOWS
-    src/MemoryUtils_Win.cpp
-)
-
+# OS-dependendent implementation
 if(CMAKE_SYSTEM_NAME MATCHES Windows)
-    list(APPEND HACK_SOURCES ${HACK_SOURCES_WINDOWS})
+    target_sources(cssHack
+                   PRIVATE src/MemoryUtils_Win.cpp
+    )
 else()
-    list(APPEND HACK_SOURCES ${HACK_SOURCES_LINUX})
+    target_sources(cssHack
+                   PRIVATE src/MemoryUtils_Linux.cpp
+    )
 endif()
 
 ###########################
@@ -76,16 +77,14 @@ find_package(SDL2 REQUIRED)
 find_package(Threads REQUIRED)
 
 ###########################
-# library target
+# dependencies - add to target
 ###########################
-add_library(cssHack SHARED
-    ${HACK_SOURCES}
-    ${IMGUI_SOURCES}
-    ${BOYERMOOREDONTCARE_SOURCES}
+target_sources(cssHack
+    PRIVATE ${IMGUI_SOURCES}
+    PRIVATE ${BOYERMOOREDONTCARE_SOURCES}
 )
 
 target_include_directories(cssHack
-    PRIVATE ${CMAKE_SOURCE_DIR}/src
     PRIVATE ${IMGUI_INCLUDE_DIRS}
     PRIVATE ${BOYERMOOREDONTCARE_INCLUDE_DIRS}
     PRIVATE ${GLM_INCLUDE_DIRS}
