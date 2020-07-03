@@ -33,10 +33,14 @@
     - Windows: CreateRemoteThread/LoadLibrary Method
     - GNU/Linux: GDB attach/dlopen script
 - **Detouring / Hooking**
-    - Mid function / jmp detour
-    - Trampolines / Thunking
     - Detour to thiscall / generic lambda
+    - Trampolines / Thunking
+    - Mid function / jmp detour
     - Call redirection
+- **Auto offsets** (Game update resistance)
+    - [Signature Scanning](https://wiki.alliedmods.net/Signature_Scanning) to stay functional after game binary changes    
+    (Own [variation](https://github.com/Therdel/BoyerMoore-DontCare) of BoyerMoore)
+    
 
 ### Credits
 - [aixxe](https://aixxe.net/2016/09/shared-library-injection) - GNU/Linux SO injection
