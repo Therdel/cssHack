@@ -1,9 +1,7 @@
-#include "DetourToCallback.hpp"
-
 #include <cstring>  // std::memcpy
 
+#include "DetourToCallback.hpp"
 #include "Utility.hpp"
-#include "Detour.hpp"
 #include "MemoryScanner/MemoryScanner.hpp"
 
 DetourToCallback::DetourToCallback()

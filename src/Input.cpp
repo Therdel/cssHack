@@ -9,28 +9,16 @@
 #include "MemoryUtils.hpp"
 #include "Pointers/GamePointerFactory.hpp"
 
-#define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
-
-#include "Log.hpp"
-
-using SDL_PollEvent_t = decltype(&SDL_PollEvent);
-static SDL_PollEvent_t g_pOrigSDL_PollEvent;
-
 Input *g_keyboard{nullptr};
 
 Input::Input()
-		: m_op_sdl_pollEvent_call(GamePointerFactory::get(GamePointerDef::op_sdl_pollEvent_call()))
-		, m_keyHandlersMutex()
+		: m_keyHandlersMutex()
 		, m_keyHandlers()
 		, m_mouseHandlerMutex()
-		, m_mouseHandler() {
+		, m_mouseHandler()
+		, _op_sdl_pollEvent_detour(Util::Address(GamePointerFactory::get(GamePointerDef::op_sdl_pollEvent_call())),
+                                  Util::Address((uintptr_t)(hook_SDL_PollEvent))){
 	g_keyboard = this;
-	installPollEventHook();
-}
-
-Input::~Input() {
-	removePollEventHook();
-	g_keyboard = nullptr;
 }
 
 bool Input::isDown(SDL_Keycode key) const {
@@ -64,36 +52,6 @@ bool Input::removeMouseHandler() {
 		l_success = true;
 	}
 	return l_success;
-}
-
-void Input::installPollEventHook() {
-
-	// calculate call-relative hook address
-	uintptr_t addr_call_pollEvent = m_op_sdl_pollEvent_call;
-	uintptr_t *p_call_dest_relative = (uintptr_t *) (addr_call_pollEvent + 1);
-	uintptr_t addr_after_call = addr_call_pollEvent + 0x05;
-	uintptr_t addr_hook_relative = (uintptr_t) hook_SDL_PollEvent - addr_after_call;
-
-	g_pOrigSDL_PollEvent = reinterpret_cast<SDL_PollEvent_t>(*p_call_dest_relative + addr_after_call);
-	{
-		auto scoped_reprotect = MemoryUtils::scoped_remove_memory_protection(addr_call_pollEvent + 1, 4);
-		// patch this shit
-		*(uintptr_t *) (addr_call_pollEvent + 1) = addr_hook_relative;
-	}
-}
-
-void Input::removePollEventHook() {
-	// calculate call-relative address to original function
-	uintptr_t addr_call_pollEvent = m_op_sdl_pollEvent_call;
-	uintptr_t addr_after_call = addr_call_pollEvent + 0x05;
-	//uintptr_t addr_orig_relative = (uintptr_t) SDL_PollEvent - addr_after_call;
-	uintptr_t addr_orig_relative = (uintptr_t) g_pOrigSDL_PollEvent - addr_after_call;
-
-	{
-		auto scoped_reprotect = MemoryUtils::scoped_remove_memory_protection(addr_call_pollEvent + 1, 4);
-		// unpatch this shit
-		*(uintptr_t *) (addr_call_pollEvent + 1) = addr_orig_relative;
-	}
 }
 
 std::optional<bool> Input::callKeyHandlerIfExists(SDL_KeyboardEvent const &event) {
@@ -173,8 +131,7 @@ int Input::detour_SDL_PollEvent(SDL_Event *callerEvent) {
 	bool steal = false;
 
 	SDL_Event event;
-	//int eventExists = SDL_PollEvent(&event);
-	int eventExists = g_pOrigSDL_PollEvent(&event);
+	int eventExists = SDL_PollEvent(&event);
 	if (eventExists == 1) {
 		{
 			std::scoped_lock l_lock(m_allEventConsumerMutex);

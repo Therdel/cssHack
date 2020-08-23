@@ -12,6 +12,7 @@
 
 #include "Utility.hpp"
 #include "Pointers/SharedGamePointer.hpp"
+#include "CallDetour.hpp"
 
 struct KeyStroke {
 	constexpr explicit KeyStroke(SDL_Keycode keycode, uint16_t modifiers = KMOD_NONE)
@@ -62,8 +63,6 @@ public:
 
 	Input();
 
-	~Input();
-
 	bool isDown(SDL_Keycode key) const;
 
 	void setKeyHandler(KeyStroke key, keyHandler callback);
@@ -81,7 +80,6 @@ public:
 	static void injectEvent(SDL_Event *event);
 
 private:
-	SharedGamePointer<uintptr_t> m_op_sdl_pollEvent_call;
 	std::mutex m_keyHandlersMutex;
 	std::map<KeyStroke, keyHandler> m_keyHandlers;
 
@@ -91,9 +89,7 @@ private:
 	std::mutex m_allEventConsumerMutex;
 	std::optional<eventHandler> m_allEventConsumer;
 
-	void installPollEventHook();
-
-	void removePollEventHook();
+	CallDetour _op_sdl_pollEvent_detour;
 
 	std::optional<bool> callKeyHandlerIfExists(SDL_KeyboardEvent const &event);
 
