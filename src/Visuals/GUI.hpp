@@ -16,7 +16,7 @@ struct SDL_KeyboardEvent;
 union SDL_Event;
 struct SDL_Window;
 
-class GUI : protected DrawHookSubscriber, public Utility::NonCopyable, public Utility::NonMovable {
+class GUI : protected DrawHookSubscriber, public Util::NonCopyable, public Util::NonMovable {
 public:
 	GUI(DrawHook &drawHook, Input &keyboard);
 

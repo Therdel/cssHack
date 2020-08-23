@@ -8,7 +8,7 @@
 
 struct Vec3f;
 
-namespace Utility {
+namespace Util {
 	class NonCopyable {
 	public:
 		NonCopyable() = default;

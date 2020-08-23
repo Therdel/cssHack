@@ -18,7 +18,7 @@ class GUI;
 
 class Aimbot;
 
-class ESP : public DrawHookSubscriber, public Utility::NonCopyable, public Utility::NonMovable {
+class ESP : public DrawHookSubscriber, public Util::NonCopyable, public Util::NonMovable {
 public:
 	explicit ESP(DrawHook &drawHook, GUI &gui, Aimbot &aimbot);
 

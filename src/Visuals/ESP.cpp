@@ -18,7 +18,7 @@
 #include "../Log.hpp"
 #include "../Mat4f.hpp"
 
-using namespace Utility;
+using namespace Util;
 
 ESP::ESP(DrawHook &drawHook, GUI &gui, Aimbot &aimbot)
 		: m_drawHook(drawHook)
@@ -274,7 +274,7 @@ void ESP::drawFlagESP() const {
 		Vec3f l_flagLowWorld = l_flagLowPointOff + player.m_pos;
 		Vec3f l_flagHighWorld = l_flagHighPointOff + player.m_pos;
 		Vec3f l_flagTipWorld = player.m_pos;
-		l_flagTipWorld += Utility::rotateAroundZ(l_flagTipOff, player.m_viewangles.m_y);
+		l_flagTipWorld += Util::rotateAroundZ(l_flagTipOff, player.m_viewangles.m_y);
 
 		auto l_playerPosScreen = world_to_screen(player.m_pos);
 		auto l_flagLowScreen = world_to_screen(l_flagLowWorld);
@@ -405,7 +405,7 @@ void ESP::drawAimFov() const {
 }
 
 static void rotate(Vec2f &point, float degrees) {
-	point = point.rotate(Utility::toRadians(degrees));
+	point = point.rotate(Util::toRadians(degrees));
 }
 
 void ESP::drawScreenCross(Vec2f crossPos, float radius, const SDL_Color &color, bool diagonal,

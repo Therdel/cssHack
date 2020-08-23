@@ -11,7 +11,7 @@
 struct Player;
 //class GUI;
 
-class Aimbot : public Utility::NonCopyable, public Utility::NonMovable {
+class Aimbot : public Util::NonCopyable, public Util::NonMovable {
 public:
 	enum class Mode360 {
 		TRIGGER,

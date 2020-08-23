@@ -5,7 +5,7 @@
 
 #include "Utility.hpp"
 
-class Detour : public Utility::NonCopyable {
+class Detour : public Util::NonCopyable {
 public:
 	Detour();
 	Detour(Detour &&other);

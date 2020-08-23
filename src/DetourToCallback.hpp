@@ -44,7 +44,7 @@ struct PopAllRegisters {
 	}
 };
 
-class DetourToCallback : public Utility::NonCopyable, public Utility::NonMovable {
+class DetourToCallback : public Util::NonCopyable, public Util::NonMovable {
 public:
 	using callback = std::function<void()>;
 

@@ -14,7 +14,7 @@
 
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
 #include "Log.hpp"
-#include "Utility.hpp"  // Utility::split, Utility::get_filename
+#include "Utility.hpp"  // Util::split, Util::get_filename
 
 using namespace std::chrono_literals; // std::chrono::seconds(1) == 1s
 
@@ -67,7 +67,7 @@ auto MemoryUtils::lib_base_32_timeout(std::string_view libName,
 
 	do {
 		auto predicate = [&](dl_phdr_info const &info) {
-			return Utility::get_filename(info.dlpi_name) == libName;
+			return Util::get_filename(info.dlpi_name) == libName;
 		};
 		auto library = find_library(std::move(predicate));
 		if (library.has_value()) {
@@ -93,7 +93,7 @@ auto MemoryUtils::loadedLibPath(std::string_view libName) -> std::optional<std::
 	std::optional<std::string> l_libPath;
 
 	auto predicate = [&](dl_phdr_info const &info) {
-		return Utility::get_filename(info.dlpi_name) == libName;
+		return Util::get_filename(info.dlpi_name) == libName;
 	};
 	auto library = find_library(std::move(predicate));
 	if (library.has_value()) {
@@ -148,7 +148,7 @@ auto MemoryUtils::lib_segment_ranges(std::string_view libName,
 	dl_phdr_info library{};
 	while (true) {
 		auto predicate = [&](dl_phdr_info const &info) {
-			return Utility::get_filename(info.dlpi_name) == libName;
+			return Util::get_filename(info.dlpi_name) == libName;
 		};
 		auto optionalLib = find_library(std::move(predicate));
 		if (optionalLib.has_value()) {
@@ -202,7 +202,7 @@ auto read_protection(uintptr_t address, size_t length) -> std::optional<MemoryUt
 	auto map_range_contains =
 			[address, length](const std::string_view &map_range) {
 				// parse map range
-				auto map_range_tokens = Utility::split(map_range, "-");
+				auto map_range_tokens = Util::split(map_range, "-");
 				auto address_start = std::stoull(std::string(map_range_tokens[0]), 0, 16);
 				auto address_end = std::stoull(std::string(map_range_tokens[1]), 0, 16);
 
@@ -215,7 +215,7 @@ auto read_protection(uintptr_t address, size_t length) -> std::optional<MemoryUt
 		std::string line;
 		// iterate over memory maps
 		while (std::getline(mem_maps, line)) {
-			auto mapping = Utility::split(line, " ");
+			auto mapping = Util::split(line, " ");
 			std::string_view &map_range = mapping[0];
 			std::string_view &protection_string = mapping[1];
 

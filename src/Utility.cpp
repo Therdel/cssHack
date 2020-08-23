@@ -9,7 +9,7 @@
 
 #include "Vec3f.hpp"
 
-namespace Utility {
+namespace Util {
 	static const float PI = static_cast<float>(std::acos(-1));
 
 // simple string split

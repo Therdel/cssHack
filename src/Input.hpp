@@ -105,7 +105,7 @@ private:
 // TODO: This is ugly as fuck. Should be a singleton.
 extern Input *g_keyboard;
 
-class ScopedKeyHandler : public Utility::NonCopyable {
+class ScopedKeyHandler : public Util::NonCopyable {
 public:
 	ScopedKeyHandler(Input &keyboard,
 	                 KeyStroke key,

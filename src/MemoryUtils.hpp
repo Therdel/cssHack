@@ -26,7 +26,7 @@ public:
 	using MemoryProtection = MemoryRange;
 
 	/// temporary memory protection change, RAII auto-restores the former protection.
-	class ScopedReProtect : private Utility::NonCopyable {
+	class ScopedReProtect : private Util::NonCopyable {
 	public:
 		ScopedReProtect(ScopedReProtect &&other) noexcept;
 		auto operator=(ScopedReProtect &&other) noexcept -> ScopedReProtect&;

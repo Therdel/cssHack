@@ -16,7 +16,7 @@
 #include "Pointers/GamePointerFactory.hpp"
 #include "Pointers/Signatures.hpp"
 
-using namespace Utility;
+using namespace Util;
 
 //Aimbot::Aimbot(GUI& gui)
 Aimbot::Aimbot()
@@ -302,7 +302,7 @@ void Aimbot::findTarget() {
 		const Vec3f l_targetAimPointTmp = getTargetAimPoint(curTarget);
 		const Vec3f l_targetAimVecTmp = l_targetAimPointTmp - *m_playerPos;
 		float l_angleToTarget = degreesBetweenVectors(l_targetAimVecTmp,
-		                                              Utility::viewAnglesToUnitvector(*m_visualAngles));
+		                                              Util::viewAnglesToUnitvector(*m_visualAngles));
 		if (l_angleToTarget > toDegrees(m_aim_fov_rad)) {
 			continue;
 		}

@@ -4,7 +4,7 @@
 #include "DetourToCallback.hpp"
 #include "Pointers/SharedGamePointer.hpp"
 
-class Bunnyhop : public Utility::NonCopyable, public Utility::NonMovable {
+class Bunnyhop : public Util::NonCopyable, public Util::NonMovable {
 public:
 	Bunnyhop();
 

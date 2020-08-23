@@ -6,7 +6,7 @@
 #include <set>
 #include "../Utility.hpp"
 
-class Wallhack : public Utility::NonCopyable, public Utility::NonMovable {
+class Wallhack : public Util::NonCopyable, public Util::NonMovable {
 public:
 	Wallhack();
 

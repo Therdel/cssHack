@@ -117,7 +117,7 @@ auto MemoryUtils::loadedLibPath(std::string_view libName) -> std::optional<std::
 
 
     auto predicate = [&libName](const MODULEENTRY32& module) {
-        return Utility::get_filename(module.szModule) == libName;
+        return Util::get_filename(module.szModule) == libName;
 	};
 	auto library = find_library(std::move(predicate));
 	if (library.has_value()) {
@@ -152,7 +152,7 @@ auto MemoryUtils::lib_segment_ranges(std::string_view libName,
 	std::vector<MemoryRange> ranges;
 
 	auto libraryPredicate = [&libName](const MODULEENTRY32& module) {
-		return Utility::get_filename(module.szModule) == libName;
+		return Util::get_filename(module.szModule) == libName;
 	};
 	auto library = find_library(std::move(libraryPredicate));
 	if (!library.has_value()) {

@@ -16,7 +16,7 @@ public:
 	virtual ~DrawHookSubscriber() = default;
 };
 
-class DrawHook : public Utility::NonCopyable, public Utility::NonMovable {
+class DrawHook : public Util::NonCopyable, public Util::NonMovable {
 public:
 	DrawHook();
 
