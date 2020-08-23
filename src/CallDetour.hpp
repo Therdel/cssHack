@@ -41,8 +41,9 @@ private:
 	}
 
 	auto _restore_opcodes() const -> void {
-		auto scoped_permission = MemoryUtils::scoped_remove_memory_protection(_old_call_target_offset, 4);
-		Util::Address addr_call_target_offset = _addr_call_opcode + Util::Offset{ 0x01 };
+	    Util::Address addr_call_target_offset = _addr_call_opcode + Util::Offset{ 0x01 };
+
+		auto scoped_permission = MemoryUtils::scoped_remove_memory_protection(addr_call_target_offset, 4);
 		*addr_call_target_offset.as_pointer<Util::Offset>() = _old_call_target_offset;
 	}
 };
