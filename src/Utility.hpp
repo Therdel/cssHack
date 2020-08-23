@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <string_view>
+#include <cstdint>      // uintptr_t, ptrdiff_t
 
 struct Vec3f;
 
@@ -52,4 +53,37 @@ namespace Util {
 
 	// returns the angle between given vectors in degrees
 	float degreesBetweenVectors(const Vec3f &a, const Vec3f &b);
+
+	class Offset final {
+	public:
+		constexpr explicit Offset(ptrdiff_t offset) : _offset{ offset } {}
+		constexpr operator ptrdiff_t() const { return _offset; }
+
+		constexpr auto operator+(ptrdiff_t offset) const -> Offset { return Offset{ _offset + offset }; }
+		constexpr auto operator-(ptrdiff_t offset) const -> Offset { return Offset{ _offset - offset }; }
+		auto operator+=(ptrdiff_t offset) -> Offset& { _offset += offset; return *this; }
+		auto operator-=(ptrdiff_t offset) -> Offset& { _offset -= offset; return *this; }
+
+	private:
+		ptrdiff_t _offset;
+	};
+
+	class Address final {
+	public:
+		constexpr explicit Address(uintptr_t address) : _address{ address } {}
+		constexpr operator uintptr_t const& () const { return _address; }
+
+		constexpr auto operator+(Offset offset) const -> Address { return Address{ _address + offset }; }
+		constexpr auto operator-(Offset offset) const -> Address { return Address{ _address - offset }; }
+		auto operator+=(Offset offset) -> Address& { _address += offset; return *this; }
+		auto operator-=(Offset offset) -> Address& { _address -= offset; return *this; }
+
+		auto operator-(Address address) const -> Offset { return Offset{ static_cast<ptrdiff_t>(_address - address) }; }
+
+		template<typename T>
+		auto as_pointer() const -> T* { return reinterpret_cast<T*>(_address); }
+
+	private:
+		uintptr_t _address;
+	};
 }
