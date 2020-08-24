@@ -5,7 +5,9 @@
 
 #include <mutex>
 #include <vector>
+
 #include "../Utility.hpp"
+#include "../CallDetour.hpp"
 
 struct SDL_Window;
 
@@ -31,10 +33,7 @@ private:
 	std::vector<DrawHookSubscriber *> m_subscribers;
 	const uintptr_t m_launcherBase;
 
-	// hooking stuff
-	void installSwapWindowHook();
-
-	void removeSwapWindowHook();
+    CallDetour _op_sdl_swapWindow_detour;
 
 	void callSubscribers(SDL_Window *window);
 

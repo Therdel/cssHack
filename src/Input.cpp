@@ -17,7 +17,7 @@ Input::Input()
 		, m_mouseHandlerMutex()
 		, m_mouseHandler()
 		, _op_sdl_pollEvent_detour(Util::Address(GamePointerFactory::get(GamePointerDef::op_sdl_pollEvent_call())),
-                                  Util::Address((uintptr_t)(hook_SDL_PollEvent))){
+                                  Util::Address((uintptr_t)(hook_SDL_PollEvent))) {
 	g_keyboard = this;
 }
 

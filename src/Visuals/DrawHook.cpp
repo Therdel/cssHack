@@ -18,16 +18,15 @@ DrawHook *g_DrawHook = nullptr;
 DrawHook::DrawHook()
 		: m_subscribersMutex()
 		, m_subscribers()
-		, m_launcherBase{MemoryUtils::lib_base_32(libNames::launcher)} {
-
+		, m_launcherBase{MemoryUtils::lib_base_32(libNames::launcher)}
+		, _op_sdl_swapWindow_detour{Util::Address(m_launcherBase + Offsets::launcher_sdl_swapWindow_caller),
+                                    Util::Address((uintptr_t)(hook_SDL_GL_SwapWindow))} {
 	g_DrawHook = this;
-	installSwapWindowHook();
 }
 
 DrawHook::~DrawHook() {
-	removeSwapWindowHook();
-	g_DrawHook = nullptr;
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    // TODO: Wireframe mode!
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void DrawHook::attachSubscriber(DrawHookSubscriber *sub) {
@@ -41,33 +40,6 @@ void DrawHook::detachSubscriber(DrawHookSubscriber *sub) {
 	                                m_subscribers.end(),
 	                                sub),
 	                    m_subscribers.end());
-}
-
-void DrawHook::installSwapWindowHook() {
-	// calculate call-relative hook address
-	uintptr_t addr_call_swapWindow = m_launcherBase + Offsets::launcher_sdl_swapWindow_caller;
-	uintptr_t addr_after_call = addr_call_swapWindow + 0x05;
-	uintptr_t addr_hook_relative = (uintptr_t) hook_SDL_GL_SwapWindow - addr_after_call;
-
-	{
-		auto scoped_reprotect = MemoryUtils::scoped_remove_memory_protection(addr_call_swapWindow + 1, 4);
-		// patch this shit
-		*(uintptr_t *) (addr_call_swapWindow + 1) = addr_hook_relative;
-	}
-}
-
-void DrawHook::removeSwapWindowHook() {
-	// calculate call-relative address to original function
-	uintptr_t addr_call_swapWindow = m_launcherBase + Offsets::launcher_sdl_swapWindow_caller;
-	uintptr_t addr_after_call = addr_call_swapWindow + 0x05;
-	uintptr_t addr_orig_relative = (uintptr_t) SDL_GL_SwapWindow - addr_after_call;
-
-	{
-		auto scoped_reprotect = MemoryUtils::scoped_remove_memory_protection(addr_call_swapWindow + 1, 4);
-		// unpatch this shit
-		*(uintptr_t *) (addr_call_swapWindow + 1) = addr_orig_relative;
-	}
-
 }
 
 void DrawHook::callSubscribers(SDL_Window *window) {

@@ -11,7 +11,6 @@
 #include <SDL_keyboard.h>
 
 #include "Utility.hpp"
-#include "Pointers/SharedGamePointer.hpp"
 #include "CallDetour.hpp"
 
 struct KeyStroke {
