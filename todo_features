@@ -1,4 +1,19 @@
 TODO:
+    - statemachines
+        - top-level hack:
+            o not injected
+            o injected
+                o not ingame
+                o ingame                               -> hacks initialized
+                o hack-menu                            -> game-input disabled
+                o inside game-input (chat, console...) -> hack-input disabled
+        - aimbot
+            o Idle
+            o 360::INIT
+            o 360::TWIST
+            o 360::DONE
+            o Triggerbot
+        - what about states, that can be/not be in any combination? Aimbot States Trigger/Aimbot Friendlyfire for example
     - central, generic user configuration.
         - features could register themselves in the configuration
         - changes to the config could propagate back to Features using Observer pattern
@@ -17,7 +32,6 @@ TODO:
     - triggerbot
         - auto knife
             auto right / left
-    - sigscanner using c++ stl <regex>
     - log rewrite
         - flush() next to log()
         - remove #define DEFAULT_LOG_CHANNEL
@@ -43,6 +57,7 @@ DONE:
         x bi-directional callbacks on change
     x change toolchain from MSVC to CMake + Clang
         (for interop with Clion or Linux)
+    x sigscanner using c++ stl <regex>
 
 DITCHED:
     - hack console
