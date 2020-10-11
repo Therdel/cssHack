@@ -74,7 +74,7 @@ void normalizeHeading(Vec3f &angles) {
 }
 
 void Aimbot::aim_once() {
-	findTarget();
+	findTarget(m_aim_type);
 
 	if (m_360.m_state == Maneuver360::INIT) {
 		bool l_target_360_found = false;
@@ -88,7 +88,7 @@ void Aimbot::aim_once() {
 			}
 		} else {
 			// find target using aimbot
-			findTarget();
+			findTarget(m_aim_type);
 			if (m_currentTarget.has_value()) {
 				m_360.m_target = &m_currentTarget->target;
 				l_target_360_found = true;
@@ -142,7 +142,7 @@ void Aimbot::aim_once() {
 		bool l_aim_foundTarget = false;
 		if (m_doAim) {
 			// normal aimbot
-			findTarget();
+			findTarget(m_aim_type);
 
 			// check if player found
 			if (m_currentTarget.has_value()) {
@@ -170,6 +170,24 @@ void Aimbot::aim_once() {
 			}
 		}
 	}
+}
+
+auto Aimbot::deflect_once() -> void {
+  const auto lastFOV = m_aim_fov_rad;
+  m_aim_fov_rad = Util::toRadians(180);
+  findTarget(AIM_TYPE::BY_ANGLE);
+  m_aim_fov_rad = lastFOV;
+
+  // check if player found
+  if (m_currentTarget.has_value()) {
+    auto deflectPointWorld = deflectAimInWorld(m_currentTarget->target, 45);
+    if (deflectPointWorld.has_value()) {
+      // the aim should be deflected, the aim point is too close to the target center
+      Vec3f vecEyeToDeflectPoint = *deflectPointWorld - *m_playerPos;
+      Vec3f angles = cartesianToPolar(vecEyeToDeflectPoint);
+      *m_aimAngles = angles;
+    }
+  }
 }
 
 void Aimbot::startAim() {
@@ -277,7 +295,7 @@ Vec3f Aimbot::cartesianToPolar(const Vec3f &cartesian) {
 	return {l_pitchNewDeg - 90, l_yawNewDeg, 0.0};
 }
 
-void Aimbot::findTarget() {
+void Aimbot::findTarget(AIM_TYPE method) {
 	Vec3f l_targetAimPoint;
 	Vec3f l_targetAimVec;
 	Player *l_target = nullptr;
@@ -314,7 +332,7 @@ void Aimbot::findTarget() {
 			continue;
 		}
 
-		switch (m_aim_type) {
+		switch (method) {
 			case AIM_TYPE::BY_ANGLE: {
 				// aim at target closest to crosshair
 				if (l_target == nullptr || l_angleToTarget < l_nearestAngle) {
@@ -385,7 +403,8 @@ void Aimbot::hookViewAnglesUpdate() {
 		*m_aimAngles -= m_recoilFix_previous;
 	}
 
-	aim_once();
+        deflect_once();
+	//aim_once();
 
 	// calculate (visual and effective) recoil compensation
 	auto l_recoil_fix_new = *m_punchAngles;
@@ -412,4 +431,33 @@ bool Aimbot::is_user_shooting() const {
 	int *l_attack_user_0 = m_doAttack.pointer() - 2;
 	int *l_attack_user_1 = m_doAttack.pointer() - 1;
 	return *l_attack_user_0 != 0 || *l_attack_user_1 != 0;
+}
+
+auto Aimbot::deflectAimInWorld(const Player &target, float targetRadius) -> std::optional<Vec3f> {
+  Vec3f pTargetCenter = target.m_pos + Vec3f{0.0f, 0.0f, -30.0f};
+  Vec3f vEyeToTarCen = pTargetCenter - *m_playerPos;
+  Vec3f vUnitAimVec = Util::viewAnglesToUnitvector(*m_aimAngles);
+
+  // intersect eye vec with target "disk"
+  // (intersect line with plane) source: https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
+  Vec3f &p0 = pTargetCenter;
+  Vec3f &l0 = *m_playerPos;
+  Vec3f n = vEyeToTarCen;
+  n.m_z = 0.0f;
+  Vec3f &l = vUnitAimVec;
+
+  float d = ( (p0 - l0) * n ) / (l * n);
+
+  // pA is the point on the target circle disk
+  Vec3f pA = *m_playerPos + vUnitAimVec * d;
+  Vec3f pCA = pA - pTargetCenter;
+  float distancePaToTargetCenter = pCA.length();
+  if (distancePaToTargetCenter < targetRadius) {
+    // perform deflect
+    Vec3f pCAStretched = pCA.toUnitVector() * targetRadius;
+    Vec3f pDeflectedOntoPerimeter = pTargetCenter + pCAStretched;
+    return pDeflectedOntoPerimeter;
+  } else {
+    return std::nullopt;
+  }
 }

@@ -31,6 +31,8 @@ public:
 
 	void aim_once();
 
+	void deflect_once();
+
 	void startAim();
 
 	void stopAim();
@@ -115,7 +117,7 @@ private:
 
 	static Vec3f cartesianToPolar(const Vec3f &cartesian);
 
-	void findTarget();
+	void findTarget(AIM_TYPE method);
 
 	std::optional<Player *> isCrosshairOnTarget() const;
 
@@ -126,4 +128,8 @@ private:
 	void hookViewAnglesVisUpdate();
 
 	bool is_user_shooting() const;
+
+        // deflect aim away from target.
+        // Result is the world coordinate [targetRadius] away from player.
+        auto deflectAimInWorld(const Player &target, float targetRadius) -> std::optional<Vec3f>;
 };
