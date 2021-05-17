@@ -76,6 +76,11 @@ endif()
 find_package(SDL2 REQUIRED)
 find_package(Threads REQUIRED)
 
+# Boost
+# source: https://cmake.org/cmake/help/latest/module/FindBoost.html
+set(BOOST_ROOT lib/boost_1_74_0)
+find_package(Boost 1.74.0 REQUIRED)
+
 ###########################
 # dependencies - add to target
 ###########################
@@ -89,6 +94,7 @@ target_include_directories(cssHack
     PRIVATE ${BOYERMOOREDONTCARE_INCLUDE_DIRS}
     PRIVATE ${GLM_INCLUDE_DIRS}
     PRIVATE ${SDL2_INCLUDE_DIRS}
+    PRIVATE ${Boost_INCLUDE_DIRS}
 )
 
 target_link_libraries(cssHack
