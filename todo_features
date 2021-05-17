@@ -1,12 +1,101 @@
 TODO:
     - statemachines
         - top-level hack:
-            o not injected
-            o injected
-                o not ingame
-                o ingame                               -> hacks initialized
-                o hack-menu                            -> game-input disabled
-                o inside game-input (chat, console...) -> hack-input disabled
+            States
+                o injected
+                    o inactive
+                    o active
+                        o not ingame
+                        o ingame                               -> hacks initialized
+                            o hack-menu                            -> game-input disabled
+                            o inside game-input (chat, console...) -> hack-input disabled
+                    o ejecting
+                        o from_within_hack
+                            o lib_waiting_for_completion
+                        o from_lib_exit
+            ------------
+            Events
+                o eject_from_within_hack
+                o eject_lib_exit
+                o active_toggle
+                o enterGame
+                o leaveGame
+                o enterMenu
+                o leaveMenu
+                o enterGameInput
+                o leaveGameInput
+            (Events maybe too fine-grained)
+                o aimbot_[start|stop]
+                o triggerbot_[start|stop]
+                o 360_[start|stop]
+                o bunnyhop_[start|stop]
+            -------------
+            Beobachtungen
+                - Keine Transitions innh. von Transitions auslösen.
+                - Input Events sind alle asynchron + nicht innh. von Transitions
+                - Input, Game-Events und SM auf verschiedenen Threads.
+                - Input kann nicht direkt Event auslösen, da das ne RC mit z.B. asynchronen Game-Events auslösen würde
+                    1. SM durch mutex schützen. Keine process_events gleichzeitig.
+                        contra: Währenddessen sind andere Events geblocked. (Nicht so schlimm. Eh nur 1 Event gleichzeitig)
+                                Jedoch zumindest während Event reactions, entry/exit und transitions: [post_event()]
+                                Aber: Innh. eines Events können auch keine weiteren Events ausgelöst werden
+                                --> Deadlock gefahr, wenn während einem [process_event()] ein weiterer ausgeführt werden soll.
+                                --> ? panic-Key? Wäre ne State-Transition infolge eines Input-Events.
+                    2. Events auf async queue legen.
+                        ? Wie soll Input die Resultate von den Event Handlern abholen?
+                            - std::future
+                        (? Könnte es sein, dass die SM in nen anderen State gegangen ist, der das Event nicht mehr akzeptiert?)
+                            --> Nein. Entweder ist keyHandler entfernt oder er wartet auf den call, bis er entfernt werden kann.
+                ? Problem: Wie kann ein Input Event eine Transition auslösen?
+                    - Legt es im Handler eine transition auf die queue,
+                      so könnte ein asynchroner queue-Worker im Race zum Input den State unterm Handler ändern.
+                        - "Lösung" dafür: Jeder Input callback geht durch die [process_event()] Vordertür.
+                          Währenddessen bleibt die SM stehen.
+                          Schade: Dadurch müssen alle Input Events gewrapped werden in SM-Events.
+                          Problem:
+                        - Mögl. Lösung: Asynchrone Input callbacks, die als out-Parameter eine future mitgeben.
+                    - Input Events können als Events gewrapped werden, die vom aktuellen State behandelt werden.
+                      In Reactions können auch folge-Events geposted werden, ohne asynchronen Schnickschnack!
+                    ? Wie kann man von diesen Events dann wieder abmelden?
+                    ? Wie können Ergebnisse von Handlern abgeholt werden?
+                        - Ergebnisse werden nur benötigt, wenn die Entscheidung zur EventPropagation dynamisch ist.
+                    - Das State Pattern passt ganz gut zu dem Problem. Aus Inputsicht sind Handler Stateabhängig.
+                    - Beim State Pattern werden Handler ausgetauscht, bei FSM werden durch Event Transitions Aktionen getriggert.
+                      Ich will aber dass durch Events State-Transitions getriggert werden,
+                      und dass durch Events auch im selben State verblieben werden kann und die Action einfach n
+                      Event-Handler ausgetauscht wird.
+                      Und ich will, dass es von außen wie das State-Pattern aussieht:
+                      --> Methodenrümpfe werden von versch. States verschieden behandelt.
+                ? Problem: Bedeutung der State-Hierarchie.
+                    1. Hierarchieebenen führen zu sharing von state-storage.
+                    2. Sie bestimmen aber auch die Reihenfolge in der Eventhandler gecalled / gemasked werden.
+                    --> Kann hier ein Konflikt bestehen?
+                - Hack abschalten:
+                    1. lib_exit
+                        - Event_eject_lib_exit
+                            - ...
+                            - ~Input() { un_detour(); }
+                            - ...
+                        - ~MainSM();
+                    2. Knöppes
+                        - Input::keyHandler {
+                              process_event(keyEvent) {
+                                  Active::react() {
+                                      return transition<Ejecting>();
+                                      - ...
+                                      - ~Input() <-- BOOM
+                                        - Problem: Destruktoraufruf während das Objekt noch tut.
+                                        - Problem: Destruktor blockiert durch laufenden Event-call.
+                                  }
+                              }
+                          }
+            -------------
+            Was brauche ich?
+                x Superstates
+                x Events
+                x Entry / Exit actions
+                x State-local-storage
+                - Eventloop
         - aimbot
             o Idle
             o 360::INIT

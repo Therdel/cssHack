@@ -22,6 +22,7 @@
 #include "Visuals/Wallhack.hpp"
 #include "Pointers/GamePointerFactory.hpp"
 #include "Pointers/GamePointerUpdater.hpp"
+#include "MainSM.h"
 
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
 
@@ -36,7 +37,7 @@ static auto wait_for_inject_combination(Input &input) -> void {
 	auto keyHandler = ScopedKeyHandler(input,
 	                                   key_inject, [&](SDL_KeyboardEvent const &) {
 				l_injected = true;
-				return true;
+				return Input::StealEvent;
 			});
 	while (l_injected == false && g_do_exit == false) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(POLL_SLEEP_MS));
@@ -49,7 +50,7 @@ static auto onEjectKey(SDL_KeyboardEvent const &event) -> bool {
 			eject_from_within_hack();
 		}
 	}
-	return false;
+	return Input::PropagateEvent;
 }
 
 static auto onBhopKey(Bunnyhop &bhop, SDL_KeyboardEvent const &event) -> bool {
@@ -60,8 +61,8 @@ static auto onBhopKey(Bunnyhop &bhop, SDL_KeyboardEvent const &event) -> bool {
 			bhop.stop();
 		}
 	}
-	// hide event from game
-	return true;
+
+	return Input::StealEvent;
 }
 
 static auto onAimKey(Aimbot &aimbot, SDL_KeyboardEvent const &event) -> bool {
@@ -72,21 +73,22 @@ static auto onAimKey(Aimbot &aimbot, SDL_KeyboardEvent const &event) -> bool {
 			aimbot.stopAim();
 		}
 	}
-	return false;
+
+	return Input::PropagateEvent;
 }
 
 static auto onAimKey(Aimbot &aimbot, SDL_Event const &event) -> bool {
-	bool stealEvent = false;
+	bool stealEvent = Input::PropagateEvent;
 	if (event.type == SDL_MOUSEBUTTONDOWN ||
 	    event.type == SDL_MOUSEBUTTONUP) {
 		auto &buttonEvent = event.button;
 		if (buttonEvent.button == SDL_BUTTON_LEFT) {
+            stealEvent = Input::StealEvent;
 			if (buttonEvent.state == SDL_PRESSED) {
 				aimbot.startAim();
 			} else {
 				aimbot.stopAim();
 			}
-			stealEvent = true;
 		}
 	}
 
@@ -102,12 +104,21 @@ static auto onTriggerKey(Aimbot &aimbot, SDL_KeyboardEvent const &event) -> bool
 			aimbot.stopAim();
 		}
 	}
-	return false;
+	return Input::PropagateEvent;
 }
 
 static bool g_acceptInputInGameMenus = true;
 
 auto hack_loop() -> void {
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+//    MainSM sm;
+//    sm.initiate();
+//
+//    auto &l_input = sm.state_cast<const States::Injected&>().input;
+//    while (sm.state_downcast<const States::Active*>() == nullptr) {
+//        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+//
+//    }
 	// TODO: detect LD_PRELOAD method with wait
 	/*
 	while (!g_do_exit) {
@@ -126,27 +137,33 @@ auto hack_loop() -> void {
 	if (!g_do_exit) {
 		Log::log("Injected");
 	}
+	//return;
 
 	while (g_do_exit == false) {
 		// fixme: Crashes with nullptr on create when put at main() beginning
-		auto l_isInGame = GamePointerFactory::get(GamePointerDef::isIngame());
-		auto l_isInMenu = GamePointerFactory::get(GamePointerDef::isInMenu());
+		//auto l_isInGame = GamePointerFactory::get(GamePointerDef::isIngame());
+		// auto l_isInMenu = GamePointerFactory::get(GamePointerDef::isInMenu());
+                auto isInMenu = 0;
+                auto isInGame = 1;
+                auto l_isInMenu = &isInMenu;
+                auto l_isInGame = &isInGame;
 
 		if (g_do_exit == false && *l_isInGame == 1) {
 			// initialize game hacks
 			// fixme: Crashes when put at main() beginning
 			// fixme: Sometimes an update after an invalidate is missing and causes a null deref
-			GamePointerUpdater l_gamePointerUpdater;
-			DrawHook l_drawHook;
-			GUI l_gui(l_drawHook, l_input);
-			l_gui.registerButton({"Update localplayer",
-			                      [sp_localplayer = GamePointerFactory::get(GamePointerDef::localplayer())]
-					                      () mutable {
-				                      sp_localplayer.update();
-			                      }});
-			Aimbot l_aimbot(l_gui);
+			// GamePointerUpdater l_gamePointerUpdater;
+			// DrawHook l_drawHook;
+			// GUI l_gui(l_drawHook, l_input);
+			// l_gui.registerButton({"Update localplayer",
+//			                      [sp_localplayer = GamePointerFactory::get(GamePointerDef::localplayer())]
+//					                      () mutable {
+//				                      sp_localplayer.update();
+//			                      }});
+			// Aimbot l_aimbot(l_gui);
+                        Aimbot l_aimbot;
 			Bunnyhop l_bunnyhop;
-			ESP l_esp(l_drawHook, l_gui, l_aimbot);
+			// ESP l_esp(l_drawHook, l_gui, l_aimbot);
 //			Wallhack l_wallhack;
 
 			while (g_do_exit == false && *l_isInGame == 1) {

@@ -403,8 +403,8 @@ auto Aimbot::hookViewAnglesUpdate() -> void {
 		*m_aimAngles -= m_recoilFix_previous;
 	}
 
-        deflect_once();
-	//aim_once();
+        //deflect_once();
+	aim_once();
 
 	// calculate (visual and effective) recoil compensation
 	auto l_recoil_fix_new = *m_punchAngles;
@@ -454,7 +454,8 @@ auto Aimbot::deflectAimInWorld(const Player &target, float targetRadius) -> std:
   float distancePaToTargetCenter = pCA.length();
   if (distancePaToTargetCenter < targetRadius) {
     // perform deflect
-    Vec3f pCAStretched = pCA.toUnitVector() * targetRadius;
+    float newRadius = distancePaToTargetCenter + (targetRadius - distancePaToTargetCenter) * 0.01;
+    Vec3f pCAStretched = pCA.toUnitVector() * newRadius;
     Vec3f pDeflectedOntoPerimeter = pTargetCenter + pCAStretched;
     return pDeflectedOntoPerimeter;
   } else {

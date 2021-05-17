@@ -50,6 +50,11 @@ union SDL_Event;
 
 class Input {
 public:
+    enum EventPropagation : bool {
+        StealEvent = true,
+        PropagateEvent = false
+    };
+    // TODO:
 	/// receives a key event.
 	/// return value determines if the event should be hidden from the game
 	using keyHandler = std::function<bool(SDL_KeyboardEvent const &)>;

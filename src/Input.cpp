@@ -57,10 +57,13 @@ auto Input::removeMouseHandler() -> bool {
 auto Input::callKeyHandlerIfExists(SDL_KeyboardEvent const &event) -> std::optional<bool> {
 	KeyStroke keyStroke{event.keysym.sym, event.keysym.mod};
 
+	keyHandler handler;
+
 	std::scoped_lock l_lock(m_keyHandlersMutex);
 	// check if handler exists
 	auto handlerIt = g_keyboard->m_keyHandlers.find(keyStroke);
 	if (handlerIt != g_keyboard->m_keyHandlers.end()) {
+	    handler = handlerIt->second;
 		// execute handler
 		bool doSteal = handlerIt->second(event);
 		return doSteal;
