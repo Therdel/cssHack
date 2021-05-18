@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="29">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>10</ID>
+      <Description>"s_entity_list?"</Description>
+      <ShowAsHex>1</ShowAsHex>
+      <VariableType>4 Bytes</VariableType>
+      <Address>materialsystem.dll+E9BA4</Address>
+      <Offsets>
+        <Offset>0</Offset>
+      </Offsets>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>11</ID>
+      <Description>"sp_entity_list? 2"</Description>
+      <ShowAsHex>1</ShowAsHex>
+      <VariableType>4 Bytes</VariableType>
+      <Address>materialsystem.dll+E9B74</Address>
+      <Offsets>
+        <Offset>0</Offset>
+      </Offsets>
+    </CheatEntry>
+  </CheatEntries>
+  <CheatCodes>
+    <CodeEntry>
+      <Description>pos_x entitylist(?) update</Description>
+      <AddressString>client_panorama.dll+24547D</AddressString>
+      <Before>
+        <Byte>8B</Byte>
+        <Byte>55</Byte>
+        <Byte>0C</Byte>
+        <Byte>8B</Byte>
+        <Byte>0A</Byte>
+      </Before>
+      <Actual>
+        <Byte>89</Byte>
+        <Byte>0F</Byte>
+      </Actual>
+      <After>
+        <Byte>8B</Byte>
+        <Byte>4A</Byte>
+        <Byte>04</Byte>
+        <Byte>89</Byte>
+        <Byte>4F</Byte>
+      </After>
+    </CodeEntry>
+  </CheatCodes>
+  <UserdefinedSymbols/>
+</CheatTable>
