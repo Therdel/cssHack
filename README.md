@@ -1,6 +1,9 @@
 # Cross Platform Counter-Strike: Source hack
 ##### for GNU/Linux and Windows  
 
+https://user-images.githubusercontent.com/14974231/119541218-a66b7d00-bd8e-11eb-812d-baee80f0fc8d.mp4
+https://github.com/Therdel/cssHack/blob/master/media/360_hack.mp4
+
 
 ### Features
 - Bunnyhop
