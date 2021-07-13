@@ -98,7 +98,7 @@ auto DetourToCallback::_rawMethodAddress(void (Class::* method)() const) -> uint
 	// clearly insane magic to get MSVC to hand the addresses of member functions
 	// https://stackoverflow.com/questions/8121320/get-memory-address-of-member-function
 	// simplified by
-	// https://www.codeprojectcheat.com/Questions/1032379/how-to-print-the-address-of-a-member-function-usin
+	// https://www.codeproject.com/Questions/1032379/how-to-print-the-address-of-a-member-function-usin
 	uintptr_t rawAddress = reinterpret_cast<uintptr_t&>(method);
 	return rawAddress;
 }
