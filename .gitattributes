@@ -2,4 +2,4 @@
 # source: https://help.github.com/en/articles/configuring-git-to-handle-line-endings
 * text=auto
 
-lib/* linguist-vendored # github language statistics: Exclude foreign code
+lib/** linguist-vendored # github language statistics: Exclude foreign code
