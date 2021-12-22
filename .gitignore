@@ -1,6 +1,11 @@
+# clion
 .idea
 cmake-build-debug*
 cmake-build-release*
 
+# visual studio
 .vs
 out
+
+# vscode
+build
