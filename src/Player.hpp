@@ -21,11 +21,11 @@ struct Player {
 	Vec3f m_viewangles;
 	int m_unknown_3[60];  // 30x8 bytes - getting updated one after another after movement
 
-	bool is_valid() const {
+	auto is_valid() const -> bool {
 		return m_valid > 0;
 	}
 
-	bool isActive() const {
+	auto isActive() const -> bool {
 		return is_valid() &&
 		       m_team != Player::TEAM::SPECT &&
 		       m_health > 0;

@@ -49,37 +49,37 @@ GUI::~GUI() {
 	shutdownImGui();
 }
 
-void GUI::registerFloatSlider(FloatSlider slider) {
+auto GUI::registerFloatSlider(FloatSlider slider) -> void {
 	std::scoped_lock l_lock(m_debugFloatSlidersMutex);
 	m_debugFloatSliders.push_back(std::move(slider));
 }
 
-void GUI::registerCheckbox(Checkbox checkBox) {
+auto GUI::registerCheckbox(Checkbox checkBox) -> void {
 	std::scoped_lock l_lock(m_debugCheckboxesMutex);
 	m_debugCheckboxes.push_back(std::move(checkBox));
 }
 
-void GUI::registerIntSlider(IntSlider slider) {
+auto GUI::registerIntSlider(IntSlider slider) -> void {
 	std::scoped_lock l_lock(m_debugIntSlidersMutex);
 	m_debugIntSliders.push_back(std::move(slider));
 }
 
-void GUI::registerAngleRadSlider(AngleRadSlider slider) {
+auto GUI::registerAngleRadSlider(AngleRadSlider slider) -> void {
 	std::scoped_lock l_lock(m_debugAngleSlidersMutex);
 	m_debugAngleSliders.push_back(std::move(slider));
 }
 
-void GUI::registerComboBox(ComboBox comboBox) {
+auto GUI::registerComboBox(ComboBox comboBox) -> void {
 	std::scoped_lock l_lock(m_debugComboBoxesMutex);
 	m_debugComboBoxes.push_back(std::move(comboBox));
 }
 
-void GUI::registerButton(Button button) {
+auto GUI::registerButton(Button button) -> void {
 	std::scoped_lock l_lock(m_debugButtonsMutex);
 	m_debugButtons.push_back(std::move(button));
 }
 
-bool GUI::onGuiKey(SDL_KeyboardEvent const &event) {
+auto GUI::onGuiKey(SDL_KeyboardEvent const &event) -> bool {
 	if (event.type == SDL_KEYDOWN && event.repeat == 0) {
 		m_show = !m_show;
 		if (m_show) {
@@ -93,7 +93,7 @@ bool GUI::onGuiKey(SDL_KeyboardEvent const &event) {
 	return true;
 }
 
-bool GUI::onInputEvent(SDL_Event const &event) {
+auto GUI::onInputEvent(SDL_Event const &event) -> bool {
 	bool steal = false;
 	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == key_gui.m_keycode &&
 	    event.key.keysym.mod == key_gui.m_modifiers) {
@@ -108,11 +108,11 @@ bool GUI::onInputEvent(SDL_Event const &event) {
 	return steal;
 }
 
-void GUI::onDraw(SDL_Window *window) {
+auto GUI::onDraw(SDL_Window *window) -> void {
 	imGuiNewFrame(window);
 }
 
-void GUI::initImGui(SDL_Window *window) {
+auto GUI::initImGui(SDL_Window *window) -> void {
 	const char *glsl_version = "#version 130";
 
 	// Initialize OpenGL loader
@@ -164,14 +164,14 @@ void GUI::initImGui(SDL_Window *window) {
 	m_didInit = true;
 }
 
-void GUI::shutdownImGui() {
+auto GUI::shutdownImGui() -> void {
 	// Cleanup
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
 }
 
-void GUI::imGuiNewFrame(SDL_Window *window) {
+auto GUI::imGuiNewFrame(SDL_Window *window) -> void {
 	if (!m_didInit) {
 		initImGui(window);
 	}

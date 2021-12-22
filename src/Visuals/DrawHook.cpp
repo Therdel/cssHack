@@ -29,12 +29,12 @@ DrawHook::~DrawHook() {
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void DrawHook::attachSubscriber(DrawHookSubscriber *sub) {
+auto DrawHook::attachSubscriber(DrawHookSubscriber *sub) -> void {
 	std::scoped_lock l_lock(m_subscribersMutex);
 	m_subscribers.push_back(sub);
 }
 
-void DrawHook::detachSubscriber(DrawHookSubscriber *sub) {
+auto DrawHook::detachSubscriber(DrawHookSubscriber *sub) -> void {
 	std::scoped_lock l_lock(m_subscribersMutex);
 	m_subscribers.erase(std::remove(m_subscribers.begin(),
 	                                m_subscribers.end(),
@@ -42,14 +42,14 @@ void DrawHook::detachSubscriber(DrawHookSubscriber *sub) {
 	                    m_subscribers.end());
 }
 
-void DrawHook::callSubscribers(SDL_Window *window) {
+auto DrawHook::callSubscribers(SDL_Window *window) -> void {
 	std::scoped_lock l_lock(m_subscribersMutex);
 	for (auto &subscriber : m_subscribers) {
 		subscriber->onDraw(window);
 	}
 }
 
-void DrawHook::hook_SDL_GL_SwapWindow(SDL_Window *window) {
+auto DrawHook::hook_SDL_GL_SwapWindow(SDL_Window *window) -> void {
 	g_DrawHook->callSubscribers(window);
 
 	SDL_GL_SwapWindow(window);

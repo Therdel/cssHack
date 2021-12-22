@@ -21,7 +21,7 @@ Bunnyhop::~Bunnyhop() {
 	unhook();
 }
 
-void Bunnyhop::start() {
+auto Bunnyhop::start() -> void {
  	if (!m_enabled) {
 		// the fake jumps are only triggered by landing on the ground, not while being on ground
 		// so if we're currently standing on the ground...
@@ -34,7 +34,7 @@ void Bunnyhop::start() {
 	}
 }
 
-void Bunnyhop::stop() {
+auto Bunnyhop::stop() -> void {
 	if (m_enabled) {
 		m_enabled = false;
 
@@ -44,7 +44,7 @@ void Bunnyhop::stop() {
 	}
 }
 
-void Bunnyhop::hook() {
+auto Bunnyhop::hook() -> void {
 	bool l_inc_detour_success = m_detour_onGround_inc.install(
 		Signatures::onGround_op_land,
 		[this] { hook_onGround_inc(); },
@@ -64,7 +64,7 @@ void Bunnyhop::hook() {
     }
 }
 
-void Bunnyhop::unhook() {
+auto Bunnyhop::unhook() -> void {
 	if (!m_detour_onGround_inc.remove()) {
 		Log::log("Bunnyhop failed to un-detour inc on_ground");
 	}
@@ -74,13 +74,13 @@ void Bunnyhop::unhook() {
 	}
 }
 
-void Bunnyhop::hook_onGround_inc() {
+auto Bunnyhop::hook_onGround_inc() -> void {
 	if (m_enabled) {
 		*m_jump = 5;
 	}
 }
 
-void Bunnyhop::hook_onGround_dec() {
+auto Bunnyhop::hook_onGround_dec() -> void {
 	if (m_enabled) {
 		*m_jump = 4;
 	}

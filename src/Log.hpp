@@ -23,11 +23,11 @@ public:
 	~Log();
 
 	// stopEventProcessing logging thread
-	static void stop();
+	static auto stop() -> void;
 
 	// log with custom log level
 	template<LogTime time = LogTime::LATER, typename ...Args>
-	static void log(Channel level, const Args &...args) {
+	static auto log(Channel level, const Args &...args) -> void {
 		if (level == Channel::SILENT) {
 			// do nothing
 			return;
@@ -55,7 +55,7 @@ public:
 
 	// log with default log level
 	template<LogTime time = LogTime::LATER, typename ...Args>
-	static void log(const Args &...args) {
+	static auto log(const Args &...args) -> void {
 		Channel default_level;
 
 		// TODO only gets set once at first include because of include barrier
@@ -92,27 +92,28 @@ private:
 
 	Log();
 
-	static Log &get();
+	static auto get() -> Log&;
 
+	// TODO: Use fold expressions instead of recursion
 	// from: https://stackoverflow.com/questions/9204780/accepting-variable-number-of-arguments-for-logger
 	template<typename Stream, typename Arg1>
-	static Stream &addToStream(Stream &stream, const Arg1 &arg1) {
+	static auto addToStream(Stream &stream, const Arg1 &arg1) -> Stream& {
 		stream << arg1;
 		return stream;
 	}
 
 	// from: https://stackoverflow.com/questions/9204780/accepting-variable-number-of-arguments-for-logger
 	template<typename Stream, typename Arg1, typename ...Args>
-	static Stream &addToStream(Stream &stream, const Arg1 &arg1, const Args &...args) {
+	static auto addToStream(Stream &stream, const Arg1 &arg1, const Args &...args) -> Stream& {
 		stream << arg1;
 		return addToStream(stream, args...);
 	}
 
-	static void doLog(const LogJob &job);
+	static auto doLog(const LogJob &job) -> void;
 
-	void logLater(LogJob job);
+	auto logLater(LogJob job) -> void;
 
-	void logThreadWork();
+	auto logThreadWork() -> void;
 
-	void joinWorkerThread();
+	auto joinWorkerThread() -> void;
 };

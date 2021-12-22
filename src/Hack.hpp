@@ -8,4 +8,4 @@
 // flag that tells if the hack should be terminated
 extern std::atomic_bool g_do_exit;
 
-void hack_loop();
+auto hack_loop() -> void;

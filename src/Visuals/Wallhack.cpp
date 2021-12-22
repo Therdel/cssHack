@@ -16,7 +16,7 @@
 
 Wallhack *g_Wallhack = nullptr;
 
-Wallhack::DrawIndexedPrimitive_t Wallhack::getDrawIndexedPrimitive() {
+auto Wallhack::getDrawIndexedPrimitive() -> Wallhack::DrawIndexedPrimitive_t {
 	const char *symbolName = "_ZN16IDirect3DDevice920DrawIndexedPrimitiveE17_D3DPRIMITIVETYPEijjjj";
 
 	auto drawIndexedPrimitiveRaw = MemoryUtils::getSymbolAddress(libNames::libtogl, symbolName);
@@ -37,7 +37,7 @@ Wallhack::~Wallhack() {
 	g_Wallhack = nullptr;
 }
 
-void Wallhack::installDrawIndexedPrimitiveHook() {
+auto Wallhack::installDrawIndexedPrimitiveHook() -> void {
 	// calculate call-relative hook address
 	uintptr_t addr_call_drawIndexedPrimitive = m_shaderapidx9Base + Offsets::shaderapidx9_drawIndexedPrimitive_caller;
 	uintptr_t addr_after_call = addr_call_drawIndexedPrimitive + 0x05;
@@ -50,7 +50,7 @@ void Wallhack::installDrawIndexedPrimitiveHook() {
 	}
 }
 
-void Wallhack::removeDrawIndexedPrimitiveHook() {
+auto Wallhack::removeDrawIndexedPrimitiveHook() -> void {
 	// calculate call-relative address to original function
 	uintptr_t addr_call_drawIndexedPrimitive = m_shaderapidx9Base + Offsets::shaderapidx9_drawIndexedPrimitive_caller;
 	uintptr_t addr_after_call = addr_call_drawIndexedPrimitive + 0x05;
@@ -64,14 +64,14 @@ void Wallhack::removeDrawIndexedPrimitiveHook() {
 
 }
 
-Wallhack::HRESULT Wallhack::hook_DrawIndexedPrimitive(
+auto Wallhack::hook_DrawIndexedPrimitive(
 		uintptr_t thisptr,
 		D3DPRIMITIVETYPE d3Dprimitivetype,
 		int BaseVertexIndex,
 		unsigned MinVertexIndex,
 		unsigned NumVertices,
 		unsigned startIndex,
-		unsigned primCount) {
+		unsigned primCount) -> Wallhack::HRESULT{
 	auto insertion = g_Wallhack->m_indexedPrimitives.emplace(d3Dprimitivetype,
 	                                                         BaseVertexIndex,
 	                                                         MinVertexIndex,

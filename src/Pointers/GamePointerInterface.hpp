@@ -11,11 +11,11 @@ public:
 	using reference_type = T &;
 	using pointer_type = T *;
 
-	address_type address() const {
+	auto address() const -> address_type {
 		return derived().address();
 	}
 
-	void update() {
+	auto update() -> void {
 		return derived().update();
 	}
 
@@ -23,15 +23,15 @@ public:
 		return address();
 	}
 
-	pointer_type pointer() const {
+	auto pointer() const -> pointer_type {
 		return reinterpret_cast<pointer_type>(address());
 	}
 
-	reference_type operator*() const {
+	auto operator*() const -> reference_type {
 		return *pointer();
 	}
 
-	pointer_type operator->() const {
+	auto operator->() const -> pointer_type {
 		return pointer();
 	}
 
@@ -40,11 +40,11 @@ public:
 	}
 
 private:
-	Derived &derived() {
+	auto derived() -> Derived& {
 		return static_cast<Derived &>(*this);
 	}
 
-	Derived const &derived() const {
+	auto derived() const -> Derived const& {
 		return static_cast<Derived const &>(*this);
 	}
 };

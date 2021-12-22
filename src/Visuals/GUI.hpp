@@ -22,21 +22,21 @@ public:
 
 	~GUI() override;
 
-	void registerFloatSlider(GuiElements::FloatSlider slider);
+	auto registerFloatSlider(GuiElements::FloatSlider slider) -> void;
 
-	void registerCheckbox(GuiElements::Checkbox checkBox);
+	auto registerCheckbox(GuiElements::Checkbox checkBox) -> void;
 
-	void registerIntSlider(GuiElements::IntSlider slider);
+	auto registerIntSlider(GuiElements::IntSlider slider) -> void;
 
-	void registerAngleRadSlider(GuiElements::AngleRadSlider slider);
+	auto registerAngleRadSlider(GuiElements::AngleRadSlider slider) -> void;
 
-	void registerComboBox(GuiElements::ComboBox comboBox);
+	auto registerComboBox(GuiElements::ComboBox comboBox) -> void;
 
-	void registerButton(GuiElements::Button button);
+	auto registerButton(GuiElements::Button button) -> void;
 
 protected:
 
-	void onDraw(SDL_Window *window) override;
+	auto onDraw(SDL_Window *window) -> void override;
 
 private:
 	DrawHook &m_drawHook;
@@ -63,14 +63,14 @@ private:
 	bool m_didInit;
 	bool m_show;
 
-	bool onGuiKey(SDL_KeyboardEvent const &event);
+	auto onGuiKey(SDL_KeyboardEvent const &event) -> bool;
 
-	bool onInputEvent(SDL_Event const &event);
+	auto onInputEvent(SDL_Event const &event) -> bool;
 
-	void initImGui(SDL_Window *window);
+	auto initImGui(SDL_Window *window) -> void;
 
-	void shutdownImGui();
+	auto shutdownImGui() -> void;
 
-	void imGuiNewFrame(SDL_Window *window);
+	auto imGuiNewFrame(SDL_Window *window) -> void;
 
 };

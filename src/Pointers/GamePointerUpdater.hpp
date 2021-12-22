@@ -22,9 +22,9 @@ private:
 	DetourToCallback m_detour_localplayer_update;
 	DetourToCallback m_detour_localplayer_invalidate;
 
-	void hook();
-	void unhook();
+	auto hook() -> void;
+	auto unhook() -> void;
 
-	void hookOnLocalplayerUpdate();
-	void hookOnLocalplayerInvalidate();
+	auto hookOnLocalplayerUpdate() -> void;
+	auto hookOnLocalplayerInvalidate() -> void;
 };

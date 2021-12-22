@@ -24,7 +24,7 @@ public:
 
 	~ESP() override;
 
-	void onDraw(SDL_Window *window) override;
+	auto onDraw(SDL_Window *window) -> void override;
 
 private:
 	DrawHook &m_drawHook;
@@ -65,40 +65,40 @@ private:
 	int m_boneMatrices1Amount = 1000;
 	int m_boneMatrices2Amount = 1000;
 
-	void calcMatPerspective();
+	auto calcMatPerspective() -> void;
 
-	void calcMatNormalization();
+	auto calcMatNormalization() -> void;
 
 	/**
 	 * Returns given position in screen coordinates, if visible
 	 * @param worldPos position in world space
 	 * @return screen x/y coordinates. std::nullopt if not on screen
 	 */
-	std::optional<Vec2f> world_to_screen(Vec3f const &worldPos) const;
+	auto world_to_screen(Vec3f const &worldPos) const -> std::optional<Vec2f>;
 
 
-	void drawCircleScreen(float cx, float cy, float r, int num_segments, const SDL_Color &color) const;
+	auto drawCircleScreen(float cx, float cy, float r, int num_segments, const SDL_Color &color) const -> void;
 
-	void drawBox(Vec3f position,
+	auto drawBox(Vec3f position,
 	             SDL_Color const &color,
 	             float height = 100.0f,
 	             float orientationYaw = 0.0f,
-	             float width = 100.0f) const;
+	             float width = 100.0f) const -> void;
 
-	void drawScreenCross(Vec2f crossPos, float radius, const SDL_Color &color,
-	                     bool diagonal = true, float lineToCenterRatio = 0.4) const;
+	auto drawScreenCross(Vec2f crossPos, float radius, const SDL_Color &color,
+	                     bool diagonal = true, float lineToCenterRatio = 0.4) const -> void;
 
-	void drawLineESP() const;
+	auto drawLineESP() const -> void;
 
-	void drawBoxESP() const;
+	auto drawBoxESP() const -> void;
 
-	void drawFlagESP() const;
+	auto drawFlagESP() const -> void;
 
-	void drawAimFov() const;
+	auto drawAimFov() const -> void;
 
-	void drawAimTargetCross() const;
+	auto drawAimTargetCross() const -> void;
 
-	void drawBulletPrediction() const;
+	auto drawBulletPrediction() const -> void;
 
-	void drawBoneBoxes() const;
+	auto drawBoneBoxes() const -> void;
 };

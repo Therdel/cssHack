@@ -67,13 +67,13 @@ Aimbot::~Aimbot() {
 	uninstall();
 }
 
-void normalizeHeading(Vec3f &angles) {
+auto normalizeHeading(Vec3f &angles) -> void {
 	float heading_360_deg_range_corrected = std::fmod(angles.m_y + 180, 360);
 	float heading_180_deg_range_corrected = heading_360_deg_range_corrected - 180;
 	angles.m_y = heading_180_deg_range_corrected;
 }
 
-void Aimbot::aim_once() {
+auto Aimbot::aim_once() -> void {
 	findTarget(m_aim_type);
 
 	if (m_360.m_state == Maneuver360::INIT) {
@@ -190,34 +190,34 @@ auto Aimbot::deflect_once() -> void {
   }
 }
 
-void Aimbot::startAim() {
+auto Aimbot::startAim() -> void {
 	m_doAim = true;
 }
 
-void Aimbot::stopAim() {
+auto Aimbot::stopAim() -> void {
 	m_doAim = false;
 }
 
-void Aimbot::startTrigger() {
+auto Aimbot::startTrigger() -> void {
 	m_doTrigger = true;
 }
 
-void Aimbot::stopTrigger() {
+auto Aimbot::stopTrigger() -> void {
 	m_doTrigger = false;
 }
 
-void Aimbot::start360(Mode360 modeBefore, Mode360 modeAfter) {
+auto Aimbot::start360(Mode360 modeBefore, Mode360 modeAfter) -> void {
 	// FIXME? set state after modes - #race condition
 	m_360.m_state = Maneuver360::INIT;
 	m_360.m_modeBefore = modeBefore;
 	m_360.m_modeAfter = modeAfter;
 }
 
-void Aimbot::stop360() {
+auto Aimbot::stop360() -> void {
 	m_360.m_state = Maneuver360::DONE;
 }
 
-void Aimbot::triggerbot_once() const {
+auto Aimbot::triggerbot_once() const -> void {
 	if (isCrosshairOnTarget()) {
 		// shoot once
 
@@ -234,15 +234,15 @@ void Aimbot::triggerbot_once() const {
 	}
 }
 
-std::optional<Aimbot::AimTarget> const &Aimbot::getCurrentTarget() const {
+auto Aimbot::getCurrentTarget() const -> std::optional<Aimbot::AimTarget> const& {
 	return m_currentTarget;
 }
 
-Vec3f const &Aimbot::getBulletPredictionAngles() const {
+auto Aimbot::getBulletPredictionAngles() const-> Vec3f const& {
 	return m_bulletPredictionAngles;
 }
 
-void Aimbot::install() {
+auto Aimbot::install() -> void {
 	bool l_ang_detour_success = m_detour_viewAngles_update.install(
 		Signatures::aimAngles_x_op_read,
 		[this] { hookViewAnglesUpdate(); },
@@ -262,7 +262,7 @@ void Aimbot::install() {
 	}
 }
 
-void Aimbot::uninstall() {
+auto Aimbot::uninstall() -> void {
 	if (!m_detour_viewAngles_update.remove()) {
 		Log::log("Aimbot failed to un-detour update_ang");
 	}
@@ -278,7 +278,7 @@ void Aimbot::uninstall() {
 	}
 }
 
-Vec3f Aimbot::getTargetAimPoint(const Player &target) {
+auto Aimbot::getTargetAimPoint(const Player &target) -> Vec3f {
 	// include the target offset (aim a little at the belly)
 	// rotate static target offset with targets heading angle:
 	// source: https://developer.valvesoftware.com/wiki/QAngle
@@ -287,7 +287,7 @@ Vec3f Aimbot::getTargetAimPoint(const Player &target) {
 	return target.m_pos + l_aim_target_offset_rotated;
 }
 
-Vec3f Aimbot::cartesianToPolar(const Vec3f &cartesian) {
+auto Aimbot::cartesianToPolar(const Vec3f &cartesian) -> Vec3f {
 	const float l_yawNewDeg = toDegrees(std::atan2(cartesian.m_y, cartesian.m_x));
 	const float l_pitchNewDeg = toDegrees(std::acos(cartesian.m_z / cartesian.length()));
 
@@ -295,7 +295,7 @@ Vec3f Aimbot::cartesianToPolar(const Vec3f &cartesian) {
 	return {l_pitchNewDeg - 90, l_yawNewDeg, 0.0};
 }
 
-void Aimbot::findTarget(AIM_TYPE method) {
+auto Aimbot::findTarget(AIM_TYPE method) -> void {
 	Vec3f l_targetAimPoint;
 	Vec3f l_targetAimVec;
 	Player *l_target = nullptr;
@@ -365,7 +365,7 @@ void Aimbot::findTarget(AIM_TYPE method) {
 	}
 }
 
-std::optional<Player *> Aimbot::isCrosshairOnTarget() const {
+auto Aimbot::isCrosshairOnTarget() const -> std::optional<Player *> {
 	std::optional<Player *> valid_target;
 
 	// check if we're aiming at a player (not a barrel, for example)
@@ -386,7 +386,7 @@ std::optional<Player *> Aimbot::isCrosshairOnTarget() const {
 	return valid_target;
 }
 
-void Aimbot::removeVisRecoil() {
+auto Aimbot::removeVisRecoil() -> void {
 	if (m_aim_noRecoil) {
 		// fix visual angles so that the anti-punch/recoil movement isn't visible
 		// while the recoil fix substracts twice the punch angles,
@@ -397,7 +397,7 @@ void Aimbot::removeVisRecoil() {
 	}
 }
 
-void Aimbot::hookViewAnglesUpdate() {
+auto Aimbot::hookViewAnglesUpdate() -> void {
 	// undo previous recoil compensation
 	if (m_aim_noRecoil) {
 		*m_aimAngles -= m_recoilFix_previous;
@@ -419,7 +419,7 @@ void Aimbot::hookViewAnglesUpdate() {
 	}
 }
 
-void Aimbot::hookViewAnglesVisUpdate() {
+auto Aimbot::hookViewAnglesVisUpdate() -> void {
 	if (m_aim_noVisRecoil) {
 		removeVisRecoil();
 	}
@@ -427,7 +427,7 @@ void Aimbot::hookViewAnglesVisUpdate() {
 	m_bulletPredictionAngles = *m_aimAngles - m_recoilFix_previous;
 }
 
-bool Aimbot::is_user_shooting() const {
+auto Aimbot::is_user_shooting() const -> bool {
 	int *l_attack_user_0 = m_doAttack.pointer() - 2;
 	int *l_attack_user_1 = m_doAttack.pointer() - 1;
 	return *l_attack_user_0 != 0 || *l_attack_user_1 != 0;

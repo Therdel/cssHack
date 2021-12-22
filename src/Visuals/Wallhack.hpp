@@ -49,7 +49,7 @@ private:
 		unsigned startIndex;
 		unsigned primCount;
 
-		bool operator<(IndexedPrimitive const &rhs) const {
+		auto operator<(IndexedPrimitive const &rhs) const -> bool {
 			if (d3Dprimitivetype != rhs.d3Dprimitivetype) {
 				return d3Dprimitivetype < rhs.d3Dprimitivetype;
 			} else if (BaseVertexIndex != rhs.BaseVertexIndex) {
@@ -71,21 +71,21 @@ private:
 	const uintptr_t m_shaderapidx9Base;
 	const DrawIndexedPrimitive_t m_orig_DrawIndexedPrimitive;
 
-	static DrawIndexedPrimitive_t getDrawIndexedPrimitive();
+	static auto getDrawIndexedPrimitive() -> DrawIndexedPrimitive_t;
 
 	// hooking stuff
-	void installDrawIndexedPrimitiveHook();
+	auto installDrawIndexedPrimitiveHook() -> void;
 
-	void removeDrawIndexedPrimitiveHook();
+	auto removeDrawIndexedPrimitiveHook() -> void;
 
-	static HRESULT hook_DrawIndexedPrimitive(
+	static auto hook_DrawIndexedPrimitive(
 			uintptr_t thisptr,
 			D3DPRIMITIVETYPE d3Dprimitivetype,
 			int BaseVertexIndex,
 			unsigned MinVertexIndex,
 			unsigned NumVertices,
 			unsigned startIndex,
-			unsigned primCount);
+			unsigned primCount) -> HRESULT;
 };
 
 extern Wallhack *g_Wallhack;

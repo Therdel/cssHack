@@ -18,8 +18,8 @@ namespace Util {
 		NonCopyable(const NonCopyable&) = delete;
 		NonCopyable(NonCopyable&&) = default;
 
-		NonCopyable& operator=(const NonCopyable&) = delete;
-		NonCopyable& operator=(NonCopyable&&) = default;
+		auto operator=(const NonCopyable&) -> NonCopyable& = delete;
+		auto operator=(NonCopyable&&) -> NonCopyable& = default;
 	};
 
 	class NonMovable {
@@ -30,29 +30,29 @@ namespace Util {
 		NonMovable(const NonMovable&) = default;
 		NonMovable(NonMovable&&) = delete;
 
-		NonMovable &operator=(const NonMovable&) = default;
-		NonMovable &operator=(NonMovable&&) = delete;
+		auto operator=(const NonMovable&) -> NonMovable& = default;
+		auto operator=(NonMovable&&) -> NonMovable& = delete;
 	};
 
 // simple string split
 // source: https://www.bfilipek.com/2018/07/string-view-perf-followup.html
 // code: https://github.com/fenbf/StringViewTests/blob/master/StringViewTest.cpp
-	std::vector<std::string_view> split(std::string_view str, std::string_view delims = " ");
+	auto split(std::string_view str, std::string_view delims = " ") -> std::vector<std::string_view>;
 
 	// returns the filename of given path
 	// taken from https://www.oreilly.com/library/view/c-cookbook/0596007612/ch10s15.html
-	std::string_view get_filename(std::string_view path);
+	auto get_filename(std::string_view path) -> std::string_view;
 
-	float toRadians(float degrees);
+	auto toRadians(float degrees) -> float;
 
-	float toDegrees(float radians);
+	auto toDegrees(float radians) -> float;
 
-	Vec3f rotateAroundZ(Vec3f const &vec, float yawDegrees);
+	auto rotateAroundZ(Vec3f const &vec, float yawDegrees) -> Vec3f;
 
-	Vec3f viewAnglesToUnitvector(Vec3f const &angles);
+	auto viewAnglesToUnitvector(Vec3f const &angles) -> Vec3f;
 
 	// returns the angle between given vectors in degrees
-	float degreesBetweenVectors(const Vec3f &a, const Vec3f &b);
+	auto degreesBetweenVectors(const Vec3f &a, const Vec3f &b) -> float;
 
 	class Offset final {
 	public:
@@ -61,8 +61,8 @@ namespace Util {
 
 		constexpr auto operator+(ptrdiff_t offset) const -> Offset { return Offset{ _offset + offset }; }
 		constexpr auto operator-(ptrdiff_t offset) const -> Offset { return Offset{ _offset - offset }; }
-		auto operator+=(ptrdiff_t offset) -> Offset& { _offset += offset; return *this; }
-		auto operator-=(ptrdiff_t offset) -> Offset& { _offset -= offset; return *this; }
+		constexpr auto operator+=(ptrdiff_t offset) -> Offset& { _offset += offset; return *this; }
+		constexpr auto operator-=(ptrdiff_t offset) -> Offset& { _offset -= offset; return *this; }
 
 	private:
 		ptrdiff_t _offset;
@@ -75,13 +75,13 @@ namespace Util {
 
 		constexpr auto operator+(Offset offset) const -> Address { return Address{ _address + offset }; }
 		constexpr auto operator-(Offset offset) const -> Address { return Address{ _address - offset }; }
-		auto operator+=(Offset offset) -> Address& { _address += offset; return *this; }
-		auto operator-=(Offset offset) -> Address& { _address -= offset; return *this; }
+		constexpr auto operator+=(Offset offset) -> Address& { _address += offset; return *this; }
+		constexpr auto operator-=(Offset offset) -> Address& { _address -= offset; return *this; }
 
-		auto operator-(Address address) const -> Offset { return Offset{ static_cast<ptrdiff_t>(_address - address) }; }
+		constexpr auto operator-(Address address) const -> Offset { return Offset{ static_cast<ptrdiff_t>(_address - address) }; }
 
 		template<typename T>
-		auto as_pointer() const -> T* { return reinterpret_cast<T*>(_address); }
+		constexpr auto as_pointer() const -> T* { return reinterpret_cast<T*>(_address); }
 
 	private:
 		uintptr_t _address;

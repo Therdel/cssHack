@@ -14,7 +14,7 @@ Log::~Log() {
 	stop();
 }
 
-void Log::stop() {
+auto Log::stop() -> void {
 	Log &s_log = get();
 	if (!s_log.m_stopped) {
 		// send stopEventProcessing signal
@@ -52,12 +52,12 @@ Log::Log()
 #endif
 }
 
-Log &Log::get() {
+auto Log::get() -> Log& {
 	static Log s_log;
 	return s_log;
 }
 
-void Log::doLog(const LogJob &job) {
+auto Log::doLog(const LogJob &job) -> void {
 	switch (job.m_channel) {
 		case Channel::SILENT:
 			break;
@@ -106,7 +106,7 @@ void Log::logLater(LogJob job) {
 	m_queueCondition.notify_all();
 }
 
-void Log::logThreadWork() {
+auto Log::logThreadWork() -> void {
 	while (true) {
 		LogJob l_job;
 		// retrieve logJob

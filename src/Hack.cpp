@@ -31,7 +31,7 @@ std::atomic_bool g_do_exit{false};
 
 using namespace std::chrono_literals;
 
-static void wait_for_inject_combination(Input &input) {
+static auto wait_for_inject_combination(Input &input) -> void {
 	std::atomic_bool l_injected{false};
 	auto keyHandler = ScopedKeyHandler(input,
 	                                   key_inject, [&](SDL_KeyboardEvent const &) {
@@ -43,7 +43,7 @@ static void wait_for_inject_combination(Input &input) {
 	}
 }
 
-static bool onEjectKey(SDL_KeyboardEvent const &event) {
+static auto onEjectKey(SDL_KeyboardEvent const &event) -> bool {
 	if (event.repeat == 0) {
 		if (event.type == SDL_KEYDOWN) {
 			eject_from_within_hack();
@@ -52,7 +52,7 @@ static bool onEjectKey(SDL_KeyboardEvent const &event) {
 	return false;
 }
 
-static bool onBhopKey(Bunnyhop &bhop, SDL_KeyboardEvent const &event) {
+static auto onBhopKey(Bunnyhop &bhop, SDL_KeyboardEvent const &event) -> bool {
 	if (event.repeat == 0) {
 		if (event.type == SDL_KEYDOWN) {
 			bhop.start();
@@ -64,7 +64,7 @@ static bool onBhopKey(Bunnyhop &bhop, SDL_KeyboardEvent const &event) {
 	return true;
 }
 
-static bool onAimKey(Aimbot &aimbot, SDL_KeyboardEvent const &event) {
+static auto onAimKey(Aimbot &aimbot, SDL_KeyboardEvent const &event) -> bool {
 	if (event.repeat == 0) {
 		if (event.type == SDL_KEYDOWN) {
 			aimbot.startAim();
@@ -75,7 +75,7 @@ static bool onAimKey(Aimbot &aimbot, SDL_KeyboardEvent const &event) {
 	return false;
 }
 
-static bool onAimKey(Aimbot &aimbot, SDL_Event const &event) {
+static auto onAimKey(Aimbot &aimbot, SDL_Event const &event) -> bool {
 	bool stealEvent = false;
 	if (event.type == SDL_MOUSEBUTTONDOWN ||
 	    event.type == SDL_MOUSEBUTTONUP) {
@@ -93,7 +93,7 @@ static bool onAimKey(Aimbot &aimbot, SDL_Event const &event) {
 	return stealEvent;
 }
 
-static bool onTriggerKey(Aimbot &aimbot, SDL_KeyboardEvent const &event) {
+static auto onTriggerKey(Aimbot &aimbot, SDL_KeyboardEvent const &event) -> bool {
 	if (event.repeat == 0) {
 		if (event.type == SDL_KEYDOWN) {
 			aimbot.start360(Aimbot::Mode360::TRIGGER, Aimbot::Mode360::TRIGGER);
@@ -107,7 +107,7 @@ static bool onTriggerKey(Aimbot &aimbot, SDL_KeyboardEvent const &event) {
 
 static bool g_acceptInputInGameMenus = true;
 
-void hack_loop() {
+auto hack_loop() -> void {
 	// TODO: detect LD_PRELOAD method with wait
 	/*
 	while (!g_do_exit) {

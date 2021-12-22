@@ -12,15 +12,15 @@ public:
 	SharedGamePointer(std::shared_ptr<GamePointer<T>> gamePointer)
 			: m_gamePointer(std::move(gamePointer)) {}
 
-	uintptr_t address() const {
+	auto address() const -> uintptr_t {
 		return m_gamePointer->address();
 	}
 
-	void update() {
+	auto update() -> void {
 		m_gamePointer->update();
 	}
 
-	std::shared_ptr<GamePointer<T>> const &getGamePointer() const {
+	auto getGamePointer() const -> std::shared_ptr<GamePointer<T>> const& {
 		return m_gamePointer;
 	}
 

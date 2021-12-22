@@ -15,19 +15,19 @@ extern std::atomic_bool g_ejectingFromWithinGame;
 extern pthread_t g_nix_hack_thread;
 extern pthread_t g_nix_eject_thread;
 
-void *nix_hack_main(void *);
+auto nix_hack_main(void *) -> void*;
 
-void nix_init_hack();
+auto nix_init_hack() -> void;
 
 __attribute__((constructor))
-void initLibrary();
+auto initLibrary() -> void;
 
 __attribute__((destructor))
-void exitLibrary();
+auto exitLibrary() -> void;
 
-void eject_from_within_hack();
+auto eject_from_within_hack() -> void;
 
-void *eject_hack(void *);
+auto eject_hack(void *) -> void*;
 
 #else // windows
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
@@ -37,20 +37,20 @@ extern HMODULE g_win_hModule;
 extern HANDLE g_win_hack_thread;
 extern HANDLE g_win_eject_thread;
 
-DWORD WINAPI win_hack_main(LPVOID lpParam);
+auto WINAPI win_hack_main(LPVOID lpParam) -> DWORD;
 
 // start hack main in its own thread
 // source: https://stackoverflow.com/questions/32252143/stdthread-cause-deadlock-in-dllmain
-void win_init_hack();
+auto win_init_hack() -> void;
 
-BOOL WINAPI DllMain(HMODULE hModule,
+auto WINAPI DllMain(HMODULE hModule,
 					DWORD ul_reason_for_call,
-					LPVOID);
+					LPVOID) -> BOOL;
 
-DWORD WINAPI win_eject_hack(LPVOID lpParam);
+auto WINAPI win_eject_hack(LPVOID lpParam) -> DWORD;
 
-void eject_from_within_hack();
+auto eject_from_within_hack() -> void;
 
-void eject_from_libEntry();
+auto eject_from_libEntry() -> void;
 
 #endif

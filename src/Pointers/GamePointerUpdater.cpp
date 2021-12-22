@@ -17,7 +17,7 @@ GamePointerUpdater::~GamePointerUpdater() {
 	unhook();
 }
 
-void GamePointerUpdater::hook() {
+auto GamePointerUpdater::hook() -> void {
 	bool l_detour_update_success = m_detour_localplayer_update.install(
 		GamePointerFactory::get(GamePointerDef::op_localplayer_update()),
 		GAMEPOINTERUPDATER_DETOUR_LEN_ON_UPDATE,
@@ -41,7 +41,7 @@ void GamePointerUpdater::hook() {
 	}
 }
 
-void GamePointerUpdater::unhook() {
+auto GamePointerUpdater::unhook() -> void {
 	if (!m_detour_localplayer_update.remove()) {
 		Log::log("GamePointerUpdater failed to un-detour localplayer update");
 	}
@@ -51,12 +51,12 @@ void GamePointerUpdater::unhook() {
 	}
 }
 
-void GamePointerUpdater::hookOnLocalplayerUpdate() {
+auto GamePointerUpdater::hookOnLocalplayerUpdate() -> void {
 	Log::log(Log::Channel::STD_OUT, "Localplayer update");
 	m_localplayer.update();
 }
 
-void GamePointerUpdater::hookOnLocalplayerInvalidate() {
+auto GamePointerUpdater::hookOnLocalplayerInvalidate() -> void {
 	Log::log(Log::Channel::STD_OUT, "Localplayer invalidate");
 	m_localplayer.update();
 }

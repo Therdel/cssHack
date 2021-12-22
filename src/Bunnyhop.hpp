@@ -11,13 +11,13 @@ public:
 	// remove hooks
 	~Bunnyhop();
 
-	bool isEnabled() const {
+	auto isEnabled() const -> bool {
 		return m_enabled;
 	}
 
-	void start();
+	auto start() -> void;
 
-	void stop();
+	auto stop() -> void;
 
 private:
 	SharedGamePointer<int> m_on_ground;
@@ -28,15 +28,15 @@ private:
 
 	bool m_enabled;
 
-	void hook();
+	auto hook() -> void;
 
-	void unhook();
+	auto unhook() -> void;
 
 	// hook that gets called when the player lands on the ground
 	// causes a +jump action
-	void hook_onGround_inc();
+	auto hook_onGround_inc() -> void;
 
 	// hook that gets called when the player leaves the ground
 	// causes a -jump action
-	void hook_onGround_dec();
+	auto hook_onGround_dec() -> void;
 };

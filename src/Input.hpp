@@ -21,7 +21,7 @@ struct KeyStroke {
 	/// sorts key first, modifiers second.
 	/// those without modifiers compare equally pairwise
 	/// and sort after those with modifiers
-	bool operator<(KeyStroke const &other) const {
+	auto  operator<(KeyStroke const &other) const -> bool {
 		if (m_keycode != other.m_keycode) {
 			return m_keycode < other.m_keycode;
 		} else {
@@ -62,21 +62,21 @@ public:
 
 	Input();
 
-	bool isDown(SDL_Keycode key) const;
+	auto isDown(SDL_Keycode key) const -> bool;
 
-	void setKeyHandler(KeyStroke key, keyHandler callback);
+	auto setKeyHandler(KeyStroke key, keyHandler callback) -> void;
 
-	bool removeKeyHandler(KeyStroke key);
+	auto removeKeyHandler(KeyStroke key) -> bool;
 
-	void setMouseHandler(mouseHandler callback);
+	auto setMouseHandler(mouseHandler callback) -> void;
 
-	bool removeMouseHandler();
+	auto removeMouseHandler() -> bool;
 
-	void setAllEventConsumer(eventHandler callback);
+	auto setAllEventConsumer(eventHandler callback) -> void;
 
-	void removeAllEventConsumer();
+	auto removeAllEventConsumer() -> void;
 
-	static void injectEvent(SDL_Event *event);
+	static auto injectEvent(SDL_Event *event) -> void;
 
 private:
 	std::mutex m_keyHandlersMutex;
@@ -92,9 +92,9 @@ private:
 
 	std::optional<bool> callKeyHandlerIfExists(SDL_KeyboardEvent const &event);
 
-	static int hook_SDL_PollEvent(SDL_Event *callerEvent);
+	static auto hook_SDL_PollEvent(SDL_Event *callerEvent) -> int;
 
-	int detour_SDL_PollEvent(SDL_Event *callerEvent);
+	auto detour_SDL_PollEvent(SDL_Event *callerEvent) -> int;
 };
 
 // TODO: This is ugly as fuck. Should be a singleton.
@@ -108,9 +108,9 @@ public:
 
 	ScopedKeyHandler(ScopedKeyHandler &&other) noexcept;
 
-	ScopedKeyHandler &operator=(ScopedKeyHandler &&other) noexcept;
-
 	~ScopedKeyHandler();
+
+	auto operator=(ScopedKeyHandler &&other) noexcept -> ScopedKeyHandler&;
 
 private:
 	Input *m_input;

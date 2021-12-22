@@ -16,8 +16,8 @@ public:
 	{
 	}
 
-	void scanSegment(std::string_view haystack,
-                     std::vector<uintptr_t> &matches) const {
+	auto scanSegment(std::string_view haystack,
+                     std::vector<uintptr_t> &matches) const -> void {
 		std::cmatch results;
 		std::regex_search(haystack.begin(), haystack.end(), results, _regex);
 
@@ -37,7 +37,7 @@ private:
 
 	struct BinaryRegex {
 	public:
-		static std::regex from(const SignatureAOI &signature) {
+		static auto from(const SignatureAOI &signature) -> std::regex {
 			std::stringstream regex;
 			auto &pattern = signature.signature.pattern();
             auto &mask = signature.signature.mask();
@@ -52,12 +52,12 @@ private:
         }
 
     private:
-        static void appendUnknownByte(std::stringstream &regex) {
+        static auto appendUnknownByte(std::stringstream &regex) -> void {
             // "[\\S\\s]" matches any character/byte
             regex << "[\\S\\s]";
         }
 
-        static void appendKnownByte(std::stringstream &regex, uint8_t byte) {
+        static auto appendKnownByte(std::stringstream &regex, uint8_t byte) -> void {
             // "\xHH" matches a raw hex value HH
             regex << "\\x";
 

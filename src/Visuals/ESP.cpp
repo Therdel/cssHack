@@ -61,7 +61,7 @@ ESP::~ESP() {
 	m_drawHook.detachSubscriber(this);
 }
 
-void ESP::onDraw(SDL_Window *) {
+auto ESP::onDraw(SDL_Window *) -> void {
 	// update transformation matrices
 	calcMatPerspective();
 	calcMatNormalization();
@@ -109,14 +109,14 @@ void ESP::onDraw(SDL_Window *) {
 	}
 }
 
-void ESP::calcMatPerspective() {
+auto ESP::calcMatPerspective() -> void {
 	m_mat_perspective.columns = {Vec4f{1, 0, 0, 0},
 	                             Vec4f{0, 1, 0, 0},
 	                             Vec4f{0, 0, 1 + (m_f / m_n), m_f},
 	                             Vec4f{0, 0, -1 / m_n, 0}};
 }
 
-void ESP::calcMatNormalization() {
+auto ESP::calcMatNormalization() -> void {
 	auto &screenW = m_screen_dimensions->first;
 	auto &screenH = m_screen_dimensions->second;
 
@@ -142,7 +142,7 @@ void ESP::calcMatNormalization() {
 
 // source: Youtube HazardEdit - Gamehacking#13 ESP Overlay
 // https://www.youtube.com/watch?v=GgTQod8Kp0k
-std::optional<Vec2f> ESP::world_to_screen(Vec3f const &worldPos) const {
+auto ESP::world_to_screen(Vec3f const &worldPos) const -> std::optional<Vec2f>{
 	// as in https://stackoverflow.com/questions/8491247/c-opengl-convert-world-coords-to-screen2d-coords
 	// also see: https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/opengl-perspective-projection-matrix
 	// TODO if the modelViewMatrix is unavailable:
@@ -162,7 +162,7 @@ std::optional<Vec2f> ESP::world_to_screen(Vec3f const &worldPos) const {
 	return l_result;
 }
 
-void ESP::drawBox(Vec3f position, SDL_Color const &color, float height, float orientationYaw, float width) const {
+auto ESP::drawBox(Vec3f position, SDL_Color const &color, float height, float orientationYaw, float width) const -> void {
 	constexpr size_t squareVertices = 4;
 	// describes a square of sidelength 1 centered at origin in the x/y plane
 	static std::array<Vec3f, squareVertices> square{
@@ -217,7 +217,7 @@ void ESP::drawBox(Vec3f position, SDL_Color const &color, float height, float or
 	glEnd();
 }
 
-void ESP::drawLineESP() const {
+auto ESP::drawLineESP() const -> void {
 	glLineWidth(LINEWIDTH);
 	glBegin(GL_LINES);
 	for (auto &player : *m_players) {
@@ -238,7 +238,7 @@ void ESP::drawLineESP() const {
 	glEnd();
 }
 
-void ESP::drawBoxESP() const {
+auto ESP::drawBoxESP() const -> void {
 	static SDL_Color colorT{255, 0, 0, 255};  // RED
 	static SDL_Color colorCT{0, 0, 255, 255}; // BLUE
 
@@ -258,7 +258,7 @@ void ESP::drawBoxESP() const {
 	}
 }
 
-void ESP::drawFlagESP() const {
+auto ESP::drawFlagESP() const -> void {
 	static constexpr float l_flagHeight = 40.0;
 	static constexpr float l_flagSize = 30.0;
 	static Vec3f l_flagLowPointOff{0, 0, l_flagHeight};
@@ -326,7 +326,7 @@ void ESP::drawFlagESP() const {
 	}
 }
 
-void ESP::drawBoneBoxes() const {
+auto ESP::drawBoneBoxes() const -> void {
 	SDL_Color color{255, 255, 255, 255};
 	Vec3f origin(0, 0, 0);
 	for (int i = 0; i < m_boneMatrices1Amount; ++i) {
@@ -356,7 +356,7 @@ void ESP::drawBoneBoxes() const {
 }
 
 // adapted from: http://slabode.exofire.net/circle_draw.shtml
-void ESP::drawCircleScreen(float cx, float cy, float r, int num_segments, const SDL_Color &color) const {
+auto ESP::drawCircleScreen(float cx, float cy, float r, int num_segments, const SDL_Color &color) const -> void {
 	float aspectYoverX =
 			static_cast<float>(m_screen_dimensions->second) /
 			static_cast<float>(m_screen_dimensions->first);
@@ -384,7 +384,7 @@ void ESP::drawCircleScreen(float cx, float cy, float r, int num_segments, const 
 	glEnd();
 }
 
-void ESP::drawAimFov() const {
+auto ESP::drawAimFov() const -> void {
 	// get screen coordinates of a point on the fov circle
 	// TODO: Get circle radius from dummy projection independent of camera position.
 	Vec3f l_anglesOnFovRing = *m_player_angles_vis;
@@ -404,12 +404,12 @@ void ESP::drawAimFov() const {
 	}
 }
 
-static void rotate(Vec2f &point, float degrees) {
+static auto rotate(Vec2f &point, float degrees) -> void {
 	point = point.rotate(Util::toRadians(degrees));
 }
 
-void ESP::drawScreenCross(Vec2f crossPos, float radius, const SDL_Color &color, bool diagonal,
-                          float lineToCenterRatio) const {
+auto ESP::drawScreenCross(Vec2f crossPos, float radius, const SDL_Color &color, bool diagonal,
+                          float lineToCenterRatio) const -> void {
 
 	float aspectYoverX =
 			static_cast<float>(m_screen_dimensions->second) /
@@ -460,7 +460,7 @@ void ESP::drawScreenCross(Vec2f crossPos, float radius, const SDL_Color &color, 
 	glLineWidth(lastLineWidth);
 }
 
-void ESP::drawAimTargetCross() const {
+auto ESP::drawAimTargetCross() const -> void {
 	std::optional<Aimbot::AimTarget> const &l_currentTarget = m_aimbot.getCurrentTarget();
 
 	if (l_currentTarget.has_value()) {
@@ -485,7 +485,7 @@ void ESP::drawAimTargetCross() const {
 	}
 }
 
-void ESP::drawBulletPrediction() const {
+auto ESP::drawBulletPrediction() const -> void {
 	Vec3f l_bulletPredictionUnitVec = viewAnglesToUnitvector(m_aimbot.getBulletPredictionAngles());
 	Vec3f l_bulletPointWorld = *m_player_pos + l_bulletPredictionUnitVec;
 	auto l_bulletPointScreen = world_to_screen(l_bulletPointWorld);

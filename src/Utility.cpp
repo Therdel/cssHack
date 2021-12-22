@@ -15,7 +15,7 @@ namespace Util {
 // simple string split
 // source: https://www.bfilipek.com/2018/07/string-view-perf-followup.html
 // code: https://github.com/fenbf/StringViewTests/blob/master/StringViewTest.cpp
-	std::vector<std::string_view> split(std::string_view str, std::string_view delims) {
+	auto split(std::string_view str, std::string_view delims) -> std::vector<std::string_view> {
 		std::vector<std::string_view> output;
 		//output.reserve(str.size() / 2);
 
@@ -34,7 +34,7 @@ namespace Util {
 
 	// returns the filename of given path
 	// taken from https://www.oreilly.com/library/view/c-cookbook/0596007612/ch10s15.html
-	std::string_view get_filename(std::string_view path) {
+	auto get_filename(std::string_view path) -> std::string_view {
 
 #ifdef __linux__
 		char sep = '/';
@@ -50,16 +50,16 @@ namespace Util {
 		}
 	}
 
-	float toRadians(float degrees) {
+	auto toRadians(float degrees) -> float {
 		return (degrees * PI) / 180.0f;
 	}
 
-	float toDegrees(float radians) {
+	auto toDegrees(float radians) -> float{
 		return (radians * 180.0f) / PI;
 	}
 
 
-	Vec3f rotateAroundZ(Vec3f const &vec, float yawDegrees) {
+	auto rotateAroundZ(Vec3f const &vec, float yawDegrees) -> Vec3f {
 		float yawRad = toRadians(yawDegrees);
 		// rotate around z axis
 		// source: https://de.wikipedia.org/wiki/Drehmatrix
@@ -71,7 +71,7 @@ namespace Util {
 		return rotated;
 	}
 
-	Vec3f viewAnglesToUnitvector(Vec3f const &angles) {
+	auto viewAnglesToUnitvector(Vec3f const &angles) -> Vec3f {
 		// determine crosshair unit vector
 		// that is dependent on the players viewangles
 		// TODO: Clarify angle conversions
@@ -87,7 +87,7 @@ namespace Util {
 		return l_unitVector;
 	}
 
-	float degreesBetweenVectors(const Vec3f &a, const Vec3f &b) {
+	auto degreesBetweenVectors(const Vec3f &a, const Vec3f &b) -> float {
 		// derive the angle using the dot product
 		const float l_dotProduct = a * b;
 		const float l_angleRad = std::acos(l_dotProduct / (a.length() * b.length()));

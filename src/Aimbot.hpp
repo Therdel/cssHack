@@ -29,29 +29,29 @@ public:
 
 	~Aimbot();
 
-	void aim_once();
+	auto aim_once() -> void;
 
-	void deflect_once();
+	auto deflect_once() -> void;
 
-	void startAim();
+	auto startAim() -> void;
 
-	void stopAim();
+	auto stopAim() -> void;
 
-	void startTrigger();
+	auto startTrigger() -> void;
 
-	void stopTrigger();
+	auto stopTrigger() -> void;
 
-	void start360(Mode360 modeBefore, Mode360 modeAfter);
+	auto start360(Mode360 modeBefore, Mode360 modeAfter) -> void;
 
-	void stop360();
+	auto stop360() -> void;
 
 	// do primary attack if the crosshair points at an enemy
-	void triggerbot_once() const;
+	auto triggerbot_once() const -> void;
 
-	std::optional<Aimbot::AimTarget> const &getCurrentTarget() const;
+	auto getCurrentTarget() const -> std::optional<Aimbot::AimTarget> const&;
 
 	/// next bullet angle relative to visual angles
-	Vec3f const &getBulletPredictionAngles() const;
+	auto getBulletPredictionAngles() const -> Vec3f const&;
 
 private:
 	friend class ESP;
@@ -109,27 +109,27 @@ private:
 		Player *m_target = nullptr;
 	} m_360;
 
-	void install();
+	auto install() -> void;
 
-	void uninstall();
+	auto uninstall() -> void;
 
-	static Vec3f getTargetAimPoint(const Player &target);
+	static auto getTargetAimPoint(const Player &target) -> Vec3f;
 
-	static Vec3f cartesianToPolar(const Vec3f &cartesian);
+	static auto cartesianToPolar(const Vec3f &cartesian) -> Vec3f;
 
-	void findTarget(AIM_TYPE method);
+	auto findTarget(AIM_TYPE method) -> void;
 
-	std::optional<Player *> isCrosshairOnTarget() const;
+	auto isCrosshairOnTarget() const -> std::optional<Player *>;
 
-	void removeVisRecoil();
+	auto removeVisRecoil() -> void;
 
-	void hookViewAnglesUpdate();
+	auto hookViewAnglesUpdate() -> void;
 
-	void hookViewAnglesVisUpdate();
+	auto hookViewAnglesVisUpdate() -> void;
 
-	bool is_user_shooting() const;
+	auto is_user_shooting() const -> bool;
 
-        // deflect aim away from target.
-        // Result is the world coordinate [targetRadius] away from player.
-        auto deflectAimInWorld(const Player &target, float targetRadius) -> std::optional<Vec3f>;
+    // deflect aim away from target.
+    // Result is the world coordinate [targetRadius] away from player.
+    auto deflectAimInWorld(const Player &target, float targetRadius) -> std::optional<Vec3f>;
 };

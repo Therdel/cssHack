@@ -18,14 +18,14 @@ pthread_t g_nix_hack_thread;
 pthread_t g_nix_eject_thread;
 
 __attribute__((constructor))
-void initLibrary() {
+auto initLibrary() -> void {
 
 	Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "initLibrary");
 	nix_init_hack();
 }
 
 __attribute__((destructor))
-void exitLibrary() {
+auto exitLibrary() -> void {
 	if (g_ejectingFromWithinGame) {
 		if (pthread_join(g_nix_eject_thread, nullptr) != 0) {
 			Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "Join eject-thread failed");
@@ -36,13 +36,13 @@ void exitLibrary() {
 	Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "exited Library");
 }
 
-void *nix_hack_main(void *) {
+auto nix_hack_main(void *) -> void* {
 	hack_loop();
 
 	return nullptr;
 }
 
-void nix_init_hack() {
+auto nix_init_hack() -> void {
 	if (g_loaded == false) {
 		g_do_exit = false;
 
@@ -54,7 +54,7 @@ void nix_init_hack() {
 	}
 }
 
-void eject_from_within_hack() {
+auto eject_from_within_hack() -> void {
 	std::scoped_lock l_lock(g_ejectingFromWithinGameMutex);
 	if (!g_ejectingFromWithinGame) {
 		g_do_exit = true;
@@ -64,7 +64,7 @@ void eject_from_within_hack() {
 	}
 }
 
-void *eject_hack(void *) {
+auto eject_hack(void *) -> void* {
 	// ensure hack was loaded before
 	if (g_loaded == true) {
 		g_loaded = false;
@@ -106,9 +106,9 @@ HMODULE g_win_hModule;
 HANDLE g_win_hack_thread = INVALID_HANDLE_VALUE;
 HANDLE g_win_eject_thread = INVALID_HANDLE_VALUE;
 
-BOOL WINAPI DllMain(HMODULE hModule,
-  DWORD  ul_reason_for_call,
-  LPVOID)
+auto WINAPI DllMain(HMODULE hModule,
+					DWORD  ul_reason_for_call,
+					LPVOID) -> BOOL 
 {
   switch (ul_reason_for_call)
   {
@@ -131,7 +131,7 @@ BOOL WINAPI DllMain(HMODULE hModule,
   return TRUE;
 }
 
-DWORD WINAPI win_hack_main(LPVOID) {
+auto WINAPI win_hack_main(LPVOID) -> DWORD {
 	try {
 		hack_loop();
 	}
@@ -146,7 +146,7 @@ DWORD WINAPI win_hack_main(LPVOID) {
 	return EXIT_SUCCESS;
 }
 
-void win_init_hack() {
+auto win_init_hack() -> void {
   if (g_loaded == false) {
 	g_loaded = true;
 	g_do_exit = false;
@@ -160,7 +160,7 @@ void win_init_hack() {
   }
 }
 
-DWORD WINAPI win_eject_hack(LPVOID) {
+auto WINAPI win_eject_hack(LPVOID) -> DWORD {
   // ensure hack was loaded before
   if (g_loaded == true) {
 	g_loaded = false;
@@ -186,7 +186,7 @@ DWORD WINAPI win_eject_hack(LPVOID) {
   return EXIT_SUCCESS;
 }
 
-void eject_from_within_hack() {
+auto eject_from_within_hack() -> void {
   std::scoped_lock l_lock(g_ejectingFromWithinGameMutex);
   if (!g_ejectingFromWithinGame) {
 	g_do_exit = true;
@@ -201,7 +201,7 @@ void eject_from_within_hack() {
   }
 }
 
-void eject_from_libEntry() {
+auto eject_from_libEntry() -> void {
   // TODO: join + destroy
   g_win_eject_thread = CreateThread(nullptr, 0, &win_eject_hack, nullptr, 0, nullptr);
 

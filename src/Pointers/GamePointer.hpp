@@ -20,12 +20,12 @@ public:
 
 	virtual ~GamePointerUntyped() = default;
 
-	uintptr_t address() const {
+	auto address() const -> uintptr_t {
 		return m_cachedAddress;
 	}
 
 	/// recalculate the address and propagate the change to dependent pointers
-	void update() {
+	auto update() -> void {
 		m_cachedAddress = calculateAddress();
 		for (auto &dependent : m_dependentPointers) {
 			if (auto sharedDependent = dependent.lock()) {
@@ -34,12 +34,12 @@ public:
 		}
 	}
 
-	void addDependent(std::weak_ptr<GamePointerUntyped> dependent) {
+	auto addDependent(std::weak_ptr<GamePointerUntyped> dependent) -> void {
 		m_dependentPointers.emplace_back(std::move(dependent));
 	}
 
 protected:
-	virtual uintptr_t calculateAddress() const = 0;
+	virtual auto calculateAddress() const -> uintptr_t = 0;
 
 private:
 	uintptr_t m_cachedAddress;
@@ -53,11 +53,11 @@ public:
 	GamePointer(uintptr_t address)
 			: GamePointerUntyped(address) {}
 
-	uintptr_t address() const {
+	auto address() const -> uintptr_t {
 		return GamePointerUntyped::address();
 	}
 
-	void update() {
+	auto update() -> void {
 		GamePointerUntyped::update();
 	}
 };
@@ -69,7 +69,7 @@ public:
 			, m_libName{libName} {}
 
 protected:
-	uintptr_t calculateAddress() const override {
+	auto calculateAddress() const -> uintptr_t override {
 		return MemoryUtils::lib_base_32(m_libName);
 	};
 
@@ -84,7 +84,7 @@ public:
 			, m_address(address) {}
 
 protected:
-	uintptr_t calculateAddress() const override {
+	auto calculateAddress() const -> uintptr_t override {
 		return m_address;
 	};
 
@@ -100,9 +100,9 @@ enum class OffsetType {
 template<typename T>
 class GamePointerOffset : public GamePointer<T> {
 public:
-	static std::shared_ptr<GamePointerOffset<T>> create(std::shared_ptr<GamePointerUntyped> basePtr,
-	                                                    ptrdiff_t offset,
-	                                                    OffsetType type) {
+	static auto create(std::shared_ptr<GamePointerUntyped> basePtr,
+	                   ptrdiff_t offset,
+	                   OffsetType type) -> std::shared_ptr<GamePointerOffset<T>> {
 		auto ptr = std::shared_ptr<GamePointerOffset<T>>(new GamePointerOffset<T>(basePtr, offset, type));
 		basePtr->addDependent(ptr);
 
@@ -110,7 +110,7 @@ public:
 	}
 
 protected:
-	uintptr_t calculateAddress() const override {
+	auto calculateAddress() const -> uintptr_t override {
 		return calculateAddress(m_basePtr.get(), m_offset, m_type);
 	}
 
@@ -125,7 +125,7 @@ private:
 			, m_offset(offset)
 			, m_type(type) {}
 
-	static uintptr_t calculateAddress(GamePointerUntyped const *basePtr, ptrdiff_t offset, OffsetType type) {
+	static auto calculateAddress(GamePointerUntyped const *basePtr, ptrdiff_t offset, OffsetType type) -> uintptr_t {
 		auto *l_basePointer = reinterpret_cast<uintptr_t *>(basePtr->address() + offset);
 
 		uintptr_t result;

@@ -13,7 +13,7 @@ struct SDL_Window;
 
 class DrawHookSubscriber {
 public:
-	virtual void onDraw(SDL_Window *window) = 0;
+	virtual auto onDraw(SDL_Window *window) -> void = 0;
 
 	virtual ~DrawHookSubscriber() = default;
 };
@@ -24,9 +24,9 @@ public:
 
 	~DrawHook();
 
-	void attachSubscriber(DrawHookSubscriber *sub);
+	auto attachSubscriber(DrawHookSubscriber *sub) -> void;
 
-	void detachSubscriber(DrawHookSubscriber *sub);
+	auto detachSubscriber(DrawHookSubscriber *sub) -> void;
 
 private:
 	std::mutex m_subscribersMutex;
@@ -35,9 +35,9 @@ private:
 
     CallDetour _op_sdl_swapWindow_detour;
 
-	void callSubscribers(SDL_Window *window);
+	auto callSubscribers(SDL_Window *window) -> void;
 
-	static void hook_SDL_GL_SwapWindow(SDL_Window *window);
+	static auto hook_SDL_GL_SwapWindow(SDL_Window *window) -> void;
 };
 
 // FIXME: race condition on use when drawhook is being destroyed

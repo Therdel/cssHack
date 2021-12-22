@@ -13,8 +13,8 @@ public:
 	{
 	}
 
-    void scanSegment(std::string_view haystack,
-                     std::vector<uintptr_t> &matches) const {
+    auto scanSegment(std::string_view haystack,
+                     std::vector<uintptr_t> &matches) const -> void {
 		auto &pattern = _signature.signature.pattern();
 		const char *lastCandidate = &haystack.back() - (pattern.size() - 1);
 		for(const char &position : haystack) {
@@ -33,7 +33,7 @@ public:
 private:
 	const SignatureAOI &_signature;
 
-	bool signatureMatches(const uint8_t *candidate) const {
+	auto signatureMatches(const uint8_t *candidate) const -> bool {
 	    auto &mask = _signature.signature.mask();
 	    auto &pattern = _signature.signature.pattern();
 		for(size_t i=0; i<pattern.size(); ++i) {

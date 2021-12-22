@@ -21,31 +21,31 @@ Input::Input()
 	g_keyboard = this;
 }
 
-bool Input::isDown(SDL_Keycode key) const {
+auto Input::isDown(SDL_Keycode key) const -> bool {
 	uint8_t const *keyState = SDL_GetKeyboardState(nullptr);
 	SDL_Scancode scancode = SDL_GetScancodeFromKey(key);
 
 	return keyState[scancode] == 1;
 }
 
-void Input::setKeyHandler(KeyStroke key, keyHandler callback) {
+auto Input::setKeyHandler(KeyStroke key, keyHandler callback) -> void {
 	std::scoped_lock lock(m_keyHandlersMutex);
 	m_keyHandlers[key] = std::move(callback);
 }
 
-bool Input::removeKeyHandler(KeyStroke key) {
+auto Input::removeKeyHandler(KeyStroke key) -> bool {
 	std::scoped_lock lock(m_keyHandlersMutex);
 
 	auto amountErased = m_keyHandlers.erase(key);
 	return amountErased != 0;
 }
 
-void Input::setMouseHandler(Input::mouseHandler callback) {
+auto Input::setMouseHandler(Input::mouseHandler callback) -> void {
 	std::scoped_lock l_lock(m_mouseHandlerMutex);
 	m_mouseHandler = std::move(callback);
 }
 
-bool Input::removeMouseHandler() {
+auto Input::removeMouseHandler() -> bool {
 	bool l_success = false;
 	if (m_mouseHandler.has_value()) {
 		m_mouseHandler.reset();
@@ -54,7 +54,7 @@ bool Input::removeMouseHandler() {
 	return l_success;
 }
 
-std::optional<bool> Input::callKeyHandlerIfExists(SDL_KeyboardEvent const &event) {
+auto Input::callKeyHandlerIfExists(SDL_KeyboardEvent const &event) -> std::optional<bool> {
 	KeyStroke keyStroke{event.keysym.sym, event.keysym.mod};
 
 	std::scoped_lock l_lock(m_keyHandlersMutex);
@@ -69,21 +69,21 @@ std::optional<bool> Input::callKeyHandlerIfExists(SDL_KeyboardEvent const &event
 	return std::nullopt;
 }
 
-void Input::setAllEventConsumer(Input::eventHandler callback) {
+auto Input::setAllEventConsumer(Input::eventHandler callback) -> void {
 	std::scoped_lock l_lock(m_allEventConsumerMutex);
 	m_allEventConsumer = std::move(callback);
 }
 
-void Input::removeAllEventConsumer() {
+auto Input::removeAllEventConsumer() -> void {
 	std::scoped_lock l_lock(m_allEventConsumerMutex);
 	m_allEventConsumer.reset();
 }
 
-void Input::injectEvent(SDL_Event *event) {
+auto Input::injectEvent(SDL_Event *event) -> void {
 	SDL_PushEvent(event);
 }
 
-//static SDL_Event fakeMouseMotionEvent(Vec2f const &pos) {
+//static auto fakeMouseMotionEvent(Vec2f const &pos) -> SDL_Event {
 //	SDL_Event result;
 //	memset(&result, '\0', sizeof(result));
 //
@@ -95,7 +95,7 @@ void Input::injectEvent(SDL_Event *event) {
 //	return result;
 //}
 
-static SDL_Event getNopEvent() {
+static auto getNopEvent() -> SDL_Event {
 	SDL_Event result;
 	memset(&result, '\0', sizeof(result));
 
@@ -119,11 +119,11 @@ static SDL_Event getNopEvent() {
 	return result;
 }
 
-int SDLCALL Input::hook_SDL_PollEvent(SDL_Event *callerEvent) {
+auto SDLCALL Input::hook_SDL_PollEvent(SDL_Event *callerEvent) -> int {
 	return g_keyboard->detour_SDL_PollEvent(callerEvent);
 }
 
-int Input::detour_SDL_PollEvent(SDL_Event *callerEvent) {
+auto Input::detour_SDL_PollEvent(SDL_Event *callerEvent) -> int {
 	if (callerEvent == nullptr) {
 		return SDL_PollEvent(callerEvent);
 	}
@@ -200,17 +200,17 @@ ScopedKeyHandler::ScopedKeyHandler(ScopedKeyHandler &&other) noexcept
 	other.m_valid = false;
 }
 
-ScopedKeyHandler &ScopedKeyHandler::operator=(ScopedKeyHandler &&other) noexcept {
+ScopedKeyHandler::~ScopedKeyHandler() {
+	if (m_valid) {
+		m_input->removeKeyHandler(m_key);
+	}
+}
+
+auto ScopedKeyHandler::operator=(ScopedKeyHandler &&other) noexcept -> ScopedKeyHandler& {
 	m_input = other.m_input;
 	m_key = other.m_key;
 	m_valid = other.m_valid;
 	other.m_valid = false;
 
 	return *this;
-}
-
-ScopedKeyHandler::~ScopedKeyHandler() {
-	if (m_valid) {
-		m_input->removeKeyHandler(m_key);
-	}
 }
