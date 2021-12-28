@@ -44,7 +44,7 @@ public:
     static auto scanSignatureExpectOneResult(const SignatureAOI& signature) -> uintptr_t {
         auto results = scanSignature(signature);
         if (results.size() != 1) {
-            Log::log("Signature Scan insuccessful");
+            Log::log<Log::FLUSH>("Signature Scan insuccessful");
             throw std::runtime_error("Signature Scan insuccessful");
         }
         return results.front();
