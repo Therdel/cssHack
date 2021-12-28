@@ -17,8 +17,8 @@
 #include "Bunnyhop.hpp"
 #include "Input.hpp"
 #include "Visuals/DrawHook.hpp"
-#include "Visuals/GUI.hpp"
-#include "Visuals/ESP.hpp"
+// #include "Visuals/GUI.hpp"
+// #include "Visuals/ESP.hpp"
 #include "Visuals/Wallhack.hpp"
 #include "Pointers/GamePointerFactory.hpp"
 #include "Pointers/GamePointerUpdater.hpp"
@@ -121,7 +121,7 @@ auto hack_loop() -> void {
 	*/
 	Input l_input;
 	l_input.setKeyHandler(key_eject, &onEjectKey);
-	wait_for_inject_combination(l_input);
+	//wait_for_inject_combination(l_input);
 
 	if (!g_do_exit) {
 		Log::log("Injected");
@@ -129,24 +129,30 @@ auto hack_loop() -> void {
 
 	while (g_do_exit == false) {
 		// fixme: Crashes with nullptr on create when put at main() beginning
-		auto l_isInGame = GamePointerFactory::get(GamePointerDef::isIngame());
-		auto l_isInMenu = GamePointerFactory::get(GamePointerDef::isInMenu());
+		auto l_isInGame_always = 1;
+		auto *l_isInGame = &l_isInGame_always;
+		// auto l_isInGame = GamePointerFactory::get(GamePointerDef::isIngame());
+		auto l_isInMenu_never = 0;
+		auto *l_isInMenu = &l_isInMenu_never;
+		//auto l_isInMenu = GamePointerFactory::get(GamePointerDef::isInMenu());
 
 		if (g_do_exit == false && *l_isInGame == 1) {
 			// initialize game hacks
 			// fixme: Crashes when put at main() beginning
 			// fixme: Sometimes an update after an invalidate is missing and causes a null deref
-			GamePointerUpdater l_gamePointerUpdater;
-			DrawHook l_drawHook;
-			GUI l_gui(l_drawHook, l_input);
+			// GamePointerUpdater l_gamePointerUpdater;
+//			DrawHook l_drawHook;
+/*			GUI l_gui(l_drawHook, l_input);
 			l_gui.registerButton({"Update localplayer",
 			                      [sp_localplayer = GamePointerFactory::get(GamePointerDef::localplayer())]
 					                      () mutable {
 				                      sp_localplayer.update();
 			                      }});
-			Aimbot l_aimbot(l_gui);
+*/
+			//Aimbot l_aimbot;
 			Bunnyhop l_bunnyhop;
-			ESP l_esp(l_drawHook, l_gui, l_aimbot);
+			l_bunnyhop.start();
+//			ESP l_esp(l_drawHook, l_gui, l_aimbot);
 //			Wallhack l_wallhack;
 
 			while (g_do_exit == false && *l_isInGame == 1) {
@@ -158,7 +164,7 @@ auto hack_loop() -> void {
 					                             [&](SDL_KeyboardEvent const &event) {
 						                             return onBhopKey(l_bunnyhop, event);
 					                             });
-
+					/*
 					ScopedKeyHandler aimbotHandler(l_input,
 					                               key_aim,
 					                               [&](SDL_KeyboardEvent const &event) {
@@ -170,6 +176,8 @@ auto hack_loop() -> void {
 					                               [&](SDL_KeyboardEvent const &event) {
 						                               return onTriggerKey(l_aimbot, event);
 					                               });
+
+					*/
 					while (g_do_exit == false && *l_isInGame == 1 &&
 					       (g_acceptInputInGameMenus || *l_isInMenu == 0)) {
 						// sleep for some time to not kill performance
@@ -177,7 +185,7 @@ auto hack_loop() -> void {
 					}
 					l_input.removeMouseHandler();
 					l_bunnyhop.stop();
-					l_aimbot.stopAim();
+					// l_aimbot.stopAim();
 				}
 				// sleep for some time to not kill performance
 				std::this_thread::sleep_for(std::chrono::milliseconds(POLL_SLEEP_MS));

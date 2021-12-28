@@ -114,18 +114,18 @@ auto isIngame() -> const Base<uint8_t>& {
 	static Base<uint8_t> def{materialsystem, {materialsystem_isIngame}};
 	return def;
 }
-auto isInMenu() -> const Base<uint32_t>& {
-	static Base<uint32_t> def{vgui2, {vgui2_isInMenu}};
-	return def;
-}
+// auto isInMenu() -> const Base<uint32_t>& {
+// 	static Base<uint32_t> def{vgui2, {vgui2_isInMenu}};
+// 	return def;
+// }
 
 // GamePointerUpdater
-auto op_localplayer_update() -> const Base<>& {
-	static Base<> def{client, {client_op_localplayer_update}};
-	return def;
-}
-auto op_localplayer_invalidate() -> const Base<>& {
-	static Base<> def{client, {client_op_localplayer_invalidate}};
-	return def;
-}
+// auto op_localplayer_update() -> const Base<>& {
+// 	static Base<> def{client, {client_op_localplayer_update}};
+// 	return def;
+// }
+// auto op_localplayer_invalidate() -> const Base<>& {
+// 	static Base<> def{client, {client_op_localplayer_invalidate}};
+// 	return def;
+// }
 }
