@@ -53,7 +53,7 @@ public:
 				m_orig_function_trampoline.size());
 		if (!m_scoped_trampoline_protection.has_value()) {
 			// unable to change memory protection of code segment
-			Log::log("ApiInterceptor: Failed to enable execute permissions on code buf");
+			Log::log<Log::FLUSH>("ApiInterceptor: Failed to enable execute permissions on code buf");
 			throw std::runtime_error("ApiInterceptor: Failed to enable execute permissions on code buf");
 		}
 	}

@@ -3,7 +3,7 @@
 
 process=hl2_linux
 pid=$(pidof $process)
-libraryPath=$(realpath "../cmake-build-debug/libcssHack.so")
+libraryPath=$(realpath "../build/libcssHack.so")
 library=$(basename $libraryPath)
 
 echo "Process: $process (pid: $(pidof $process))"

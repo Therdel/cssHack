@@ -7,7 +7,7 @@
 #include <string_view>
 #include <cstdint>      // uintptr_t, ptrdiff_t
 
-struct Vec3f;
+#include <glm/vec3.hpp>
 
 namespace Util {
 	class NonCopyable {
@@ -47,12 +47,12 @@ namespace Util {
 
 	auto toDegrees(float radians) -> float;
 
-	auto rotateAroundZ(Vec3f const &vec, float yawDegrees) -> Vec3f;
+	auto rotateAroundZ(glm::vec3 const &vec, float yawDegrees) -> glm::vec3;
 
-	auto viewAnglesToUnitvector(Vec3f const &angles) -> Vec3f;
+	auto viewAnglesToUnitvector(glm::vec3 const &angles) -> glm::vec3;
 
 	// returns the angle between given vectors in degrees
-	auto degreesBetweenVectors(const Vec3f &a, const Vec3f &b) -> float;
+	auto degreesBetweenVectors(const glm::vec3 &a, const glm::vec3 &b) -> float;
 
 	class Offset final {
 	public:

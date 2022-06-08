@@ -5,6 +5,8 @@
 #include <thread>     //this_thread, sleep_for
 #include <cmath>        // std::acos
 
+#include <glm/geometric.hpp> // glm::distance
+
 #include "Aimbot.hpp"
 #include "MemoryUtils.hpp"
 #include "Player.hpp"
@@ -67,10 +69,10 @@ Aimbot::~Aimbot() {
 	uninstall();
 }
 
-auto normalizeHeading(Vec3f &angles) -> void {
-	float heading_360_deg_range_corrected = std::fmod(angles.m_y + 180, 360);
+auto normalizeHeading(glm::vec3 &angles) -> void {
+	float heading_360_deg_range_corrected = std::fmod(angles.y + 180, 360);
 	float heading_180_deg_range_corrected = heading_360_deg_range_corrected - 180;
-	angles.m_y = heading_180_deg_range_corrected;
+	angles.y = heading_180_deg_range_corrected;
 }
 
 auto Aimbot::aim_once() -> void {
@@ -108,21 +110,21 @@ auto Aimbot::aim_once() -> void {
 		float progress = deltaTime.count() / m_360.m_totalTimeMillis_360;
 
 		if (progress <= 1.0) {
-			const Vec3f targetAimPoint = getTargetAimPoint(*m_360.m_target);
-			const Vec3f targetVec = targetAimPoint - *m_playerPos;
-			Vec3f targetAngles = cartesianToPolar(targetVec);
-			Vec3f aimDiff = targetAngles - m_360.m_startAngles;
+			const glm::vec3 targetAimPoint = getTargetAimPoint(*m_360.m_target);
+			const glm::vec3 targetVec = targetAimPoint - *m_playerPos;
+			glm::vec3 targetAngles = cartesianToPolar(targetVec);
+			glm::vec3 aimDiff = targetAngles - m_360.m_startAngles;
 			normalizeHeading(aimDiff);
 
-			float shortDiffPitch = aimDiff.m_x;
-			float greatDiffHeading = 360.0f - std::abs(aimDiff.m_y);
-			if (aimDiff.m_y > 0) {
+			float shortDiffPitch = aimDiff.x;
+			float greatDiffHeading = 360.0f - std::abs(aimDiff.y);
+			if (aimDiff.y > 0) {
 				greatDiffHeading *= -1;
 			}
-			Vec3f totalAngDiff360{shortDiffPitch, greatDiffHeading, aimDiff.m_z};
-			Vec3f currentAngDiff360 = totalAngDiff360 * progress;
+			glm::vec3 totalAngDiff360{shortDiffPitch, greatDiffHeading, aimDiff.z};
+			glm::vec3 currentAngDiff360 = totalAngDiff360 * progress;
 
-			Vec3f currentAng = m_360.m_startAngles + currentAngDiff360;
+			glm::vec3 currentAng = m_360.m_startAngles + currentAngDiff360;
 			normalizeHeading(currentAng);
 			*m_aimAngles = currentAng;
 		} else {
@@ -183,8 +185,8 @@ auto Aimbot::deflect_once() -> void {
     auto deflectPointWorld = deflectAimInWorld(m_currentTarget->target, 45);
     if (deflectPointWorld.has_value()) {
       // the aim should be deflected, the aim point is too close to the target center
-      Vec3f vecEyeToDeflectPoint = *deflectPointWorld - *m_playerPos;
-      Vec3f angles = cartesianToPolar(vecEyeToDeflectPoint);
+      glm::vec3 vecEyeToDeflectPoint = *deflectPointWorld - *m_playerPos;
+      glm::vec3 angles = cartesianToPolar(vecEyeToDeflectPoint);
       *m_aimAngles = angles;
     }
   }
@@ -238,7 +240,7 @@ auto Aimbot::getCurrentTarget() const -> std::optional<Aimbot::AimTarget> const&
 	return m_currentTarget;
 }
 
-auto Aimbot::getBulletPredictionAngles() const-> Vec3f const& {
+auto Aimbot::getBulletPredictionAngles() const-> glm::vec3 const& {
 	return m_bulletPredictionAngles;
 }
 
@@ -278,26 +280,26 @@ auto Aimbot::uninstall() -> void {
 	}
 }
 
-auto Aimbot::getTargetAimPoint(const Player &target) -> Vec3f {
+auto Aimbot::getTargetAimPoint(const Player &target) -> glm::vec3 {
 	// include the target offset (aim a little at the belly)
 	// rotate static target offset with targets heading angle:
 	// source: https://developer.valvesoftware.com/wiki/QAngle
-	auto l_aim_target_offset_rotated = rotateAroundZ(AIM_TARGET_OFFSET_HEAD, target.m_viewangles.m_y);
+	auto l_aim_target_offset_rotated = rotateAroundZ(AIM_TARGET_OFFSET_HEAD, target.m_viewangles.y);
 
 	return target.m_pos + l_aim_target_offset_rotated;
 }
 
-auto Aimbot::cartesianToPolar(const Vec3f &cartesian) -> Vec3f {
-	const float l_yawNewDeg = toDegrees(std::atan2(cartesian.m_y, cartesian.m_x));
-	const float l_pitchNewDeg = toDegrees(std::acos(cartesian.m_z / cartesian.length()));
+auto Aimbot::cartesianToPolar(const glm::vec3 &cartesian) -> glm::vec3 {
+	const float l_yawNewDeg = toDegrees(std::atan2(cartesian.y, cartesian.x));
+	const float l_pitchNewDeg = toDegrees(std::acos(cartesian.z / cartesian.length()));
 
 	// TODO: Clarify angle conversion
 	return {l_pitchNewDeg - 90, l_yawNewDeg, 0.0};
 }
 
 auto Aimbot::findTarget(AIM_TYPE method) -> void {
-	Vec3f l_targetAimPoint;
-	Vec3f l_targetAimVec;
+	glm::vec3 l_targetAimPoint;
+	glm::vec3 l_targetAimVec;
 	Player *l_target = nullptr;
 	float l_nearestDistance = -1;
 	float l_nearestAngle = -1;
@@ -317,8 +319,8 @@ auto Aimbot::findTarget(AIM_TYPE method) -> void {
 
 		// the target must be inside the FOV
 		// (the angle between target vector and crosshair vector is within the FOV range)
-		const Vec3f l_targetAimPointTmp = getTargetAimPoint(curTarget);
-		const Vec3f l_targetAimVecTmp = l_targetAimPointTmp - *m_playerPos;
+		const glm::vec3 l_targetAimPointTmp = getTargetAimPoint(curTarget);
+		const glm::vec3 l_targetAimVecTmp = l_targetAimPointTmp - *m_playerPos;
 		float l_angleToTarget = degreesBetweenVectors(l_targetAimVecTmp,
 		                                              Util::viewAnglesToUnitvector(*m_visualAngles));
 		if (l_angleToTarget > toDegrees(m_aim_fov_rad)) {
@@ -326,7 +328,7 @@ auto Aimbot::findTarget(AIM_TYPE method) -> void {
 		}
 
 		// calculate distance to target
-		float l_targetDistance = m_playerPos->distanceTo(curTarget.m_pos);
+		float l_targetDistance = glm::distance(*m_playerPos, curTarget.m_pos);
 		// prevent aiming at yourself
 		if (l_targetDistance <= AIM_MIN_DISTANCE) {
 			continue;
@@ -391,9 +393,9 @@ auto Aimbot::removeVisRecoil() -> void {
 		// fix visual angles so that the anti-punch/recoil movement isn't visible
 		// while the recoil fix substracts twice the punch angles,
 		// the visuals need only 1 times the punch angles for correction
-		*m_visualAngles -= m_recoilFix_previous / 2.0;
+		*m_visualAngles -= m_recoilFix_previous / 2.0f;
 	} else {
-		*m_visualAngles += m_recoilFix_previous / 2.0;
+		*m_visualAngles += m_recoilFix_previous / 2.0f;
 	}
 }
 
@@ -409,7 +411,7 @@ auto Aimbot::hookViewAnglesUpdate() -> void {
 	// calculate (visual and effective) recoil compensation
 	auto l_recoil_fix_new = *m_punchAngles;
 	// exclude roll axis compensation, as it doesn't affect recoil
-	l_recoil_fix_new.m_z = 0;
+	l_recoil_fix_new.z = 0;
 	l_recoil_fix_new *= -2;
 	m_recoilFix_previous = l_recoil_fix_new;
 
@@ -433,29 +435,29 @@ auto Aimbot::is_user_shooting() const -> bool {
 	return *l_attack_user_0 != 0 || *l_attack_user_1 != 0;
 }
 
-auto Aimbot::deflectAimInWorld(const Player &target, float targetRadius) -> std::optional<Vec3f> {
-  Vec3f pTargetCenter = target.m_pos + Vec3f{0.0f, 0.0f, -30.0f};
-  Vec3f vEyeToTarCen = pTargetCenter - *m_playerPos;
-  Vec3f vUnitAimVec = Util::viewAnglesToUnitvector(*m_aimAngles);
+auto Aimbot::deflectAimInWorld(const Player &target, float targetRadius) -> std::optional<glm::vec3> {
+  glm::vec3 pTargetCenter = target.m_pos + glm::vec3{0.0f, 0.0f, -30.0f};
+  glm::vec3 vEyeToTarCen = pTargetCenter - *m_playerPos;
+  glm::vec3 vUnitAimVec = Util::viewAnglesToUnitvector(*m_aimAngles);
 
   // intersect eye vec with target "disk"
   // (intersect line with plane) source: https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
-  Vec3f &p0 = pTargetCenter;
-  Vec3f &l0 = *m_playerPos;
-  Vec3f n = vEyeToTarCen;
-  n.m_z = 0.0f;
-  Vec3f &l = vUnitAimVec;
+  glm::vec3 &p0 = pTargetCenter;
+  glm::vec3 &l0 = *m_playerPos;
+  glm::vec3 n = vEyeToTarCen;
+  n.z = 0.0f;
+  glm::vec3 &l = vUnitAimVec;
 
-  float d = ( (p0 - l0) * n ) / (l * n);
+  float d = glm::dot((p0 - l0), n) / glm::dot(l, n);
 
   // pA is the point on the target circle disk
-  Vec3f pA = *m_playerPos + vUnitAimVec * d;
-  Vec3f pCA = pA - pTargetCenter;
+  glm::vec3 pA = *m_playerPos + vUnitAimVec * d;
+  glm::vec3 pCA = pA - pTargetCenter;
   float distancePaToTargetCenter = pCA.length();
   if (distancePaToTargetCenter < targetRadius) {
     // perform deflect
-    Vec3f pCAStretched = pCA.toUnitVector() * targetRadius;
-    Vec3f pDeflectedOntoPerimeter = pTargetCenter + pCAStretched;
+    glm::vec3 pCAStretched = glm::normalize(pCA) * targetRadius;
+    glm::vec3 pDeflectedOntoPerimeter = pTargetCenter + pCAStretched;
     return pDeflectedOntoPerimeter;
   } else {
     return std::nullopt;

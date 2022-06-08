@@ -7,7 +7,6 @@
 #include <array>
 
 #include "GamePointer.hpp"
-#include "../Vec3f.hpp"
 #include "../Player.hpp"
 
 namespace GamePointerDef {
@@ -52,10 +51,10 @@ namespace GamePointerDef {
 	auto doJump() -> const RawPointer<int>&;
 	// aimbot
 	auto localplayer() -> const RawPointer<>&;
-	auto playerPos() -> const RawPointer<Vec3f>&;
-	auto aimAngles() -> const RawPointer<Vec3f>&;
-	auto aimAnglesVisual() -> const Base<Vec3f>&;
-	auto punchAngles() -> const Composite<Vec3f, RawPointer<>>&;
+	auto playerPos() -> const RawPointer<glm::vec3>&;
+	auto aimAngles() -> const RawPointer<glm::vec3>&;
+	auto aimAnglesVisual() -> const Base<glm::vec3>&;
+	auto punchAngles() -> const Composite<glm::vec3, RawPointer<>>&;
 	auto playerTeam() -> const Composite<Player::TEAM, RawPointer<>>&;
 	auto players() -> const Composite<std::array<Player, 64>, RawPointer<>>&;
 	auto targetId() -> const Composite<int, RawPointer<>>&;
