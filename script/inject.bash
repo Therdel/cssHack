@@ -22,23 +22,17 @@ if grep -q $libraryPath /proc/$pid/maps; then
     exit
 fi
 
-# write gdb script
-echo "attach $pid
-set \$dlopen = (void*(*)(char*, int)) __libc_dlopen_mode
-set \$result = \$dlopen(\"$libraryPath\", 1)
-if \$result == 0
-printf \"Error: %s\\n\", (char*)dlerror()
-else
-print \"Success\"
-end
-detach
-quit
-" > inject.gdb
-
-# inject
-gdb -q --batch --command=inject.gdb
-
-rm inject.gdb
+gdb -n -q -batch \
+  -ex "attach $pid" \
+  -ex "set \$dlopen = (void*(*)(char*, int)) __libc_dlopen_mode" \
+  -ex "set \$result = \$dlopen(\"$libraryPath\", 1)" \
+  -ex "if \$result == 0" \
+  -ex "printf \"Error: %s\\n\", (char*)dlerror()" \
+  -ex "else" \
+  -ex "print \"Success\"" \
+  -ex "end" \
+  -ex "detach" \
+  -ex "quit"
 
 # check running
 pid=$(pidof $process)
