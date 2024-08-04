@@ -115,7 +115,7 @@ endif()
 ###########################
 # compile / link flags
 ###########################
-target_compile_features(cssHack PRIVATE cxx_std_17)
+target_compile_features(cssHack PRIVATE cxx_std_20)
 
 target_compile_options(cssHack
     PRIVATE -Wextra

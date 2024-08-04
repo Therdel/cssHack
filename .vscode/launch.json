@@ -12,6 +12,22 @@
             "cwd": "${fileDirname}",
             "environment": [],
             "console": "externalTerminal"
+        },
+        {
+            "name": "(Linux) Attach to hl2_linux",
+            "type": "cppdbg",
+            "request": "attach",
+            "program": "~/.local/share/Steam/steamapps/common/Counter-Strike Source/hl2_linux",
+            "processName": "hl2_linux",
+            "processId":"${command:pickProcess}",
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
         }
     ]
 }
