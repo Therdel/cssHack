@@ -73,20 +73,20 @@ auto localplayer() -> const RawPointer<>& {
 	static RawPointer<> rawPointer = { *pointerToPointer };
 	return rawPointer;
 }
-auto playerPos() -> const RawPointer<Vec3f>& {
-	static RawPointer<Vec3f> rawPointer = { extractAddressFromCode(Signatures::playerPos) };
+auto playerPos() -> const RawPointer<glm::vec3>& {
+	static RawPointer<glm::vec3> rawPointer = { extractAddressFromCode(Signatures::playerPos) };
 	return rawPointer;
 }
-auto aimAngles() -> const RawPointer<Vec3f>& {
-	static RawPointer<Vec3f> rawPointer = { extractAddressFromCode(Signatures::aimAngles) };
+auto aimAngles() -> const RawPointer<glm::vec3>& {
+	static RawPointer<glm::vec3> rawPointer = { extractAddressFromCode(Signatures::aimAngles) };
 	return rawPointer;
 }
-auto aimAnglesVisual() -> const Base<Vec3f>& {
-	static Base<Vec3f> def{client, {client_viewAngleVis}};
+auto aimAnglesVisual() -> const Base<glm::vec3>& {
+	static Base<glm::vec3> def{client, {client_viewAngleVis}};
 	return def;
 }
-auto punchAngles() -> const Composite<Vec3f, RawPointer<>>& {
-	static Composite<Vec3f, RawPointer<>> def{localplayer(), {localplayer_off_punch}};
+auto punchAngles() -> const Composite<glm::vec3, RawPointer<>>& {
+	static Composite<glm::vec3, RawPointer<>> def{localplayer(), {localplayer_off_punch}};
 	return def;
 }
 auto playerTeam() -> const Composite<Player::TEAM, RawPointer<>>& {

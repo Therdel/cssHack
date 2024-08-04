@@ -9,7 +9,6 @@
 #include "../Utility.hpp"
 #include "DrawHook.hpp"
 #include "../Input.hpp"
-#include "../Vec2f.hpp"
 #include "GuiElements.hpp"
 
 struct SDL_KeyboardEvent;

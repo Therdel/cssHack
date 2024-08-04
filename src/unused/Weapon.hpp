@@ -1,5 +1,5 @@
 #pragma once
-#include "../Vec3f.hpp"
+#include <cstdint>
 
 struct Weapon {
 	uint8_t unknown_0[0xA0];

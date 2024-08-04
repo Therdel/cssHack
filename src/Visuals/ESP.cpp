@@ -4,6 +4,7 @@
 
 #include <SDL.h>    // SDL_Window
 #include <GL/gl.h>
+#include <glm/gtx/rotate_vector.hpp>
 
 #include "ESP.hpp"
 #include "../MemoryUtils.hpp"
@@ -16,7 +17,6 @@
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
 
 #include "../Log.hpp"
-#include "../Mat4f.hpp"
 
 using namespace Util;
 
@@ -40,20 +40,20 @@ ESP::ESP(DrawHook &drawHook, GUI &gui, Aimbot &aimbot)
 	m_gui.registerFloatSlider({0, 4, LINEWIDTH, "ESP Linewidth"});
 
 	m_fovHorizDegrees = (float *) (l_engine_base + Offsets::engine_fov_horizontal);
-	m_mat_viewModel = (Mat4f *) (l_client_base + Offsets::client_matViewModel);
+	m_mat_viewModel = (glm::mat4 *) (l_client_base + Offsets::client_matViewModel);
 
 	uintptr_t l_client_player_base_addr = *(uintptr_t *) (l_client_base + Offsets::client_player_p_base);
 	m_players = (decltype(m_players)) (l_client_player_base_addr + Offsets::client_player_p_off);
 
-	m_player_pos = (Vec3f *) (l_engine_base + Offsets::engine_player_pos);
-	m_player_angles_vis = (Vec3f *) (l_client_base + Offsets::client_viewAngleVis);
+	m_player_pos = (glm::vec3 *) (l_engine_base + Offsets::engine_player_pos);
+	m_player_angles_vis = (glm::vec3 *) (l_client_base + Offsets::client_viewAngleVis);
 	m_screen_dimensions = (std::pair<int, int> *) (l_engine_base + Offsets::engine_screenDimensions);
 	m_drawHook.attachSubscriber(this);
 
-	auto **l_boneMatrices1_base = (Mat3x4f **) (l_matsystem_base + 0x16016C);
+	auto **l_boneMatrices1_base = (Mat3x4fRowMajor **) (l_matsystem_base + 0x16016C);
 	m_boneMatrices1 = *l_boneMatrices1_base;
 
-	auto **l_boneMatrices2_base = (Mat3x4f **) (l_matsystem_base + 0x160164);
+	auto **l_boneMatrices2_base = (Mat3x4fRowMajor **) (l_matsystem_base + 0x160164);
 	m_boneMatrices2 = *l_boneMatrices2_base;
 }
 
@@ -63,8 +63,8 @@ ESP::~ESP() {
 
 auto ESP::onDraw(SDL_Window *) -> void {
 	// update transformation matrices
-	calcMatPerspective();
-	calcMatNormalization();
+	m_mat_perspective = calcMatPerspective();
+	m_mat_normalization = calcMatNormalization();
 
 	// enable line antialiasing, setting linewidth and  "normal" alpha channel
 	GLboolean lastBlendEnabled = glIsEnabled(GL_BLEND);
@@ -80,7 +80,7 @@ auto ESP::onDraw(SDL_Window *) -> void {
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
 	{
-//		drawBox(Vec3f{0, 0, 0}, {255, 0, 255, 180});
+//		drawBox(glm::vec3{0, 0, 0}, {255, 0, 255, 180});
 		if (m_enableBoxESP) {
 			drawBoxESP();
 		}
@@ -109,14 +109,16 @@ auto ESP::onDraw(SDL_Window *) -> void {
 	}
 }
 
-auto ESP::calcMatPerspective() -> void {
-	m_mat_perspective.columns = {Vec4f{1, 0, 0, 0},
-	                             Vec4f{0, 1, 0, 0},
-	                             Vec4f{0, 0, 1 + (m_f / m_n), m_f},
-	                             Vec4f{0, 0, -1 / m_n, 0}};
+auto ESP::calcMatPerspective() -> glm::mat4 {
+	return {
+		glm::vec4{1, 0, 0, 0},
+	    glm::vec4{0, 1, 0, 0},
+	    glm::vec4{0, 0, 1 + (m_f / m_n), m_f},
+	    glm::vec4{0, 0, -1 / m_n, 0}
+	};
 }
 
-auto ESP::calcMatNormalization() -> void {
+auto ESP::calcMatNormalization() -> glm::mat4 {
 	auto &screenW = m_screen_dimensions->first;
 	auto &screenH = m_screen_dimensions->second;
 
@@ -134,42 +136,44 @@ auto ESP::calcMatNormalization() -> void {
 	// m_n = near   clipping plane
 	// m_f = far    clipping plane
 
-	m_mat_normalization.columns = {Vec4f{2 / (m_r - m_l), 0, 0, -(m_r + m_l) / (m_r - m_l)},
-	           Vec4f{0, 2 / (m_t - m_b), 0, -(m_t + m_b) / (m_t - m_b)},
-	           Vec4f{0, 0, -2 * (m_f - m_n), -(m_f + m_n) / (m_f - m_n)},
-	           Vec4f{0, 0, 0, 1}};
+	return {
+		glm::vec4{2 / (m_r - m_l), 0, 0, -(m_r + m_l) / (m_r - m_l)},
+		glm::vec4{0, 2 / (m_t - m_b), 0, -(m_t + m_b) / (m_t - m_b)},
+		glm::vec4{0, 0, -2 * (m_f - m_n), -(m_f + m_n) / (m_f - m_n)},
+		glm::vec4{0, 0, 0, 1}
+	};
 }
 
 // source: Youtube HazardEdit - Gamehacking#13 ESP Overlay
 // https://www.youtube.com/watch?v=GgTQod8Kp0k
-auto ESP::world_to_screen(Vec3f const &worldPos) const -> std::optional<Vec2f>{
+auto ESP::world_to_screen(glm::vec3 const &worldPos) const -> std::optional<glm::vec2> {
 	// as in https://stackoverflow.com/questions/8491247/c-opengl-convert-world-coords-to-screen2d-coords
 	// also see: https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/opengl-perspective-projection-matrix
 	// TODO if the modelViewMatrix is unavailable:
 	// https://gamedev.stackexchange.com/questions/168542/camera-view-matrix-from-position-yaw-pitch-worldup
-	std::optional<Vec2f> l_result(std::nullopt);
-	Vec4f world_homogenous{worldPos.m_x, worldPos.m_y, worldPos.m_z, 1};
-	Vec4f view_homogenous = m_mat_viewModel->matMulCol(world_homogenous);
+	std::optional<glm::vec2> l_result(std::nullopt);
+	glm::vec4 world_homogenous{worldPos.x, worldPos.y, worldPos.z, 1};
+	glm::vec4 view_homogenous = *m_mat_viewModel * world_homogenous;
 
-	auto projected_homogenous = m_mat_perspective.matMulCol(view_homogenous);
-	// check if vertice is in front of screen
-	if (projected_homogenous.m_w > 0.1f) {
-		auto normalized_homogenous = m_mat_normalization.matMulCol(projected_homogenous);
-		auto normalized_cartesian = normalized_homogenous.homogenous_to_cartesian();
+	auto projected_homogenous = m_mat_perspective * view_homogenous;
+	// check if vertex is in front of screen
+	if (projected_homogenous.w > 0.1f) {
+		auto normalized_homogenous = m_mat_normalization * projected_homogenous;
+		auto normalized_cartesian = glm::vec3{normalized_homogenous} / normalized_homogenous.w;
 
-		l_result = Vec2f{normalized_cartesian.m_x, normalized_cartesian.m_y};
+		l_result = glm::vec2{normalized_cartesian.x, normalized_cartesian.y};
 	}
 	return l_result;
 }
 
-auto ESP::drawBox(Vec3f position, SDL_Color const &color, float height, float orientationYaw, float width) const -> void {
+auto ESP::drawBox(glm::vec3 position, SDL_Color const &color, float height, float orientationYaw, float width) const -> void {
 	constexpr size_t squareVertices = 4;
 	// describes a square of sidelength 1 centered at origin in the x/y plane
-	static std::array<Vec3f, squareVertices> square{
-			Vec3f{-0.5, -0.5, 0},
-			Vec3f{0.5, -0.5, 0},
-			Vec3f{0.5, 0.5, 0},
-			Vec3f{-0.5, 0.5, 0}
+	static std::array<glm::vec3, squareVertices> square{
+		glm::vec3{-0.5, -0.5, 0},
+		glm::vec3{0.5, -0.5, 0},
+		glm::vec3{0.5, 0.5, 0},
+		glm::vec3{-0.5, 0.5, 0}
 	};
 
 	glLineWidth(LINEWIDTH);
@@ -187,8 +191,8 @@ auto ESP::drawBox(Vec3f position, SDL_Color const &color, float height, float or
 
 		auto bottomBegVert = position + verticeStart * width;
 		auto bottomEndVert = position + verticeEnd * width;
-		auto topBegVert = position + verticeStart * width + Vec3f{0, 0, height};
-		auto topEndVert = position + verticeEnd * width + Vec3f{0, 0, height};
+		auto topBegVert = position + verticeStart * width + glm::vec3{0, 0, height};
+		auto topEndVert = position + verticeEnd * width + glm::vec3{0, 0, height};
 
 		auto bottomBegWorld = world_to_screen(bottomBegVert);
 		auto bottomEndWorld = world_to_screen(bottomEndVert);
@@ -198,20 +202,20 @@ auto ESP::drawBox(Vec3f position, SDL_Color const &color, float height, float or
 		if (bottomBegWorld.has_value() &&
 		    bottomEndWorld.has_value()) {
 			// draw bottom square
-			glVertex2f(bottomBegWorld->m_x, bottomBegWorld->m_y);
-			glVertex2f(bottomEndWorld->m_x, bottomEndWorld->m_y);
+			glVertex2f(bottomBegWorld->x, bottomBegWorld->y);
+			glVertex2f(bottomEndWorld->x, bottomEndWorld->y);
 		}
 		if (topBegWorld.has_value() &&
 		    topEndWorld.has_value()) {
 			// draw top square
-			glVertex2f(topBegWorld->m_x, topBegWorld->m_y);
-			glVertex2f(topEndWorld->m_x, topEndWorld->m_y);
+			glVertex2f(topBegWorld->x, topBegWorld->y);
+			glVertex2f(topEndWorld->x, topEndWorld->y);
 		}
 		if (bottomBegWorld.has_value() &&
 		    topBegWorld.has_value()) {
 			// draw lines connecting top/bottom (side faces)
-			glVertex2f(bottomBegWorld->m_x, bottomBegWorld->m_y);
-			glVertex2f(topBegWorld->m_x, topBegWorld->m_y);
+			glVertex2f(bottomBegWorld->x, bottomBegWorld->y);
+			glVertex2f(topBegWorld->x, topBegWorld->y);
 		}
 	}
 	glEnd();
@@ -232,7 +236,7 @@ auto ESP::drawLineESP() const -> void {
 				glColor3ub(0, 0, 255); // BLUE
 			}
 			glVertex2f(0, 0); // Line origin - screen center
-			glVertex2f(screen_cartesian->m_x, screen_cartesian->m_y); // Line end
+			glVertex2f(screen_cartesian->x, screen_cartesian->y); // Line end
 		}
 	}
 	glEnd();
@@ -248,11 +252,11 @@ auto ESP::drawBoxESP() const -> void {
 		}
 		// FIXME: Find out which entity in the list is the player without dist
 		// ensure there's no box drawn around our player
-		if (player.m_pos.distanceTo(*m_player_pos) >= 20.0f) {
+		if (glm::distance(player.m_pos, *m_player_pos) >= 20.0f) {
 			drawBox(player.m_pos,
 			        player.m_team == Player::TEAM::T ? colorT : colorCT,
 			        -65.0f,
-			        player.m_viewangles.m_y,
+			        player.m_viewangles.y,
 			        30.0f);
 		}
 	}
@@ -261,20 +265,20 @@ auto ESP::drawBoxESP() const -> void {
 auto ESP::drawFlagESP() const -> void {
 	static constexpr float l_flagHeight = 40.0;
 	static constexpr float l_flagSize = 30.0;
-	static Vec3f l_flagLowPointOff{0, 0, l_flagHeight};
-	static Vec3f l_flagHighPointOff = l_flagLowPointOff + Vec3f{0, 0, l_flagSize};
+	static glm::vec3 l_flagLowPointOff{0, 0, l_flagHeight};
+	static glm::vec3 l_flagHighPointOff = l_flagLowPointOff + glm::vec3{0, 0, l_flagSize};
 	// flag points towards x-axis on null-orientation
-	static Vec3f l_flagTipOff = l_flagLowPointOff + Vec3f{l_flagSize, 0, l_flagSize / 2.0};
+	static glm::vec3 l_flagTipOff = l_flagLowPointOff + glm::vec3{l_flagSize, 0, l_flagSize / 2.0};
 
 	glLineWidth(LINEWIDTH);
 	for (auto &player : *m_players) {
 		if (!player.isActive()) {
 			continue;
 		}
-		Vec3f l_flagLowWorld = l_flagLowPointOff + player.m_pos;
-		Vec3f l_flagHighWorld = l_flagHighPointOff + player.m_pos;
-		Vec3f l_flagTipWorld = player.m_pos;
-		l_flagTipWorld += Util::rotateAroundZ(l_flagTipOff, player.m_viewangles.m_y);
+		glm::vec3 l_flagLowWorld = l_flagLowPointOff + player.m_pos;
+		glm::vec3 l_flagHighWorld = l_flagHighPointOff + player.m_pos;
+		glm::vec3 l_flagTipWorld = player.m_pos;
+		l_flagTipWorld += Util::rotateAroundZ(l_flagTipOff, player.m_viewangles.y);
 
 		auto l_playerPosScreen = world_to_screen(player.m_pos);
 		auto l_flagLowScreen = world_to_screen(l_flagLowWorld);
@@ -294,9 +298,9 @@ auto ESP::drawFlagESP() const -> void {
 						glColor4ubv((const GLubyte *) &colorCTflag);
 					}
 					glBegin(GL_TRIANGLES);
-					glVertex2f(l_flagLowScreen->m_x, l_flagLowScreen->m_y);
-					glVertex2f(l_flagHighScreen->m_x, l_flagHighScreen->m_y);
-					glVertex2f(l_flagTipScreen->m_x, l_flagTipScreen->m_y);
+					glVertex2f(l_flagLowScreen->x, l_flagLowScreen->y);
+					glVertex2f(l_flagHighScreen->x, l_flagHighScreen->y);
+					glVertex2f(l_flagTipScreen->x, l_flagTipScreen->y);
 					glEnd();
 					// draw flag border
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -306,9 +310,9 @@ auto ESP::drawFlagESP() const -> void {
 						glColor4ubv((const GLubyte *) &colorCT);
 					}
 					glBegin(GL_TRIANGLES);
-					glVertex2f(l_flagLowScreen->m_x, l_flagLowScreen->m_y);
-					glVertex2f(l_flagHighScreen->m_x, l_flagHighScreen->m_y);
-					glVertex2f(l_flagTipScreen->m_x, l_flagTipScreen->m_y);
+					glVertex2f(l_flagLowScreen->x, l_flagLowScreen->y);
+					glVertex2f(l_flagHighScreen->x, l_flagHighScreen->y);
+					glVertex2f(l_flagTipScreen->x, l_flagTipScreen->y);
 					glEnd();
 					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				}
@@ -317,8 +321,8 @@ auto ESP::drawFlagESP() const -> void {
 					glBegin(GL_LINES);
 
 					// draw flag pole
-					glVertex2f(l_playerPosScreen->m_x, l_playerPosScreen->m_y);
-					glVertex2f(l_flagHighScreen->m_x, l_flagHighScreen->m_y);
+					glVertex2f(l_playerPosScreen->x, l_playerPosScreen->y);
+					glVertex2f(l_flagHighScreen->x, l_flagHighScreen->y);
 					glEnd();
 				}
 			}
@@ -328,28 +332,28 @@ auto ESP::drawFlagESP() const -> void {
 
 auto ESP::drawBoneBoxes() const -> void {
 	SDL_Color color{255, 255, 255, 255};
-	Vec3f origin(0, 0, 0);
+	glm::vec3 origin(0, 0, 0);
 	for (int i = 0; i < m_boneMatrices1Amount; ++i) {
-		Mat3x4f &l_bone = m_boneMatrices1[i];
-		Vec3f l_bonePos{
+		Mat3x4fRowMajor &l_bone = m_boneMatrices1[i];
+		glm::vec3 l_bonePos{
 				l_bone.m_rows[0][3],
 				l_bone.m_rows[1][3],
 				l_bone.m_rows[2][3]
 		};
 		if (l_bonePos != origin &&
-		    l_bonePos.distanceTo(*m_player_pos) > 100) {
+			glm::distance(l_bonePos, *m_player_pos) > 100) {
 			drawBox(l_bonePos, color, 10, 0, 10);
 		}
 	}
 	for (int i = 0; i < m_boneMatrices2Amount; ++i) {
-		Mat3x4f &l_bone = m_boneMatrices2[i];
-		Vec3f l_bonePos{
+		Mat3x4fRowMajor &l_bone = m_boneMatrices2[i];
+		glm::vec3 l_bonePos{
 				l_bone.m_rows[0][3],
 				l_bone.m_rows[1][3],
 				l_bone.m_rows[2][3]
 		};
 		if (l_bonePos != origin &&
-		    l_bonePos.distanceTo(*m_player_pos) > 100) {
+			glm::distance(l_bonePos, *m_player_pos) > 100) {
 			drawBox(l_bonePos, color, 10, 0, 10);
 		}
 	}
@@ -387,8 +391,8 @@ auto ESP::drawCircleScreen(float cx, float cy, float r, int num_segments, const 
 auto ESP::drawAimFov() const -> void {
 	// get screen coordinates of a point on the fov circle
 	// TODO: Get circle radius from dummy projection independent of camera position.
-	Vec3f l_anglesOnFovRing = *m_player_angles_vis;
-	l_anglesOnFovRing.m_x += toDegrees(m_aimbot.m_aim_fov_rad);
+	glm::vec3 l_anglesOnFovRing = *m_player_angles_vis;
+	l_anglesOnFovRing.x += toDegrees(m_aimbot.m_aim_fov_rad);
 	auto l_pointOnFovRing = viewAnglesToUnitvector(l_anglesOnFovRing);
 
 	auto l_fovPointWorld = *m_player_pos + l_pointOnFovRing;
@@ -396,7 +400,7 @@ auto ESP::drawAimFov() const -> void {
 
 	if (l_fovPointScreen.has_value()) {
 		// y coordinate is the circles radius
-		auto l_fovScreenY = l_fovPointScreen->m_y;
+		auto l_fovScreenY = l_fovPointScreen->y;
 
 		drawCircleScreen(0, 0, l_fovScreenY,
 		                 100,
@@ -404,24 +408,24 @@ auto ESP::drawAimFov() const -> void {
 	}
 }
 
-static auto rotate(Vec2f &point, float degrees) -> void {
-	point = point.rotate(Util::toRadians(degrees));
+static auto rotate(glm::vec2 &point, float degrees) -> void {
+	point = glm::rotate(point, Util::toRadians(degrees));
 }
 
-auto ESP::drawScreenCross(Vec2f crossPos, float radius, const SDL_Color &color, bool diagonal,
+auto ESP::drawScreenCross(glm::vec2 crossPos, float radius, const SDL_Color &color, bool diagonal,
                           float lineToCenterRatio) const -> void {
 
 	float aspectYoverX =
 			static_cast<float>(m_screen_dimensions->second) /
 			static_cast<float>(m_screen_dimensions->first);
 
-	crossPos += {
+	crossPos += glm::vec2{
 		1.0f/m_screen_dimensions->first,
 		-1.0f/m_screen_dimensions->second
 	};
 
 	// defines an arm of the cross in screen center
-	Vec2f vertexOuter{radius, 0.0f}, vertexInner{radius * lineToCenterRatio, 0};
+	glm::vec2 vertexOuter{radius, 0.0f}, vertexInner{radius * lineToCenterRatio, 0};
 
 	if (diagonal) {
 		// rotate cross into diagonal orientation
@@ -440,8 +444,8 @@ auto ESP::drawScreenCross(Vec2f crossPos, float radius, const SDL_Color &color, 
 			auto vertexOuterFinal = vertexOuter;
 			auto vertexInnerFinal = vertexInner;
 			// correct for aspect ratio
-			vertexOuterFinal.m_x *= aspectYoverX;
-			vertexInnerFinal.m_x *= aspectYoverX;
+			vertexOuterFinal.x *= aspectYoverX;
+			vertexInnerFinal.x *= aspectYoverX;
 			// move cross to desired location
 			vertexOuterFinal += crossPos;
 			vertexInnerFinal += crossPos;
@@ -451,8 +455,8 @@ auto ESP::drawScreenCross(Vec2f crossPos, float radius, const SDL_Color &color, 
 				rotate(vertexInner, 90);
 			}
 
-			glVertex2f(vertexOuterFinal.m_x, vertexOuterFinal.m_y);
-			glVertex2f(vertexInnerFinal.m_x, vertexInnerFinal.m_y);
+			glVertex2f(vertexOuterFinal.x, vertexOuterFinal.y);
+			glVertex2f(vertexInnerFinal.x, vertexInnerFinal.y);
 		}
 	}
 	glEnd();
@@ -473,21 +477,21 @@ auto ESP::drawAimTargetCross() const -> void {
 
 //			const float width = 10;
 //			SDL_Color color{255, 0, 0, 255};
-//			Vec3f position{l_currentTarget->aimPoint};
-//			position.m_z -= width / 2;
+//			glm::vec3 position{l_currentTarget->aimPoint};
+//			position.z -= width / 2;
 //
 //			drawBox(position,
 //			        color,
 //			        width,
-//			        l_currentTarget->target.m_viewangles.m_y,
+//			        l_currentTarget->target.m_viewangles.y,
 //			        width);
 		}
 	}
 }
 
 auto ESP::drawBulletPrediction() const -> void {
-	Vec3f l_bulletPredictionUnitVec = viewAnglesToUnitvector(m_aimbot.getBulletPredictionAngles());
-	Vec3f l_bulletPointWorld = *m_player_pos + l_bulletPredictionUnitVec;
+	glm::vec3 l_bulletPredictionUnitVec = viewAnglesToUnitvector(m_aimbot.getBulletPredictionAngles());
+	glm::vec3 l_bulletPointWorld = *m_player_pos + l_bulletPredictionUnitVec;
 	auto l_bulletPointScreen = world_to_screen(l_bulletPointWorld);
 
 	if (l_bulletPointScreen.has_value()) {

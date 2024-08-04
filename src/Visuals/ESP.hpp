@@ -6,11 +6,14 @@
 #include <array>
 #include <optional>
 
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
+
 #include "../Utility.hpp"
 #include "DrawHook.hpp"
 #include "../Player.hpp"
-#include "../Mat4f.hpp"
-#include "../Vec2f.hpp"
 
 struct SDL_Window;
 
@@ -43,49 +46,49 @@ private:
 	const SDL_Color colorCTflag{0, 255, 0, 255};
 
 	template<typename T, size_t rows, size_t cols>
-	struct Matrix {
+	struct MatrixRowMajor {
 		using row_t = std::array<T, cols>;
 		std::array<row_t, rows> m_rows;
 	};
-	using Mat3x4f = Matrix<float, 3, 4>;
-	Mat4f m_mat_perspective;
-	Mat4f m_mat_normalization;
+	using Mat3x4fRowMajor = MatrixRowMajor<float, 3, 4>;
+	glm::mat4 m_mat_perspective;
+	glm::mat4 m_mat_normalization;
 
 	// game fields ESP operates on
 	float *m_fovHorizDegrees;
 	float m_f = 1000000, m_n = 1;
 	constexpr static size_t MAX_PLAYERS = 64;
-	Mat4f *m_mat_viewModel;
+	glm::mat4 *m_mat_viewModel;
 	std::array<Player, MAX_PLAYERS> *m_players;
-	Vec3f *m_player_pos;
-	Vec3f *m_player_angles_vis;
+	glm::vec3 *m_player_pos;
+	glm::vec3 *m_player_angles_vis;
 	std::pair<int, int> *m_screen_dimensions;
-	Mat3x4f *m_boneMatrices1;
-	Mat3x4f *m_boneMatrices2;
+	Mat3x4fRowMajor *m_boneMatrices1;
+	Mat3x4fRowMajor *m_boneMatrices2;
 	int m_boneMatrices1Amount = 1000;
 	int m_boneMatrices2Amount = 1000;
 
-	auto calcMatPerspective() -> void;
+	auto calcMatPerspective() -> glm::mat4;
 
-	auto calcMatNormalization() -> void;
+	auto calcMatNormalization() -> glm::mat4;
 
 	/**
 	 * Returns given position in screen coordinates, if visible
 	 * @param worldPos position in world space
 	 * @return screen x/y coordinates. std::nullopt if not on screen
 	 */
-	auto world_to_screen(Vec3f const &worldPos) const -> std::optional<Vec2f>;
+	auto world_to_screen(glm::vec3 const &worldPos) const -> std::optional<glm::vec2>;
 
 
 	auto drawCircleScreen(float cx, float cy, float r, int num_segments, const SDL_Color &color) const -> void;
 
-	auto drawBox(Vec3f position,
+	auto drawBox(glm::vec3 position,
 	             SDL_Color const &color,
 	             float height = 100.0f,
 	             float orientationYaw = 0.0f,
 	             float width = 100.0f) const -> void;
 
-	auto drawScreenCross(Vec2f crossPos, float radius, const SDL_Color &color,
+	auto drawScreenCross(glm::vec2 crossPos, float radius, const SDL_Color &color,
 	                     bool diagonal = true, float lineToCenterRatio = 0.4) const -> void;
 
 	auto drawLineESP() const -> void;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vec3f.hpp"
+#include <glm/vec3.hpp>
 
 struct Player {
 	enum class TEAM : int {
@@ -17,8 +17,8 @@ struct Player {
 
 	TEAM m_team;
 	int m_health;
-	Vec3f m_pos;
-	Vec3f m_viewangles;
+	glm::vec3 m_pos;
+	glm::vec3 m_viewangles;
 	int m_unknown_3[60];  // 30x8 bytes - getting updated one after another after movement
 
 	auto is_valid() const -> bool {

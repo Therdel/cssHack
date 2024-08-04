@@ -7,7 +7,7 @@
 #include <vector>
 #include <algorithm>    // std::find_first_of
 
-#include "Vec3f.hpp"
+#include <glm/geometric.hpp> // glm::dot
 
 namespace Util {
 	static const float PI = static_cast<float>(std::acos(-1));
@@ -59,25 +59,25 @@ namespace Util {
 	}
 
 
-	auto rotateAroundZ(Vec3f const &vec, float yawDegrees) -> Vec3f {
+	auto rotateAroundZ(glm::vec3 const &vec, float yawDegrees) -> glm::vec3 {
 		float yawRad = toRadians(yawDegrees);
 		// rotate around z axis
 		// source: https://de.wikipedia.org/wiki/Drehmatrix
-		Vec3f rotated{
-				vec.m_x * std::cos(yawRad) + -vec.m_y * std::sin(yawRad),
-				vec.m_x * std::sin(yawRad) + vec.m_y * std::cos(yawRad),
-				vec.m_z
+		auto rotated = glm::vec3{
+				vec.x * std::cos(yawRad) + -vec.y * std::sin(yawRad),
+				vec.x * std::sin(yawRad) + vec.y * std::cos(yawRad),
+				vec.z
 		};
 		return rotated;
 	}
 
-	auto viewAnglesToUnitvector(Vec3f const &angles) -> Vec3f {
+	auto viewAnglesToUnitvector(glm::vec3 const &angles) -> glm::vec3 {
 		// determine crosshair unit vector
 		// that is dependent on the players viewangles
 		// TODO: Clarify angle conversions
-		float l_yawRad = toRadians(angles.m_y + 180);
-		float l_pitchRad = toRadians(angles.m_x - 90);
-		const Vec3f l_unitVector{
+		float l_yawRad = toRadians(angles.y + 180);
+		float l_pitchRad = toRadians(angles.x - 90);
+		const glm::vec3 l_unitVector{
 				std::sin(l_pitchRad) * std::cos(l_yawRad),  // x
 				std::sin(l_pitchRad) * std::sin(l_yawRad),  // y
 				std::cos(l_pitchRad) *
@@ -87,9 +87,9 @@ namespace Util {
 		return l_unitVector;
 	}
 
-	auto degreesBetweenVectors(const Vec3f &a, const Vec3f &b) -> float {
+	auto degreesBetweenVectors(const glm::vec3 &a, const glm::vec3 &b) -> float {
 		// derive the angle using the dot product
-		const float l_dotProduct = a * b;
+		const float l_dotProduct = glm::dot(a, b);
 		const float l_angleRad = std::acos(l_dotProduct / (a.length() * b.length()));
 		// check if acos returned a nan value
 		if (std::isnan(l_angleRad)) {

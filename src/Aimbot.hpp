@@ -4,7 +4,6 @@
 
 #include "Utility.hpp"
 #include "DetourToCallback.hpp"
-#include "Vec3f.hpp"
 #include "Player.hpp"
 #include "Pointers/SharedGamePointer.hpp"
 
@@ -20,8 +19,8 @@ public:
 
 	struct AimTarget {
 		Player &target;
-		Vec3f aimPoint;
-		Vec3f anglesToTarget;
+		glm::vec3 aimPoint;
+		glm::vec3 anglesToTarget;
 	};
 
 	//explicit Aimbot(GUI &gui);
@@ -51,7 +50,7 @@ public:
 	auto getCurrentTarget() const -> std::optional<Aimbot::AimTarget> const&;
 
 	/// next bullet angle relative to visual angles
-	auto getBulletPredictionAngles() const -> Vec3f const&;
+	auto getBulletPredictionAngles() const -> glm::vec3 const&;
 
 private:
 	friend class ESP;
@@ -67,7 +66,7 @@ private:
 	static constexpr int ATTACK_SLEEP_BETWEEN_MS = 20;
 	static constexpr int MAX_PLAYERS = 64;
 	static constexpr float AIM_MIN_DISTANCE = 10;
-	static constexpr Vec3f AIM_TARGET_OFFSET_HEAD{ 9.141f, -3.828, 0.078 };
+	static constexpr glm::vec3 AIM_TARGET_OFFSET_HEAD{ 9.141f, -3.828, 0.078 };
 
 	AIM_TYPE m_aim_type;
 	bool m_friendly_fire;
@@ -76,18 +75,18 @@ private:
 	bool m_aim_noVisRecoil;
 
 	// memory fields the aimbot operates on
-	SharedGamePointer<Vec3f> m_playerPos;
-	SharedGamePointer<Vec3f> m_aimAngles;
-	SharedGamePointer<Vec3f> m_visualAngles;
-	SharedGamePointer<Vec3f> m_punchAngles;
+	SharedGamePointer<glm::vec3> m_playerPos;
+	SharedGamePointer<glm::vec3> m_aimAngles;
+	SharedGamePointer<glm::vec3> m_visualAngles;
+	SharedGamePointer<glm::vec3> m_punchAngles;
 	SharedGamePointer<Player::TEAM> m_playerTeam;
 	SharedGamePointer<std::array<Player, MAX_PLAYERS>> m_players;
 	SharedGamePointer<int> m_crosshair_target_id;
 	SharedGamePointer<int> m_doAttack;
 
-	Vec3f m_recoilFix_previous;
+	glm::vec3 m_recoilFix_previous;
 	std::optional<AimTarget> m_currentTarget;
-	Vec3f m_bulletPredictionAngles;
+	glm::vec3 m_bulletPredictionAngles;
 	std::atomic_bool m_doAim;
 	std::atomic_bool m_doTrigger;
 
@@ -105,7 +104,7 @@ private:
 		std::atomic<Mode360> m_modeBefore;
 		std::atomic<Mode360> m_modeAfter;
 		std::chrono::time_point<std::chrono::steady_clock> m_startTime;
-		Vec3f m_startAngles;
+		glm::vec3 m_startAngles;
 		Player *m_target = nullptr;
 	} m_360;
 
@@ -113,9 +112,9 @@ private:
 
 	auto uninstall() -> void;
 
-	static auto getTargetAimPoint(const Player &target) -> Vec3f;
+	static auto getTargetAimPoint(const Player &target) -> glm::vec3;
 
-	static auto cartesianToPolar(const Vec3f &cartesian) -> Vec3f;
+	static auto cartesianToPolar(const glm::vec3 &cartesian) -> glm::vec3;
 
 	auto findTarget(AIM_TYPE method) -> void;
 
@@ -131,5 +130,5 @@ private:
 
     // deflect aim away from target.
     // Result is the world coordinate [targetRadius] away from player.
-    auto deflectAimInWorld(const Player &target, float targetRadius) -> std::optional<Vec3f>;
+    auto deflectAimInWorld(const Player &target, float targetRadius) -> std::optional<glm::vec3>;
 };
