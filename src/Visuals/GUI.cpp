@@ -127,7 +127,7 @@ auto GUI::initImGui(SDL_Window *window) -> void {
 #endif
 	if (err) {
 		std::string l_error("Failed to initialize OpenGL loader!");
-		Log::log(l_error);
+		Log::log<Log::FLUSH>(l_error);
 		throw std::runtime_error(l_error);
 	}
 
