@@ -79,4 +79,6 @@ https://user-images.githubusercontent.com/14974231/142050572-a557c6a9-42d9-40d3-
 #### Windows
 *Winject 1.7* is easy to use. **use at your own risk**. Get it from e.g. [oldschoolhack.me](https://www.oldschoolhack.me/en/downloads/tools/3610-winject-17)
 #### GNU/Linux
-I bundled three scripts in the ```scripts/``` directory: *inject.bash*, *eject.bash* & *reinject.bash*. I adapted [aixxe](https://aixxe.net/2016/09/shared-library-injection)'s idea for these. You may have to adapt paths
+- I bundled three scripts in the ```scripts/``` directory: *inject.bash*, *eject.bash* & *reinject.bash*. I adapted [aixxe](https://aixxe.net/2016/09/shared-library-injection)'s idea for these.
+- You may have to adapt paths in the scripts.
+- These attach the GDB Debugger to the game process for injection. Doing this to a process we haven't started isn't allowed under normal circumstances. So execute ```scripts/disable_ptrace_scope.bash``` with sudo privileges once per login session to use these scripts.
