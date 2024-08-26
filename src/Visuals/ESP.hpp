@@ -48,9 +48,11 @@ private:
 	const SDL_Color colorTflag{255, 255, 0, 255};
 	const SDL_Color colorCTflag{0, 255, 0, 255};
 
+	glm::mat4 m_mat_view;
 	glm::mat4 m_mat_perspective;
 	glm::mat4 m_mat_normalization;
 
+	auto calcMatView() -> glm::mat4;
 	auto calcMatPerspective() -> glm::mat4;
 	auto calcMatNormalization() -> glm::mat4;
 
@@ -60,7 +62,6 @@ private:
 	 * @return screen x/y coordinates. std::nullopt if not on screen
 	 */
 	auto world_to_screen(glm::vec3 const &worldPos) const -> std::optional<glm::vec2>;
-
 
 	auto drawCircleScreen(float cx, float cy, float r, int num_segments, const SDL_Color &color) const -> void;
 

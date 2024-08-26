@@ -5,6 +5,7 @@
 #include <SDL.h>    // SDL_Window
 #include <GL/gl.h>
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 #include "ESP.hpp"
 #include "../MemoryUtils.hpp"
@@ -44,6 +45,7 @@ ESP::~ESP() {
 
 auto ESP::onDraw(SDL_Window *) -> void {
 	// update transformation matrices
+	m_mat_view = calcMatView();
 	m_mat_perspective = calcMatPerspective();
 	m_mat_normalization = calcMatNormalization();
 
@@ -87,6 +89,21 @@ auto ESP::onDraw(SDL_Window *) -> void {
 	if (!lastBlendEnabled) {
 		glDisable(GL_BLEND);
 	}
+}
+
+auto ESP::calcMatView() -> glm::mat4 {
+	// TODO: use visual angles here for compatibility with silent aim?
+	const glm::vec3 &orientation = gameVars.angles;
+	const glm::vec3 &position = gameVars.player_pos;
+	const glm::mat4 rotation_matrix = glm::eulerAngleYXZ(orientation.y, orientation.x, orientation.z);
+	// TODO: Document http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/#translation-matrices
+	const glm::mat4 translation_matrix = glm::translate(position);
+
+	// apply rotation first, translation second
+	const glm::mat4 camera_transform = translation_matrix * rotation_matrix;
+
+	// TODO: Document: View transform must use inverses, because it must undo the camera pos/rot towards origin.
+	return glm::inverse(camera_transform);
 }
 
 auto ESP::calcMatPerspective() -> glm::mat4 {
@@ -133,7 +150,7 @@ auto ESP::world_to_screen(glm::vec3 const &worldPos) const -> std::optional<glm:
 	// https://gamedev.stackexchange.com/questions/168542/camera-view-matrix-from-position-yaw-pitch-worldup
 	std::optional<glm::vec2> l_result(std::nullopt);
 	glm::vec4 world_homogenous{worldPos.x, worldPos.y, worldPos.z, 1};
-	glm::vec4 view_homogenous = gameVars.mat_viewmodel * world_homogenous;
+	glm::vec4 view_homogenous = m_mat_view * world_homogenous;
 
 	auto projected_homogenous = m_mat_perspective * view_homogenous;
 	// check if vertex is in front of screen

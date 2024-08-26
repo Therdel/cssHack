@@ -49,7 +49,6 @@ namespace Offsets {
 	// ESP
 #ifdef __linux__
 	constexpr ptrdiff_t launcher_sdl_swapWindow_caller = 0x30EBC;
-	constexpr ptrdiff_t client_matViewModel = 0xBF2BE0;
 	constexpr ptrdiff_t engine_screenDimensions = 0xD23A54;
 	constexpr ptrdiff_t engine_fov_horizontal = 0xC9EAF8;
 #else

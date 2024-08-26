@@ -36,7 +36,6 @@ public:
     uintptr_t op_sdl_pollEvent_caller;
 
     float& fov_horizontal_degrees;
-    glm::mat4& mat_viewmodel;
     std::pair<int, int>& screen_dimensions;
 
 private:
