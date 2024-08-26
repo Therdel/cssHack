@@ -141,7 +141,7 @@ auto hack_loop() -> void {
 
 		if (g_do_exit == false && l_isInGame == 1) {
 			// initialize game hacks
-//			DrawHook l_drawHook;
+			DrawHook l_drawHook{gameVars};
 //			GUI l_gui{l_drawHook, l_input};
 			Aimbot l_aimbot{gameVars};
 			Bunnyhop l_bunnyhop{gameVars};

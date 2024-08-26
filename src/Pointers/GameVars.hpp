@@ -32,7 +32,8 @@ public:
     auto localplayer() -> std::optional<overlay_structs::LocalPlayer*>;
     auto localplayer() const -> std::optional<const overlay_structs::LocalPlayer*>;
     overlay_structs::RadarStruct& radar_struct;
-    uintptr_t op_sdl_pollEvent_call;
+    uintptr_t op_sdl_swapWindow_caller;
+    uintptr_t op_sdl_pollEvent_caller;
 
     float& fov_horizontal_degrees;
     glm::mat4& mat_viewmodel;

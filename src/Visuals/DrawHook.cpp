@@ -11,15 +11,15 @@
 #include "DrawHook.hpp"
 #include "../MemoryUtils.hpp"
 #include "../Pointers/libNames.hpp"
+#include "../Pointers/GameVars.hpp"
 #include "../Pointers/Offsets.hpp"
 
 DrawHook *g_DrawHook = nullptr;
 
-DrawHook::DrawHook()
+DrawHook::DrawHook(const GameVars &gameVars)
 		: m_subscribersMutex()
 		, m_subscribers()
-		, m_launcherBase{MemoryUtils::lib_base_32(libNames::launcher)}
-		, _op_sdl_swapWindow_detour{Util::Address(m_launcherBase + Offsets::launcher_sdl_swapWindow_caller),
+		, _op_sdl_swapWindow_detour{Util::Address(gameVars.op_sdl_swapWindow_caller),
                                     Util::Address((uintptr_t)(hook_SDL_GL_SwapWindow))} {
 	g_DrawHook = this;
 }

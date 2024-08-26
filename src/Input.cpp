@@ -16,8 +16,8 @@ Input::Input(const GameVars &gameVars)
 		, m_keyHandlers()
 		, m_mouseHandlerMutex()
 		, m_mouseHandler()
-		, _op_sdl_pollEvent_detour(Util::Address(gameVars.op_sdl_pollEvent_call),
-                                  Util::Address((uintptr_t)(hook_SDL_PollEvent))) {
+		, _op_sdl_pollEvent_detour(Util::Address(gameVars.op_sdl_pollEvent_caller),
+                                   Util::Address((uintptr_t)(hook_SDL_PollEvent))) {
 	g_keyboard = this;
 }
 

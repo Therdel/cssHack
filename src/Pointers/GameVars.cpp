@@ -49,10 +49,11 @@ GameVars::GameVars()
     , radar_struct{read_reference_from_signature<overlay_structs::RadarStruct>(Signatures::playerArray_base)}
     , localplayer_base{read_reference_from_signature<uintptr_t>(Signatures::localplayer_base)}
 #ifdef __linux__
-    , op_sdl_pollEvent_call{(uintptr_t)read_reference_from_static_mem<uintptr_t>(libNames::launcher, {&Offsets::launcher_sdl_pollEvent_caller, 1})}
+    , op_sdl_pollEvent_caller{(uintptr_t)read_reference_from_static_mem<uintptr_t>(libNames::launcher, {&Offsets::launcher_sdl_pollEvent_caller, 1})}
 #else
     , op_sdl_pollEvent_call{(uintptr_t)read_reference_from_static_mem<uintptr_t>(libNames::inputsystem, {&Offsets::inputsystem_sdl_pollEvent_caller, 1})}
 #endif
+    , op_sdl_swapWindow_caller{(uintptr_t)read_reference_from_static_mem<uintptr_t>(libNames::launcher, {&Offsets::launcher_sdl_swapWindow_caller, 1})}
     , fov_horizontal_degrees{read_reference_from_static_mem<float>(libNames::engine, {&Offsets::engine_fov_horizontal, 1})}
     , mat_viewmodel{read_reference_from_static_mem<glm::mat4>(libNames::client, {&Offsets::client_matViewModel, 1})}
     , screen_dimensions{read_reference_from_static_mem<std::pair<int, int>>(libNames::engine, {&Offsets::engine_screenDimensions, 1})}

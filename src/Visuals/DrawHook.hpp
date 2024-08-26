@@ -9,6 +9,7 @@
 #include "../Utility.hpp"
 #include "../CallDetour.hpp"
 
+struct GameVars;
 struct SDL_Window;
 
 class DrawHookSubscriber {
@@ -20,19 +21,15 @@ public:
 
 class DrawHook : public Util::NonCopyable, public Util::NonMovable {
 public:
-	DrawHook();
-
+	DrawHook(const GameVars&);
 	~DrawHook();
 
 	auto attachSubscriber(DrawHookSubscriber *sub) -> void;
-
 	auto detachSubscriber(DrawHookSubscriber *sub) -> void;
 
 private:
 	std::mutex m_subscribersMutex;
 	std::vector<DrawHookSubscriber *> m_subscribers;
-	const uintptr_t m_launcherBase;
-
     CallDetour _op_sdl_swapWindow_detour;
 
 	auto callSubscribers(SDL_Window *window) -> void;
