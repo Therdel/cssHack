@@ -45,12 +45,6 @@ ESP::ESP(GameVars gameVars, DrawHook &drawHook, GUI &gui, Aimbot &aimbot)
 
 	m_screen_dimensions = (std::pair<int, int> *) (l_engine_base + Offsets::engine_screenDimensions);
 	m_drawHook.attachSubscriber(this);
-
-	auto **l_boneMatrices1_base = (Mat3x4fRowMajor **) (l_matsystem_base + 0x16016C);
-	m_boneMatrices1 = *l_boneMatrices1_base;
-
-	auto **l_boneMatrices2_base = (Mat3x4fRowMajor **) (l_matsystem_base + 0x160164);
-	m_boneMatrices2 = *l_boneMatrices2_base;
 }
 
 ESP::~ESP() {
@@ -83,7 +77,6 @@ auto ESP::onDraw(SDL_Window *) -> void {
 		if (m_enableLineESP) {
 			drawLineESP();
 		}
-		//	drawBoneBoxes();
 		if (m_enableFlagESP) {
 			drawFlagESP();
 		}
@@ -322,35 +315,6 @@ auto ESP::drawFlagESP() const -> void {
 					glEnd();
 				}
 			}
-		}
-	}
-}
-
-auto ESP::drawBoneBoxes() const -> void {
-	SDL_Color color{255, 255, 255, 255};
-	glm::vec3 origin(0, 0, 0);
-	for (int i = 0; i < m_boneMatrices1Amount; ++i) {
-		Mat3x4fRowMajor &l_bone = m_boneMatrices1[i];
-		glm::vec3 l_bonePos{
-				l_bone.m_rows[0][3],
-				l_bone.m_rows[1][3],
-				l_bone.m_rows[2][3]
-		};
-		if (l_bonePos != origin &&
-			glm::distance(l_bonePos, gameVars.player_pos) > 100) {
-			drawBox(l_bonePos, color, 10, 0, 10);
-		}
-	}
-	for (int i = 0; i < m_boneMatrices2Amount; ++i) {
-		Mat3x4fRowMajor &l_bone = m_boneMatrices2[i];
-		glm::vec3 l_bonePos{
-				l_bone.m_rows[0][3],
-				l_bone.m_rows[1][3],
-				l_bone.m_rows[2][3]
-		};
-		if (l_bonePos != origin &&
-			glm::distance(l_bonePos, gameVars.player_pos) > 100) {
-			drawBox(l_bonePos, color, 10, 0, 10);
 		}
 	}
 }

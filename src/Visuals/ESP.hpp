@@ -47,12 +47,6 @@ private:
 	const SDL_Color colorTflag{255, 255, 0, 255};
 	const SDL_Color colorCTflag{0, 255, 0, 255};
 
-	template<typename T, size_t rows, size_t cols>
-	struct MatrixRowMajor {
-		using row_t = std::array<T, cols>;
-		std::array<row_t, rows> m_rows;
-	};
-	using Mat3x4fRowMajor = MatrixRowMajor<float, 3, 4>;
 	glm::mat4 m_mat_perspective;
 	glm::mat4 m_mat_normalization;
 
@@ -62,10 +56,6 @@ private:
 	constexpr static size_t MAX_PLAYERS = 64;
 	glm::mat4 *m_mat_viewModel;
 	std::pair<int, int> *m_screen_dimensions;
-	Mat3x4fRowMajor *m_boneMatrices1;
-	Mat3x4fRowMajor *m_boneMatrices2;
-	int m_boneMatrices1Amount = 1000;
-	int m_boneMatrices2Amount = 1000;
 
 	auto calcMatPerspective() -> glm::mat4;
 
@@ -101,6 +91,4 @@ private:
 	auto drawAimTargetCross() const -> void;
 
 	auto drawBulletPrediction() const -> void;
-
-	auto drawBoneBoxes() const -> void;
 };
