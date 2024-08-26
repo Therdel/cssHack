@@ -29,21 +29,12 @@ ESP::ESP(GameVars gameVars, DrawHook &drawHook, GUI &gui, Aimbot &aimbot)
 		, m_enableBoxESP(true)
 		, m_enableLineESP(false)
 		, m_enableFlagESP(true) {
-	// read module base addresses
-	const uintptr_t l_client_base = MemoryUtils::lib_base_32(libNames::client);
-	const uintptr_t l_engine_base = MemoryUtils::lib_base_32(libNames::engine);
-	const uintptr_t l_matsystem_base = MemoryUtils::lib_base_32(libNames::materialsystem);
-
 	m_gui.registerCheckbox({m_enableDrawFov, "ESP Fov"});
 	m_gui.registerCheckbox({m_enableBoxESP, "ESP Boxes"});
 	m_gui.registerCheckbox({m_enableLineESP, "ESP Lines"});
 	m_gui.registerCheckbox({m_enableFlagESP, "ESP Flags"});
 	m_gui.registerFloatSlider({0, 4, LINEWIDTH, "ESP Linewidth"});
 
-	m_fovHorizDegrees = (float *) (l_engine_base + Offsets::engine_fov_horizontal);
-	m_mat_viewModel = (glm::mat4 *) (l_client_base + Offsets::client_matViewModel);
-
-	m_screen_dimensions = (std::pair<int, int> *) (l_engine_base + Offsets::engine_screenDimensions);
 	m_drawHook.attachSubscriber(this);
 }
 
@@ -102,18 +93,18 @@ auto ESP::calcMatPerspective() -> glm::mat4 {
 	return {
 		glm::vec4{1, 0, 0, 0},
 	    glm::vec4{0, 1, 0, 0},
-	    glm::vec4{0, 0, 1 + (m_f / m_n), m_f},
-	    glm::vec4{0, 0, -1 / m_n, 0}
+	    glm::vec4{0, 0, 1 + (FAR_PLANE / NEAR_PLANE), FAR_PLANE},
+	    glm::vec4{0, 0, -1 / NEAR_PLANE, 0}
 	};
 }
 
 auto ESP::calcMatNormalization() -> glm::mat4 {
-	auto &screenW = m_screen_dimensions->first;
-	auto &screenH = m_screen_dimensions->second;
+	auto &screenW = gameVars.screen_dimensions.first;
+	auto &screenH = gameVars.screen_dimensions.second;
 
 	// source: https://www.khronos.org/opengl/wiki/GluPerspective_code
 	float ymax, xmax;
-	xmax = m_n * tanf(toRadians(*m_fovHorizDegrees) / 2.0f);
+	xmax = NEAR_PLANE * tanf(toRadians(gameVars.fov_horizontal_degrees) / 2.0f);
 	ymax = xmax * screenH / screenW;
 	float m_r = xmax, m_l = -xmax, m_t = ymax, m_b = -ymax;
 
@@ -122,13 +113,13 @@ auto ESP::calcMatNormalization() -> glm::mat4 {
 	// m_l = left   clip
 	// m_t = top    clip
 	// m_b = bottom clip
-	// m_n = near   clipping plane
-	// m_f = far    clipping plane
+	// NEAR_PLANE = near clipping plane
+	// FAR_PLANE  = far  clipping plane
 
 	return {
 		glm::vec4{2 / (m_r - m_l), 0, 0, -(m_r + m_l) / (m_r - m_l)},
 		glm::vec4{0, 2 / (m_t - m_b), 0, -(m_t + m_b) / (m_t - m_b)},
-		glm::vec4{0, 0, -2 * (m_f - m_n), -(m_f + m_n) / (m_f - m_n)},
+		glm::vec4{0, 0, -2 * (FAR_PLANE - NEAR_PLANE), -(FAR_PLANE + NEAR_PLANE) / (FAR_PLANE - NEAR_PLANE)},
 		glm::vec4{0, 0, 0, 1}
 	};
 }
@@ -142,7 +133,7 @@ auto ESP::world_to_screen(glm::vec3 const &worldPos) const -> std::optional<glm:
 	// https://gamedev.stackexchange.com/questions/168542/camera-view-matrix-from-position-yaw-pitch-worldup
 	std::optional<glm::vec2> l_result(std::nullopt);
 	glm::vec4 world_homogenous{worldPos.x, worldPos.y, worldPos.z, 1};
-	glm::vec4 view_homogenous = *m_mat_viewModel * world_homogenous;
+	glm::vec4 view_homogenous = gameVars.mat_viewmodel * world_homogenous;
 
 	auto projected_homogenous = m_mat_perspective * view_homogenous;
 	// check if vertex is in front of screen
@@ -322,8 +313,8 @@ auto ESP::drawFlagESP() const -> void {
 // adapted from: http://slabode.exofire.net/circle_draw.shtml
 auto ESP::drawCircleScreen(float cx, float cy, float r, int num_segments, const SDL_Color &color) const -> void {
 	float aspectYoverX =
-			static_cast<float>(m_screen_dimensions->second) /
-			static_cast<float>(m_screen_dimensions->first);
+			static_cast<float>(gameVars.screen_dimensions.second) /
+			static_cast<float>(gameVars.screen_dimensions.first);
 	float theta = 2 * 3.1415926 / float(num_segments);
 	float c = cosf(theta);//precalculate the sine and cosine
 	float s = sinf(theta);
@@ -376,12 +367,12 @@ auto ESP::drawScreenCross(glm::vec2 crossPos, float radius, const SDL_Color &col
                           float lineToCenterRatio) const -> void {
 
 	float aspectYoverX =
-			static_cast<float>(m_screen_dimensions->second) /
-			static_cast<float>(m_screen_dimensions->first);
+			static_cast<float>(gameVars.screen_dimensions.second) /
+			static_cast<float>(gameVars.screen_dimensions.first);
 
 	crossPos += glm::vec2{
-		1.0f/m_screen_dimensions->first,
-		-1.0f/m_screen_dimensions->second
+		1.0f/gameVars.screen_dimensions.first,
+		-1.0f/gameVars.screen_dimensions.second
 	};
 
 	// defines an arm of the cross in screen center

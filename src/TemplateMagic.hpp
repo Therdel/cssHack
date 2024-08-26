@@ -2,6 +2,7 @@
 // Created by therdel on 06.09.19.
 //
 #pragma once
+#include <type_traits>
 
 struct OmittedType {
 };

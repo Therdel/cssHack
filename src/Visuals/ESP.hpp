@@ -38,6 +38,7 @@ private:
 
 	// configuration
 	float LINEWIDTH = 1.7;
+	constexpr static float FAR_PLANE = 1000000, NEAR_PLANE = 1;
 	bool m_enableDrawFov;
 	bool m_enableBoxESP;
 	bool m_enableLineESP;
@@ -50,15 +51,7 @@ private:
 	glm::mat4 m_mat_perspective;
 	glm::mat4 m_mat_normalization;
 
-	// game fields ESP operates on
-	float *m_fovHorizDegrees;
-	float m_f = 1000000, m_n = 1;
-	constexpr static size_t MAX_PLAYERS = 64;
-	glm::mat4 *m_mat_viewModel;
-	std::pair<int, int> *m_screen_dimensions;
-
 	auto calcMatPerspective() -> glm::mat4;
-
 	auto calcMatNormalization() -> glm::mat4;
 
 	/**

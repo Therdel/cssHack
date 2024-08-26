@@ -4,7 +4,7 @@
 #include <optional>
 #include <span>
 
-#include <glm/vec3.hpp>
+#include <glm/fwd.hpp>
 
 namespace overlay_structs {
     class LocalPlayer;
@@ -33,6 +33,10 @@ public:
     auto localplayer() const -> std::optional<const overlay_structs::LocalPlayer*>;
     overlay_structs::RadarStruct& radar_struct;
     uintptr_t op_sdl_pollEvent_call;
+
+    float& fov_horizontal_degrees;
+    glm::mat4& mat_viewmodel;
+    std::pair<int, int>& screen_dimensions;
 
 private:
     uintptr_t& localplayer_base;
