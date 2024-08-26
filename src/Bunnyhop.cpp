@@ -1,15 +1,11 @@
 #include "Bunnyhop.hpp"
-#include "Pointers/GamePointerFactory.hpp"
 #include "Pointers/Signatures.hpp"
 
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
 #include "Log.hpp"
 
-using namespace GamePointerDef;
-
-Bunnyhop::Bunnyhop()
-		: m_on_ground(GamePointerFactory::get(onGround()))
-		, m_jump(GamePointerFactory::get(doJump()))
+Bunnyhop::Bunnyhop(GameVars gameVars)
+		: gameVars(gameVars)
 		, m_detour_onGround_inc()
 		, m_detour_onGround_dec()
 		, m_enabled(false) {
@@ -21,13 +17,17 @@ Bunnyhop::~Bunnyhop() {
 	unhook();
 }
 
+auto Bunnyhop::isEnabled() const -> bool {
+	return m_enabled;
+}
+
 auto Bunnyhop::start() -> void {
  	if (!m_enabled) {
 		// the fake jumps are only triggered by landing on the ground, not while being on ground
 		// so if we're currently standing on the ground...
-		if (*m_on_ground != 0) {
+		if (gameVars.on_ground != 0) {
 			// we're manually faking the first jump
-			*m_jump = 5;
+			gameVars.do_jump = 5;
 		}
 
 		m_enabled = true;
@@ -40,7 +40,7 @@ auto Bunnyhop::stop() -> void {
 
 		// prevent bhop not starting
 		// when jump key is down when you land on the ground and bhop is enabled
-		*m_jump = 4;
+		gameVars.do_jump = 4;
 	}
 }
 
@@ -76,12 +76,12 @@ auto Bunnyhop::unhook() -> void {
 
 auto Bunnyhop::hook_onGround_inc() -> void {
 	if (m_enabled) {
-		*m_jump = 5;
+		gameVars.do_jump = 5;
 	}
 }
 
 auto Bunnyhop::hook_onGround_dec() -> void {
 	if (m_enabled) {
-		*m_jump = 4;
+		gameVars.do_jump = 4;
 	}
 }

@@ -13,7 +13,8 @@
 
 #include "../Utility.hpp"
 #include "DrawHook.hpp"
-#include "../Player.hpp"
+#include "../Pointers/GameVars.hpp"
+#include "../Pointers/overlay_structs.hpp"
 
 struct SDL_Window;
 
@@ -23,13 +24,14 @@ class Aimbot;
 
 class ESP : public DrawHookSubscriber, public Util::NonCopyable, public Util::NonMovable {
 public:
-	explicit ESP(DrawHook &drawHook, GUI &gui, Aimbot &aimbot);
+	explicit ESP(GameVars gameVars, DrawHook &drawHook, GUI &gui, Aimbot &aimbot);
 
 	~ESP() override;
 
 	auto onDraw(SDL_Window *window) -> void override;
 
 private:
+	GameVars gameVars;
 	DrawHook &m_drawHook;
 	GUI &m_gui;
 	Aimbot &m_aimbot;
@@ -59,9 +61,6 @@ private:
 	float m_f = 1000000, m_n = 1;
 	constexpr static size_t MAX_PLAYERS = 64;
 	glm::mat4 *m_mat_viewModel;
-	std::array<Player, MAX_PLAYERS> *m_players;
-	glm::vec3 *m_player_pos;
-	glm::vec3 *m_player_angles_vis;
 	std::pair<int, int> *m_screen_dimensions;
 	Mat3x4fRowMajor *m_boneMatrices1;
 	Mat3x4fRowMajor *m_boneMatrices2;

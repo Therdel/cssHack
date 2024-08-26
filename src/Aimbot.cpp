@@ -8,34 +8,27 @@
 #include <glm/geometric.hpp> // glm::distance
 
 #include "Aimbot.hpp"
+#include "Pointers/GameVars.hpp"
+#include "Pointers/overlay_structs.hpp"
+#include "Pointers/Signatures.hpp"
 #include "MemoryUtils.hpp"
-#include "Player.hpp"
 
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
 #include "Log.hpp"
 #include "Visuals/GUI.hpp"
 #include "Utility.hpp"
-#include "Pointers/GamePointerFactory.hpp"
-#include "Pointers/Signatures.hpp"
 
 using namespace Util;
 
 //Aimbot::Aimbot(GUI& gui)
-Aimbot::Aimbot()
+Aimbot::Aimbot(GameVars gameVars)
 		//: m_gui(gui)
-		: m_aim_type(AIM_TYPE::BY_ANGLE)
+		: gameVars{gameVars}
+		, m_aim_type(AIM_TYPE::BY_ANGLE)
 		, m_friendly_fire(false)
 		, m_aim_fov_rad(toRadians(15))
 		, m_aim_noRecoil(true)
 		, m_aim_noVisRecoil(true)
-		, m_playerPos(GamePointerFactory::get(GamePointerDef::playerPos()))
-		, m_aimAngles(GamePointerFactory::get(GamePointerDef::aimAngles()))
-		, m_visualAngles(GamePointerFactory::get(GamePointerDef::aimAnglesVisual()))
-		, m_punchAngles(GamePointerFactory::get(GamePointerDef::punchAngles()))
-		, m_playerTeam(GamePointerFactory::get(GamePointerDef::playerTeam()))
-		, m_players(GamePointerFactory::get(GamePointerDef::players()))
-		, m_crosshair_target_id(GamePointerFactory::get(GamePointerDef::targetId()))
-		, m_doAttack(GamePointerFactory::get(GamePointerDef::doAttack()))
 		, m_recoilFix_previous()
 		, m_currentTarget()
 		, m_doAim(false)
@@ -83,7 +76,7 @@ auto Aimbot::aim_once() -> void {
 		// initialize 360 start fields
 		if (m_360.m_modeBefore == Mode360::TRIGGER) {
 			// find target using crosshair detection
-			std::optional<Player *> l_target = isCrosshairOnTarget();
+			std::optional<overlay_structs::Player *> l_target = isCrosshairOnTarget();
 			if (l_target.has_value()) {
 				m_360.m_target = l_target.value();
 				l_target_360_found = true;
@@ -98,7 +91,7 @@ auto Aimbot::aim_once() -> void {
 		}
 		if (l_target_360_found) {
 			m_360.m_startTime = std::chrono::steady_clock::now();
-			m_360.m_startAngles = *m_aimAngles;
+			m_360.m_startAngles = gameVars.angles;
 			// transition to twist state
 			m_360.m_state = Maneuver360::TWIST;
 		}
@@ -111,7 +104,7 @@ auto Aimbot::aim_once() -> void {
 
 		if (progress <= 1.0) {
 			const glm::vec3 targetAimPoint = getTargetAimPoint(*m_360.m_target);
-			const glm::vec3 targetVec = targetAimPoint - *m_playerPos;
+			const glm::vec3 targetVec = targetAimPoint - gameVars.player_pos;
 			glm::vec3 targetAngles = cartesianToPolar(targetVec);
 			glm::vec3 aimDiff = targetAngles - m_360.m_startAngles;
 			normalizeHeading(aimDiff);
@@ -126,7 +119,7 @@ auto Aimbot::aim_once() -> void {
 
 			glm::vec3 currentAng = m_360.m_startAngles + currentAngDiff360;
 			normalizeHeading(currentAng);
-			*m_aimAngles = currentAng;
+			gameVars.angles = currentAng;
 		} else {
 			m_360.m_state = Maneuver360::DONE;
 			if (m_360.m_modeAfter == Mode360::TRIGGER) {
@@ -149,7 +142,7 @@ auto Aimbot::aim_once() -> void {
 			// check if player found
 			if (m_currentTarget.has_value()) {
 				// aim at target
-				*m_aimAngles = m_currentTarget->anglesToTarget;
+				gameVars.angles = m_currentTarget->anglesToTarget;
 				l_aim_foundTarget = true;
 			}
 		}
@@ -157,18 +150,18 @@ auto Aimbot::aim_once() -> void {
 			// triggerbot / autoshoot
 			if (isCrosshairOnTarget()) {
 				// TODO: implement autopistol
-//				if (*m_doAttack == 4) {
-					*m_doAttack = 5;
+//				if (gameVars.do_attack_1 == 4) {
+					gameVars.do_attack_1 = 5;
 //				} else {
-//					*m_doAttack = 4;
+//					gameVars.do_attack_1 = 4;
 //				}
 			} else if (!is_user_shooting()) {
-				*m_doAttack = 4;
+				gameVars.do_attack_1 = 4;
 			}
 		} else {
 			// TODO do wait after next shoot depending on timepoint of last one (autopistol)
 			if (!is_user_shooting()) {
-				*m_doAttack = 4;
+				gameVars.do_attack_1 = 4;
 			}
 		}
 	}
@@ -185,9 +178,9 @@ auto Aimbot::deflect_once() -> void {
     auto deflectPointWorld = deflectAimInWorld(m_currentTarget->target, 45);
     if (deflectPointWorld.has_value()) {
       // the aim should be deflected, the aim point is too close to the target center
-      glm::vec3 vecEyeToDeflectPoint = *deflectPointWorld - *m_playerPos;
+      glm::vec3 vecEyeToDeflectPoint = *deflectPointWorld - gameVars.player_pos;
       glm::vec3 angles = cartesianToPolar(vecEyeToDeflectPoint);
-      *m_aimAngles = angles;
+      gameVars.angles = angles;
     }
   }
 }
@@ -225,13 +218,13 @@ auto Aimbot::triggerbot_once() const -> void {
 
 		// +attack
 		// TODO don't shoot while we have to reload
-		*m_doAttack = 5;
+		gameVars.do_attack_1 = 5;
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(ATTACK_SLEEP_BETWEEN_MS));
 
 		// -attack
 		if (!is_user_shooting()) {
-			*m_doAttack = 4;
+			gameVars.do_attack_1 = 4;
 		}
 	}
 }
@@ -276,11 +269,11 @@ auto Aimbot::uninstall() -> void {
 	// TODO: necessary?
 	// stop shooting if the aimbot was disabled while shooting
 	if (!is_user_shooting()) {
-		*m_doAttack = 4;
+		gameVars.do_attack_1 = 4;
 	}
 }
 
-auto Aimbot::getTargetAimPoint(const Player &target) -> glm::vec3 {
+auto Aimbot::getTargetAimPoint(const overlay_structs::Player &target) -> glm::vec3 {
 	// include the target offset (aim a little at the belly)
 	// rotate static target offset with targets heading angle:
 	// source: https://developer.valvesoftware.com/wiki/QAngle
@@ -300,10 +293,22 @@ auto Aimbot::cartesianToPolar(const glm::vec3 &cartesian) -> glm::vec3 {
 auto Aimbot::findTarget(AIM_TYPE method) -> void {
 	glm::vec3 l_targetAimPoint;
 	glm::vec3 l_targetAimVec;
-	Player *l_target = nullptr;
+	overlay_structs::Player *l_target = nullptr;
 	float l_nearestDistance = -1;
 	float l_nearestAngle = -1;
-	for (Player &curTarget : (*m_players)) {
+
+	std::optional<overlay_structs::LocalPlayer*> localplayer_optional = gameVars.localplayer();
+	if (!localplayer_optional.has_value()) {
+		// TODO: exception?
+		// TODO: log?
+		// TODO: silent return?
+		return;
+		// TODO: return false?
+	}
+	overlay_structs::LocalPlayer &localplayer = *(*localplayer_optional);
+
+	auto &players = gameVars.radar_struct.players;
+	for (overlay_structs::Player &curTarget : players) {
 		// ensure current target is valid & alive
 		if (!curTarget.is_valid() ||
 		    curTarget.m_health <= 0) {
@@ -311,24 +316,24 @@ auto Aimbot::findTarget(AIM_TYPE method) -> void {
 		}
 
 		// target mustn't be a spectator
-		if (curTarget.m_team == Player::TEAM::SPECT
+		if (curTarget.m_team == overlay_structs::Player::TEAM::SPECT
 		    // if friendly fire is off, target mustn't be of same team
-		    || (!m_friendly_fire && curTarget.m_team == *m_playerTeam)) {
+		    || (!m_friendly_fire && curTarget.m_team == localplayer.team.value)) {
 			continue;
 		}
 
 		// the target must be inside the FOV
 		// (the angle between target vector and crosshair vector is within the FOV range)
 		const glm::vec3 l_targetAimPointTmp = getTargetAimPoint(curTarget);
-		const glm::vec3 l_targetAimVecTmp = l_targetAimPointTmp - *m_playerPos;
+		const glm::vec3 l_targetAimVecTmp = l_targetAimPointTmp - gameVars.player_pos;
 		float l_angleToTarget = degreesBetweenVectors(l_targetAimVecTmp,
-		                                              Util::viewAnglesToUnitvector(*m_visualAngles));
+		                                              Util::viewAnglesToUnitvector(gameVars.angles_visual));
 		if (l_angleToTarget > toDegrees(m_aim_fov_rad)) {
 			continue;
 		}
 
 		// calculate distance to target
-		float l_targetDistance = glm::distance(*m_playerPos, curTarget.m_pos);
+		float l_targetDistance = glm::distance(gameVars.player_pos, curTarget.m_pos);
 		// prevent aiming at yourself
 		if (l_targetDistance <= AIM_MIN_DISTANCE) {
 			continue;
@@ -367,20 +372,26 @@ auto Aimbot::findTarget(AIM_TYPE method) -> void {
 	}
 }
 
-auto Aimbot::isCrosshairOnTarget() const -> std::optional<Player *> {
-	std::optional<Player *> valid_target;
+auto Aimbot::isCrosshairOnTarget() const -> std::optional<overlay_structs::Player *> {
+	std::optional<const overlay_structs::LocalPlayer*> localplayer_optional = gameVars.localplayer();
+	if (!localplayer_optional.has_value()) {
+		return std::nullopt;
+	}
+	const overlay_structs::LocalPlayer &localplayer = *(*localplayer_optional);
+
+	std::optional<overlay_structs::Player *> valid_target;
 
 	// check if we're aiming at a player (not a barrel, for example)
-	auto l_crossIdx = *m_crosshair_target_id;
+	auto l_crossIdx = localplayer.target_id.value;
 	if (l_crossIdx != 0
 	    // TODO: check if the 64th Player's id would be == 64 or <64
 	    && l_crossIdx < MAX_PLAYERS) {
 
 		// ensure the crosshair points at an enemy
 		size_t l_player_array_idx = l_crossIdx - 1; // cross_idx'es are always 1 higher than their player array index
-		Player *l_target = &(*m_players)[l_player_array_idx];
+		overlay_structs::Player *l_target = &gameVars.radar_struct.players[l_player_array_idx];
 		if (m_friendly_fire ||
-		    l_target->m_team != *m_playerTeam) {
+		    l_target->m_team != localplayer.team.value) {
 			valid_target = l_target;
 		}
 	}
@@ -393,23 +404,29 @@ auto Aimbot::removeVisRecoil() -> void {
 		// fix visual angles so that the anti-punch/recoil movement isn't visible
 		// while the recoil fix substracts twice the punch angles,
 		// the visuals need only 1 times the punch angles for correction
-		*m_visualAngles -= m_recoilFix_previous / 2.0f;
+		gameVars.angles_visual -= m_recoilFix_previous / 2.0f;
 	} else {
-		*m_visualAngles += m_recoilFix_previous / 2.0f;
+		gameVars.angles_visual += m_recoilFix_previous / 2.0f;
 	}
 }
 
 auto Aimbot::hookViewAnglesUpdate() -> void {
+	std::optional<overlay_structs::LocalPlayer*> localplayer_optional = gameVars.localplayer();
+	if (!localplayer_optional.has_value()) {
+		return;
+	}
+	overlay_structs::LocalPlayer &localplayer = *(*localplayer_optional);
+	
 	// undo previous recoil compensation
 	if (m_aim_noRecoil) {
-		*m_aimAngles -= m_recoilFix_previous;
+		gameVars.angles -= m_recoilFix_previous;
 	}
 
         deflect_once();
 	//aim_once();
 
 	// calculate (visual and effective) recoil compensation
-	auto l_recoil_fix_new = *m_punchAngles;
+	auto l_recoil_fix_new = localplayer.punch_angles.value;
 	// exclude roll axis compensation, as it doesn't affect recoil
 	l_recoil_fix_new.z = 0;
 	l_recoil_fix_new *= -2;
@@ -417,7 +434,7 @@ auto Aimbot::hookViewAnglesUpdate() -> void {
 
 	// compensate recoil
 	if (m_aim_noRecoil) {
-		*m_aimAngles += l_recoil_fix_new;
+		gameVars.angles += l_recoil_fix_new;
 	}
 }
 
@@ -426,24 +443,26 @@ auto Aimbot::hookViewAnglesVisUpdate() -> void {
 		removeVisRecoil();
 	}
 
-	m_bulletPredictionAngles = *m_aimAngles - m_recoilFix_previous;
+	m_bulletPredictionAngles = gameVars.angles - m_recoilFix_previous;
 }
-
+#include <iterator>
 auto Aimbot::is_user_shooting() const -> bool {
-	int *l_attack_user_0 = m_doAttack.pointer() - 2;
-	int *l_attack_user_1 = m_doAttack.pointer() - 1;
+	// attack_user_0 is located at TWO 32bit before the location of do_attack_1
+	uint32_t *l_attack_user_0 = std::prev(&gameVars.do_attack_1, 2);
+	// attack_user_0 is located at ONE 32bit before the location of do_attack_1
+	uint32_t *l_attack_user_1 = std::prev(&gameVars.do_attack_1, 1);
 	return *l_attack_user_0 != 0 || *l_attack_user_1 != 0;
 }
 
-auto Aimbot::deflectAimInWorld(const Player &target, float targetRadius) -> std::optional<glm::vec3> {
+auto Aimbot::deflectAimInWorld(const overlay_structs::Player &target, float targetRadius) -> std::optional<glm::vec3> {
   glm::vec3 pTargetCenter = target.m_pos + glm::vec3{0.0f, 0.0f, -30.0f};
-  glm::vec3 vEyeToTarCen = pTargetCenter - *m_playerPos;
-  glm::vec3 vUnitAimVec = Util::viewAnglesToUnitvector(*m_aimAngles);
+  glm::vec3 vEyeToTarCen = pTargetCenter - gameVars.player_pos;
+  glm::vec3 vUnitAimVec = Util::viewAnglesToUnitvector(gameVars.angles);
 
   // intersect eye vec with target "disk"
   // (intersect line with plane) source: https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
   glm::vec3 &p0 = pTargetCenter;
-  glm::vec3 &l0 = *m_playerPos;
+  glm::vec3 &l0 = gameVars.player_pos;
   glm::vec3 n = vEyeToTarCen;
   n.z = 0.0f;
   glm::vec3 &l = vUnitAimVec;
@@ -451,7 +470,7 @@ auto Aimbot::deflectAimInWorld(const Player &target, float targetRadius) -> std:
   float d = glm::dot((p0 - l0), n) / glm::dot(l, n);
 
   // pA is the point on the target circle disk
-  glm::vec3 pA = *m_playerPos + vUnitAimVec * d;
+  glm::vec3 pA = gameVars.player_pos + vUnitAimVec * d;
   glm::vec3 pCA = pA - pTargetCenter;
   float distancePaToTargetCenter = pCA.length();
   if (distancePaToTargetCenter < targetRadius) {

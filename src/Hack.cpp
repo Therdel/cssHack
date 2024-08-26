@@ -13,15 +13,14 @@
 // own includes
 #include "Hack.hpp"
 #include "libEntry.hpp"
+#include "Pointers/GameVars.hpp"
 #include "Aimbot.hpp"
 #include "Bunnyhop.hpp"
 #include "Input.hpp"
-#include "Visuals/DrawHook.hpp"
+// #include "Visuals/DrawHook.hpp"
 // #include "Visuals/GUI.hpp"
 // #include "Visuals/ESP.hpp"
-#include "Visuals/Wallhack.hpp"
-#include "Pointers/GamePointerFactory.hpp"
-#include "Pointers/GamePointerUpdater.hpp"
+// #include "Visuals/Wallhack.hpp"
 
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
 
@@ -119,7 +118,12 @@ auto hack_loop() -> void {
 	  std::this_thread::sleep_for(100ms);
 	}
 	*/
-	Input l_input;
+
+	// fixme: Crashes (perhaps) with nullptr on create when put at main() beginning
+	std::this_thread::sleep_for(1000ms); // FIXME: necessary?
+	const GameVars gameVars = GameVars::scan();
+
+	Input l_input{gameVars};
 	l_input.setKeyHandler(key_eject, &onEjectKey);
 	//wait_for_inject_combination(l_input);
 
@@ -128,36 +132,26 @@ auto hack_loop() -> void {
 	}
 
 	while (g_do_exit == false) {
-		// fixme: Crashes with nullptr on create when put at main() beginning
 		auto l_isInGame_always = 1;
-		auto *l_isInGame = &l_isInGame_always;
-		// auto l_isInGame = GamePointerFactory::get(GamePointerDef::isIngame());
+		auto &l_isInGame = l_isInGame_always;
+		// auto &l_isInGame = gameVars.is_ingame;
 		auto l_isInMenu_never = 0;
-		auto *l_isInMenu = &l_isInMenu_never;
-		//auto l_isInMenu = GamePointerFactory::get(GamePointerDef::isInMenu());
+		auto &l_isInMenu = l_isInMenu_never;
+		// auto &l_isInMenu = gameVars.is_inmenu;
 
-		if (g_do_exit == false && *l_isInGame == 1) {
+		if (g_do_exit == false && l_isInGame == 1) {
 			// initialize game hacks
-			// fixme: Crashes when put at main() beginning
-			// fixme: Sometimes an update after an invalidate is missing and causes a null deref
-			// GamePointerUpdater l_gamePointerUpdater;
 //			DrawHook l_drawHook;
-/*			GUI l_gui(l_drawHook, l_input);
-			l_gui.registerButton({"Update localplayer",
-			                      [sp_localplayer = GamePointerFactory::get(GamePointerDef::localplayer())]
-					                      () mutable {
-				                      sp_localplayer.update();
-			                      }});
-*/
-//			Aimbot l_aimbot;
-			Bunnyhop l_bunnyhop;
+//			GUI l_gui{l_drawHook, l_input};
+			Aimbot l_aimbot{gameVars};
+			Bunnyhop l_bunnyhop{gameVars};
 			l_bunnyhop.start();
-//			ESP l_esp(l_drawHook, l_gui, l_aimbot);
+//			ESP l_esp{gameVars, l_drawHook, l_gui, l_aimbot};
 //			Wallhack l_wallhack;
 
-			while (g_do_exit == false && *l_isInGame == 1) {
-				if (g_do_exit == false && *l_isInGame == 1 &&
-				    (g_acceptInputInGameMenus || *l_isInMenu == 0)) {
+			while (g_do_exit == false && l_isInGame == 1) {
+				if (g_do_exit == false && l_isInGame == 1 &&
+				    (g_acceptInputInGameMenus || l_isInMenu == 0)) {
 					// initialize input bindings
 					ScopedKeyHandler bhopHandler(l_input,
 					                             key_bhop,
@@ -178,8 +172,8 @@ auto hack_loop() -> void {
 					                               });
 
 					*/
-					while (g_do_exit == false && *l_isInGame == 1 &&
-					       (g_acceptInputInGameMenus || *l_isInMenu == 0)) {
+					while (g_do_exit == false && l_isInGame == 1 &&
+					       (g_acceptInputInGameMenus || l_isInMenu == 0)) {
 						// sleep for some time to not kill performance
 						std::this_thread::sleep_for(std::chrono::milliseconds(POLL_SLEEP_MS));
 					}

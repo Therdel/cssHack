@@ -7,16 +7,16 @@
 
 #include "Input.hpp"
 #include "MemoryUtils.hpp"
-#include "Pointers/GamePointerFactory.hpp"
+#include "Pointers/GameVars.hpp"
 
 Input *g_keyboard{nullptr};
 
-Input::Input()
+Input::Input(const GameVars &gameVars)
 		: m_keyHandlersMutex()
 		, m_keyHandlers()
 		, m_mouseHandlerMutex()
 		, m_mouseHandler()
-		, _op_sdl_pollEvent_detour(Util::Address(GamePointerFactory::get(GamePointerDef::op_sdl_pollEvent_call())),
+		, _op_sdl_pollEvent_detour(Util::Address(gameVars.op_sdl_pollEvent_call),
                                   Util::Address((uintptr_t)(hook_SDL_PollEvent))) {
 	g_keyboard = this;
 }

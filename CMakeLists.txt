@@ -20,8 +20,7 @@ add_library(cssHack SHARED
     src/Input.cpp
     #src/Visuals/GUI.cpp
     #src/Visuals/Gui_imgui_impl_sdl.cpp
-    src/Pointers/GamePointerDef.cpp
-    #src/Pointers/GamePointerUpdater.cpp
+    src/Pointers/GameVars.cpp
     src/Pointers/Signatures.cpp
 )
 

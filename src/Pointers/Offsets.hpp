@@ -5,22 +5,30 @@
 
 #include <array>
 
+enum class OffsetType {
+	DEREFERENCE,
+	PLAIN_OFFSET
+};
+
 namespace Offsets {
 	// Aimbot
 #ifdef __linux__
     constexpr ptrdiff_t client_viewAngleVis = 0xBC2294;
 
+    constexpr ptrdiff_t localplayer_off_team = 0x8C;
+    constexpr ptrdiff_t localplayer_off_eye_height = 0xF0;
+    constexpr ptrdiff_t localplayer_off_pos = 0x260;
     constexpr ptrdiff_t localplayer_off_punch = 0xE28;
-    constexpr ptrdiff_t localplayer_off_team = 0x8c;
-    constexpr ptrdiff_t playerArray_off = 0x28;
     constexpr ptrdiff_t localplayer_off_targetId = 0x14D0;
+    constexpr ptrdiff_t playerArray_off = 0x28;
+    constexpr ptrdiff_t radarstruct_playerArray_off = 0x28;
 
 #else
 	constexpr ptrdiff_t client_viewAngleVis = 0x504644;
-	constexpr ptrdiff_t localplayer_off_punch= 0xE48;
 	constexpr ptrdiff_t localplayer_off_team = 0x9c;
-	constexpr ptrdiff_t playerArray_off = 0x28;
+	constexpr ptrdiff_t localplayer_off_punch= 0xE48;
 	constexpr ptrdiff_t localplayer_off_targetId = 0x14f0;
+	constexpr ptrdiff_t playerArray_off = 0x28;
 #endif
 
 	// Hack
@@ -44,12 +52,6 @@ namespace Offsets {
 	constexpr ptrdiff_t client_matViewModel = 0xBF2BE0;
 	constexpr ptrdiff_t engine_screenDimensions = 0xD23A54;
 	constexpr ptrdiff_t engine_fov_horizontal = 0xC9EAF8;
-#else
-#endif
-	// GamePointerUpdater
-#ifdef __linux
-	constexpr ptrdiff_t client_op_localplayer_update = 0x56BAAA;
-	constexpr ptrdiff_t client_op_localplayer_invalidate = 0x573390;
 #else
 #endif
 	// Wallhack

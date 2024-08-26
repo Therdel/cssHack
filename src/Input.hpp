@@ -45,6 +45,7 @@ constexpr KeyStroke key_trigger(SDLK_CAPSLOCK);
 constexpr KeyStroke key_bhop(SDLK_SPACE);
 constexpr KeyStroke key_gui(SDLK_INSERT);
 
+struct GameVars;
 struct SDL_KeyboardEvent;
 union SDL_Event;
 
@@ -60,7 +61,7 @@ public:
 
 	using eventHandler = std::function<void(SDL_Event const &)>;
 
-	Input();
+	Input(const GameVars&);
 
 	auto isDown(SDL_Keycode key) const -> bool;
 

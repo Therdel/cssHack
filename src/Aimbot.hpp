@@ -4,8 +4,9 @@
 
 #include "Utility.hpp"
 #include "DetourToCallback.hpp"
-#include "Player.hpp"
-#include "Pointers/SharedGamePointer.hpp"
+#include "Pointers/GameVars.hpp"
+#include "Pointers/overlay_structs.hpp"
+
 
 struct Player;
 //class GUI;
@@ -18,13 +19,13 @@ public:
 	};
 
 	struct AimTarget {
-		Player &target;
+		overlay_structs::Player &target;
 		glm::vec3 aimPoint;
 		glm::vec3 anglesToTarget;
 	};
 
 	//explicit Aimbot(GUI &gui);
-	explicit Aimbot();
+	explicit Aimbot(GameVars);
 
 	~Aimbot();
 
@@ -59,6 +60,8 @@ private:
 		BY_DISTANCE
 	};
 
+	GameVars gameVars;
+
 	//GUI &m_gui;
 
 	// TODO: read max players value from memory
@@ -73,16 +76,6 @@ private:
 	float m_aim_fov_rad;        // >= 180 results in deactivation of fov selection
 	bool m_aim_noRecoil;
 	bool m_aim_noVisRecoil;
-
-	// memory fields the aimbot operates on
-	SharedGamePointer<glm::vec3> m_playerPos;
-	SharedGamePointer<glm::vec3> m_aimAngles;
-	SharedGamePointer<glm::vec3> m_visualAngles;
-	SharedGamePointer<glm::vec3> m_punchAngles;
-	SharedGamePointer<Player::TEAM> m_playerTeam;
-	SharedGamePointer<std::array<Player, MAX_PLAYERS>> m_players;
-	SharedGamePointer<int> m_crosshair_target_id;
-	SharedGamePointer<int> m_doAttack;
 
 	glm::vec3 m_recoilFix_previous;
 	std::optional<AimTarget> m_currentTarget;
@@ -105,20 +98,20 @@ private:
 		std::atomic<Mode360> m_modeAfter;
 		std::chrono::time_point<std::chrono::steady_clock> m_startTime;
 		glm::vec3 m_startAngles;
-		Player *m_target = nullptr;
+		overlay_structs::Player *m_target = nullptr;
 	} m_360;
 
 	auto install() -> void;
 
 	auto uninstall() -> void;
 
-	static auto getTargetAimPoint(const Player &target) -> glm::vec3;
+	static auto getTargetAimPoint(const overlay_structs::Player &target) -> glm::vec3;
 
 	static auto cartesianToPolar(const glm::vec3 &cartesian) -> glm::vec3;
 
 	auto findTarget(AIM_TYPE method) -> void;
 
-	auto isCrosshairOnTarget() const -> std::optional<Player *>;
+	auto isCrosshairOnTarget() const -> std::optional<overlay_structs::Player *>;
 
 	auto removeVisRecoil() -> void;
 
@@ -130,5 +123,5 @@ private:
 
     // deflect aim away from target.
     // Result is the world coordinate [targetRadius] away from player.
-    auto deflectAimInWorld(const Player &target, float targetRadius) -> std::optional<glm::vec3>;
+    auto deflectAimInWorld(const overlay_structs::Player &target, float targetRadius) -> std::optional<glm::vec3>;
 };

@@ -20,8 +20,9 @@
 
 using namespace Util;
 
-ESP::ESP(DrawHook &drawHook, GUI &gui, Aimbot &aimbot)
-		: m_drawHook(drawHook)
+ESP::ESP(GameVars gameVars, DrawHook &drawHook, GUI &gui, Aimbot &aimbot)
+		: gameVars{gameVars}
+		, m_drawHook(drawHook)
 		, m_gui(gui)
 		, m_aimbot(aimbot)
 		, m_enableDrawFov(true)
@@ -42,11 +43,6 @@ ESP::ESP(DrawHook &drawHook, GUI &gui, Aimbot &aimbot)
 	m_fovHorizDegrees = (float *) (l_engine_base + Offsets::engine_fov_horizontal);
 	m_mat_viewModel = (glm::mat4 *) (l_client_base + Offsets::client_matViewModel);
 
-	uintptr_t l_client_player_base_addr = *(uintptr_t *) (l_client_base + Offsets::client_player_p_base);
-	m_players = (decltype(m_players)) (l_client_player_base_addr + Offsets::client_player_p_off);
-
-	m_player_pos = (glm::vec3 *) (l_engine_base + Offsets::engine_player_pos);
-	m_player_angles_vis = (glm::vec3 *) (l_client_base + Offsets::client_viewAngleVis);
 	m_screen_dimensions = (std::pair<int, int> *) (l_engine_base + Offsets::engine_screenDimensions);
 	m_drawHook.attachSubscriber(this);
 
@@ -224,13 +220,13 @@ auto ESP::drawBox(glm::vec3 position, SDL_Color const &color, float height, floa
 auto ESP::drawLineESP() const -> void {
 	glLineWidth(LINEWIDTH);
 	glBegin(GL_LINES);
-	for (auto &player : *m_players) {
+	for (auto &player : gameVars.radar_struct.players) {
 		if (!player.isActive()) {
 			continue;
 		}
 		auto screen_cartesian = world_to_screen(player.m_pos);
 		if (screen_cartesian.has_value()) {
-			if (player.m_team == Player::TEAM::T) {
+			if (player.m_team == overlay_structs::Player::TEAM::T) {
 				glColor3ub(255, 0, 0); // RED
 			} else {
 				glColor3ub(0, 0, 255); // BLUE
@@ -246,15 +242,15 @@ auto ESP::drawBoxESP() const -> void {
 	static SDL_Color colorT{255, 0, 0, 255};  // RED
 	static SDL_Color colorCT{0, 0, 255, 255}; // BLUE
 
-	for (auto &player: *m_players) {
+	for (auto &player: gameVars.radar_struct.players) {
 		if (!player.isActive()) {
 			continue;
 		}
 		// FIXME: Find out which entity in the list is the player without dist
 		// ensure there's no box drawn around our player
-		if (glm::distance(player.m_pos, *m_player_pos) >= 20.0f) {
+		if (glm::distance(player.m_pos, gameVars.player_pos) >= 20.0f) {
 			drawBox(player.m_pos,
-			        player.m_team == Player::TEAM::T ? colorT : colorCT,
+			        player.m_team == overlay_structs::Player::TEAM::T ? colorT : colorCT,
 			        -65.0f,
 			        player.m_viewangles.y,
 			        30.0f);
@@ -271,7 +267,7 @@ auto ESP::drawFlagESP() const -> void {
 	static glm::vec3 l_flagTipOff = l_flagLowPointOff + glm::vec3{l_flagSize, 0, l_flagSize / 2.0};
 
 	glLineWidth(LINEWIDTH);
-	for (auto &player : *m_players) {
+	for (auto &player : gameVars.radar_struct.players) {
 		if (!player.isActive()) {
 			continue;
 		}
@@ -292,7 +288,7 @@ auto ESP::drawFlagESP() const -> void {
 				{
 					// draw flag surface
 					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-					if (player.m_team == Player::TEAM::T) {
+					if (player.m_team == overlay_structs::Player::TEAM::T) {
 						glColor4ubv((const GLubyte *) &colorTflag);
 					} else {
 						glColor4ubv((const GLubyte *) &colorCTflag);
@@ -304,7 +300,7 @@ auto ESP::drawFlagESP() const -> void {
 					glEnd();
 					// draw flag border
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-					if (player.m_team == Player::TEAM::T) {
+					if (player.m_team == overlay_structs::Player::TEAM::T) {
 						glColor4ubv((const GLubyte *) &colorT);
 					} else {
 						glColor4ubv((const GLubyte *) &colorCT);
@@ -341,7 +337,7 @@ auto ESP::drawBoneBoxes() const -> void {
 				l_bone.m_rows[2][3]
 		};
 		if (l_bonePos != origin &&
-			glm::distance(l_bonePos, *m_player_pos) > 100) {
+			glm::distance(l_bonePos, gameVars.player_pos) > 100) {
 			drawBox(l_bonePos, color, 10, 0, 10);
 		}
 	}
@@ -353,7 +349,7 @@ auto ESP::drawBoneBoxes() const -> void {
 				l_bone.m_rows[2][3]
 		};
 		if (l_bonePos != origin &&
-			glm::distance(l_bonePos, *m_player_pos) > 100) {
+			glm::distance(l_bonePos, gameVars.player_pos) > 100) {
 			drawBox(l_bonePos, color, 10, 0, 10);
 		}
 	}
@@ -391,11 +387,11 @@ auto ESP::drawCircleScreen(float cx, float cy, float r, int num_segments, const 
 auto ESP::drawAimFov() const -> void {
 	// get screen coordinates of a point on the fov circle
 	// TODO: Get circle radius from dummy projection independent of camera position.
-	glm::vec3 l_anglesOnFovRing = *m_player_angles_vis;
+	glm::vec3 l_anglesOnFovRing = gameVars.angles_visual;
 	l_anglesOnFovRing.x += toDegrees(m_aimbot.m_aim_fov_rad);
 	auto l_pointOnFovRing = viewAnglesToUnitvector(l_anglesOnFovRing);
 
-	auto l_fovPointWorld = *m_player_pos + l_pointOnFovRing;
+	auto l_fovPointWorld = gameVars.player_pos + l_pointOnFovRing;
 	auto l_fovPointScreen = world_to_screen(l_fovPointWorld);
 
 	if (l_fovPointScreen.has_value()) {
@@ -469,7 +465,7 @@ auto ESP::drawAimTargetCross() const -> void {
 
 	if (l_currentTarget.has_value()) {
 		auto l_targetUnitVector = viewAnglesToUnitvector(l_currentTarget->anglesToTarget);
-		auto l_pointOnTargetSightLine = *m_player_pos + l_targetUnitVector;
+		auto l_pointOnTargetSightLine = gameVars.player_pos + l_targetUnitVector;
 		auto l_targetOnScreen = world_to_screen(l_pointOnTargetSightLine);
 
 		if (l_targetOnScreen.has_value()) {
@@ -491,7 +487,7 @@ auto ESP::drawAimTargetCross() const -> void {
 
 auto ESP::drawBulletPrediction() const -> void {
 	glm::vec3 l_bulletPredictionUnitVec = viewAnglesToUnitvector(m_aimbot.getBulletPredictionAngles());
-	glm::vec3 l_bulletPointWorld = *m_player_pos + l_bulletPredictionUnitVec;
+	glm::vec3 l_bulletPointWorld = gameVars.player_pos + l_bulletPredictionUnitVec;
 	auto l_bulletPointScreen = world_to_screen(l_bulletPointWorld);
 
 	if (l_bulletPointScreen.has_value()) {
