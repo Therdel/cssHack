@@ -17,22 +17,28 @@ echo "Process: $process (pid: $pid)"
 echo "Library: $libraryPath"
 
 # check already injected
-if grep -q $libraryPath /proc/$pid/maps; then
-    echo "$library already loaded"
+if grep -q $libraryPath /proc/$pid/maps ;
+then
+    echo "Library $library already loaded. Exiting."
     exit
 fi
 
-gdb -n -q -batch \
-  -ex "attach $pid" \
-  -ex "set \$dlopen = (void*(*)(char*, int)) __libc_dlopen_mode" \
-  -ex "set \$result = \$dlopen(\"$libraryPath\", 1)" \
-  -ex "if \$result == 0" \
-  -ex "printf \"Error: %s\\n\", (char*)dlerror()" \
-  -ex "else" \
-  -ex "print \"Success\"" \
-  -ex "end" \
-  -ex "detach" \
-  -ex "quit"
+# inject
+echo "Injecting library $library."
+gdbScript="
+    attach $pid
+    set \$dlopen = (void*(*)(char*, int)) dlopen
+    set \$result = \$dlopen(\"$libraryPath\", 1)
+    if \$result == 0
+        printf \"\\nInjection Error: %s\\n\", (char*)dlerror()
+    else
+        printf \"\\nInjection Success\\n\"
+    end
+    detach
+    quit
+"
+echo "$gdbScript" | sudo gdb -n --silent
+echo "" # gdb output doesn't end with a newline, so the next echos would appear to come from gdb
 
 # check running
 pid=$(pidof $process)
@@ -44,8 +50,7 @@ fi
 
 # check success
 if grep -q $libraryPath /proc/$pid/maps; then
-    echo "Injected $library into $process ($pid)"
+    echo "Injected library $library into process $process (pid: $pid)"
 else
-    echo "Injection failed: library not found in process space"
+    echo "Injection failed: Library $library not found in process $process (pid: $pid)"
 fi
-

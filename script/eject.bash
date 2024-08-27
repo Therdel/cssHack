@@ -6,35 +6,51 @@ pid=$(pidof $process)
 libraryPath=$(realpath "../build/libcssHack.so")
 library=$(basename $libraryPath)
 
-echo "Process: $process (pid: $(pidof $process))"
-echo "Library: $library"
+# check running
+if [ -z "$pid" ]
+then
+    echo "$process is not running"
+    exit 1
+fi
 
-if grep -q $libraryPath /proc/$pid/maps ; then
-    echo "$library is loaded. Ejecting"
-    sudo gdb -n -q -batch \
-      -ex "attach $pid" \
-      -ex "set \$dlopen = (void*(*)(char*, int)) dlopen" \
-      -ex "set \$dlclose = (int(*)(void*)) dlclose" \
-      -ex "set \$library = \$dlopen(\"$libraryPath\", 6)" \
-      -ex "call \$dlclose(\$library)" \
-      -ex "call \$dlclose(\$library)" \
-      -ex "detach" \
-      -ex "quit"
+echo "Process: $process (pid: $pid)"
+echo "Library: $libraryPath"
 
-  # check running
-  pid=$(pidof $process)
-  if [ -z "$pid" ]
-  then
-      echo "Ejection failed: $process crashed"
-      exit 1
-  fi
+# check if library is injected
+if ! grep -q $libraryPath /proc/$pid/maps ;
+then
+    echo "Library $library is not loaded. Exiting."
+    exit
+fi
 
-  # check success
-  if grep -q $libraryPath /proc/$pid/maps; then
-      echo "Ejection failed: library still in process space"
-  else
-      echo "Ejected $library from $process ($pid)"
-  fi
+# eject
+echo "Library $library is loaded. Ejecting"
+gdbScript="
+    attach $pid
+    set \$dlopen = (void*(*)(char*, int)) dlopen
+    set \$dlclose = (int(*)(void*)) dlclose
+    set \$library = \$dlopen(\"$libraryPath\", 6)
+    call \$dlclose(\$library)
+    call \$dlclose(\$library)
+    detach
+    quit
+"
+echo "$gdbScript" | sudo gdb -n --silent
+echo "" # gdb output doesn't end with a newline, so the next echos would appear to come from gdb
+
+
+
+# check running
+pid=$(pidof $process)
+if [ -z "$pid" ]
+then
+    echo "Ejection failed: $process crashed"
+    exit 1
+fi
+
+# check success
+if ! grep -q $libraryPath /proc/$pid/maps ; then
+    echo "Ejected library $library from process $process (pid: $pid)"
 else
-    echo "$library is not loaded"
+    echo "Ejection failed: Library $library still in process $process (pid: $pid)"
 fi
