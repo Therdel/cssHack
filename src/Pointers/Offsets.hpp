@@ -13,14 +13,13 @@ enum class OffsetType {
 namespace Offsets {
 	// Aimbot
 #ifdef __linux__
-    constexpr ptrdiff_t client_viewAngleVis = 0xBC2294;
+    constexpr ptrdiff_t client_viewAngleVis = 0xBC3E14;
 
     constexpr ptrdiff_t localplayer_off_team = 0x8C;
-    constexpr ptrdiff_t localplayer_off_eye_height = 0xF0;
-    constexpr ptrdiff_t localplayer_off_pos = 0x260;
     constexpr ptrdiff_t localplayer_off_punch = 0xE28;
     constexpr ptrdiff_t localplayer_off_targetId = 0x14D0;
     constexpr ptrdiff_t playerArray_off = 0x28;
+    constexpr ptrdiff_t client_radarstruct_playerArray_base = 0xBE9380;
     constexpr ptrdiff_t radarstruct_playerArray_off = 0x28;
 
 #else

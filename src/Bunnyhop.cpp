@@ -1,5 +1,6 @@
 #include "Bunnyhop.hpp"
 #include "Pointers/Signatures.hpp"
+#include "Pointers/overlay_structs.hpp"
 
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
 #include "Log.hpp"

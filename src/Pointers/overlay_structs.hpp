@@ -45,16 +45,6 @@ namespace overlay_structs {
             } team;
 
             struct {
-                uint8_t padding[Offsets::localplayer_off_eye_height];
-                float value;
-            } eye_height;
-
-            struct {
-                uint8_t padding[Offsets::localplayer_off_pos];
-                glm::vec3 value;
-            } pos;
-
-            struct {
                 uint8_t padding[Offsets::localplayer_off_punch];
                 glm::vec3 value;
             } punch_angles;

@@ -6,7 +6,7 @@ using namespace libNames;
 namespace Signatures {
 	// bunnyhop
 #ifdef __linux__
-	SignatureAOI onGround_op_land       = {client, { "83 05 ?? ?? ?? ?? 01 85 FF 74 3B 8B 07 89 3C 24" }, 0, 7};
+	SignatureAOI onGround_op_land       = {client, { "83 05 ?? ?? ?? ?? 01 85 FF 74 40" }, 0, 7};
 	SignatureAOI onGround_op_leave      = {client, { "83 2D ?? ?? ?? ?? 01 89 50 08 8B 43 08 8B 53 04" }, 0, 7};
 	SignatureAOI onGround               = {client, onGround_op_leave.signature, 2, 4};
 	SignatureAOI doJump                 = {client, {"8B 3D ?? ?? ?? ?? 89 DA 83 CA 02 F7 C7 03 00 00 00 0F 45 DA"}, 2, 4};

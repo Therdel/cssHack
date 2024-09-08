@@ -39,5 +39,5 @@ public:
     std::pair<int, int>& screen_dimensions;
 
 private:
-    uintptr_t& localplayer_base;
+    uintptr_t localplayer_base;
 };
