@@ -26,6 +26,9 @@ fi
 # inject
 echo "Injecting library $library."
 
+# enable gdb attach with ptrace (disable ptrace scope)
+echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+
 # write gdb script
 echo "
 attach $pid
