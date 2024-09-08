@@ -25,20 +25,24 @@ fi
 
 # eject
 echo "Library $library is loaded. Ejecting"
-gdbScript="
-    attach $pid
-    set \$dlopen = (void*(*)(char*, int)) dlopen
-    set \$dlclose = (int(*)(void*)) dlclose
-    set \$library = \$dlopen(\"$libraryPath\", 6)
-    call \$dlclose(\$library)
-    call \$dlclose(\$library)
-    detach
-    quit
-"
-echo "$gdbScript" | sudo gdb -n --silent
-echo "" # gdb output doesn't end with a newline, so the next echos would appear to come from gdb
 
+# write gdb script
+echo "
+attach $pid
+set \$dlopen = (void*(*)(char*, int)) dlopen
+set \$dlclose = (int(*)(void*)) dlclose
+set \$library = \$dlopen(\"$libraryPath\", 6)
+call \$dlclose(\$library)
+call \$dlclose(\$library)
+detach
+quit
+" > eject.gdb
 
+# eject
+gdb -q --batch --command=eject.gdb
+
+# remove gdb script
+rm eject.gdb
 
 # check running
 pid=$(pidof $process)

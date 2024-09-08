@@ -25,20 +25,26 @@ fi
 
 # inject
 echo "Injecting library $library."
-gdbScript="
-    attach $pid
-    set \$dlopen = (void*(*)(char*, int)) dlopen
-    set \$result = \$dlopen(\"$libraryPath\", 1)
-    if \$result == 0
-        printf \"\\nInjection Error: %s\\n\", (char*)dlerror()
-    else
-        printf \"\\nInjection Success\\n\"
-    end
-    detach
-    quit
-"
-echo "$gdbScript" | sudo gdb -n --silent
-echo "" # gdb output doesn't end with a newline, so the next echos would appear to come from gdb
+
+# write gdb script
+echo "
+attach $pid
+set \$dlopen = (void*(*)(char*, int)) dlopen
+set \$result = \$dlopen(\"$libraryPath\", 1)
+if \$result == 0
+printf \"Injection Error: %s\\n\", (char*)dlerror()
+else
+print \"Injection Success\"
+end
+detach
+quit
+" > inject.gdb
+
+# inject
+gdb -q --batch --command=inject.gdb
+
+# remove gdb script
+rm inject.gdb
 
 # check running
 pid=$(pidof $process)
