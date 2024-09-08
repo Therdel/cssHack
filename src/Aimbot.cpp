@@ -422,8 +422,8 @@ auto Aimbot::hookViewAnglesUpdate() -> void {
 		gameVars.angles -= m_recoilFix_previous;
 	}
 
-        deflect_once();
-	//aim_once();
+	// deflect_once();
+	aim_once();
 
 	// calculate (visual and effective) recoil compensation
 	auto l_recoil_fix_new = localplayer.punch_angles.value;
