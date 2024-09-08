@@ -90,7 +90,7 @@ namespace Util {
 	auto degreesBetweenVectors(const glm::vec3 &a, const glm::vec3 &b) -> float {
 		// derive the angle using the dot product
 		const float l_dotProduct = glm::dot(a, b);
-		const float l_angleRad = std::acos(l_dotProduct / (a.length() * b.length()));
+		const float l_angleRad = std::acos(l_dotProduct / (glm::length(a) * glm::length(b)));
 		// check if acos returned a nan value
 		if (std::isnan(l_angleRad)) {
 			// this means that both vectors directions were very similar - we'll return 0

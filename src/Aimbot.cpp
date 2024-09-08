@@ -284,7 +284,7 @@ auto Aimbot::getTargetAimPoint(const overlay_structs::Player &target) -> glm::ve
 
 auto Aimbot::cartesianToPolar(const glm::vec3 &cartesian) -> glm::vec3 {
 	const float l_yawNewDeg = toDegrees(std::atan2(cartesian.y, cartesian.x));
-	const float l_pitchNewDeg = toDegrees(std::acos(cartesian.z / cartesian.length()));
+	const float l_pitchNewDeg = toDegrees(std::acos(cartesian.z / glm::length(cartesian)));
 
 	// TODO: Clarify angle conversion
 	return {l_pitchNewDeg - 90, l_yawNewDeg, 0.0};
@@ -472,7 +472,7 @@ auto Aimbot::deflectAimInWorld(const overlay_structs::Player &target, float targ
   // pA is the point on the target circle disk
   glm::vec3 pA = gameVars.player_pos + vUnitAimVec * d;
   glm::vec3 pCA = pA - pTargetCenter;
-  float distancePaToTargetCenter = pCA.length();
+  float distancePaToTargetCenter = glm::length(pCA);
   if (distancePaToTargetCenter < targetRadius) {
     // perform deflect
     glm::vec3 pCAStretched = glm::normalize(pCA) * targetRadius;
