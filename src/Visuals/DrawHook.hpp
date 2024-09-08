@@ -4,6 +4,7 @@
 #pragma once
 
 #include <mutex>
+#include <optional>
 #include <vector>
 
 #include "../Utility.hpp"
@@ -30,7 +31,7 @@ public:
 private:
 	std::mutex m_subscribersMutex;
 	std::vector<DrawHookSubscriber *> m_subscribers;
-    CallDetour _op_sdl_swapWindow_detour;
+    std::optional<CallDetour> _op_sdl_swapWindow_detour;
 
 	auto callSubscribers(SDL_Window *window) -> void;
 

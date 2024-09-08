@@ -19,9 +19,10 @@ DrawHook *g_DrawHook = nullptr;
 DrawHook::DrawHook(const GameVars &gameVars)
 		: m_subscribersMutex()
 		, m_subscribers()
-		, _op_sdl_swapWindow_detour{Util::Address(gameVars.op_sdl_swapWindow_caller),
-                                    Util::Address((uintptr_t)(hook_SDL_GL_SwapWindow))} {
+		, _op_sdl_swapWindow_detour{} {
 	g_DrawHook = this;
+	_op_sdl_swapWindow_detour.emplace(Util::Address(gameVars.op_sdl_swapWindow_caller),
+                                      Util::Address((uintptr_t)(hook_SDL_GL_SwapWindow)));
 }
 
 DrawHook::~DrawHook() {

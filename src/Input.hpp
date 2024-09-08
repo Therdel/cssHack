@@ -89,7 +89,7 @@ private:
 	std::mutex m_allEventConsumerMutex;
 	std::optional<eventHandler> m_allEventConsumer;
 
-	CallDetour _op_sdl_pollEvent_detour;
+	std::optional<CallDetour> _op_sdl_pollEvent_detour;
 
 	std::optional<bool> callKeyHandlerIfExists(SDL_KeyboardEvent const &event);
 

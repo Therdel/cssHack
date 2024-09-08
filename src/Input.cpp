@@ -16,9 +16,10 @@ Input::Input(const GameVars &gameVars)
 		, m_keyHandlers()
 		, m_mouseHandlerMutex()
 		, m_mouseHandler()
-		, _op_sdl_pollEvent_detour(Util::Address(gameVars.op_sdl_pollEvent_caller),
-                                   Util::Address((uintptr_t)(hook_SDL_PollEvent))) {
+		, _op_sdl_pollEvent_detour() {
 	g_keyboard = this;
+	_op_sdl_pollEvent_detour.emplace(Util::Address(gameVars.op_sdl_pollEvent_caller),
+                                     Util::Address((uintptr_t)(hook_SDL_PollEvent)));
 }
 
 auto Input::isDown(SDL_Keycode key) const -> bool {
