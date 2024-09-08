@@ -39,9 +39,7 @@ namespace Offsets {
 #endif
 	// Input
 #ifdef __linux__
-//	constexpr ptrdiff_t launcher_sdl_pollEvent_caller = 0x32F5B;
-	// 2019.10.11
-	constexpr ptrdiff_t launcher_sdl_pollEvent_caller = 0x32F7B;
+	constexpr ptrdiff_t launcher_sdl_pollEvent_caller = 0x3325B;
 #else
 	constexpr ptrdiff_t inputsystem_sdl_pollEvent_caller = 0x3A22;
 #endif

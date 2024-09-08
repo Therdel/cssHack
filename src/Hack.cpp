@@ -119,13 +119,13 @@ auto hack_loop() -> void {
 	}
 	*/
 
-	// fixme: Crashes (perhaps) with nullptr on create when put at main() beginning
-	std::this_thread::sleep_for(1000ms); // FIXME: necessary?
+	std::this_thread::sleep_for(100ms); // FIXME: Crashes when put at main() beginning
 	const GameVars gameVars = GameVars::scan();
+
 
 	Input l_input{gameVars};
 	l_input.setKeyHandler(key_eject, &onEjectKey);
-	//wait_for_inject_combination(l_input);
+	wait_for_inject_combination(l_input);
 
 	if (!g_do_exit) {
 		Log::log("Injected");
@@ -141,11 +141,10 @@ auto hack_loop() -> void {
 
 		if (g_do_exit == false && l_isInGame == 1) {
 			// initialize game hacks
-			DrawHook l_drawHook{gameVars};
+//			DrawHook l_drawHook{gameVars};
 //			GUI l_gui{l_drawHook, l_input};
 			Aimbot l_aimbot{gameVars};
 			Bunnyhop l_bunnyhop{gameVars};
-			l_bunnyhop.start();
 //			ESP l_esp{gameVars, l_drawHook, l_gui, l_aimbot};
 //			Wallhack l_wallhack;
 
@@ -158,20 +157,18 @@ auto hack_loop() -> void {
 					                             [&](SDL_KeyboardEvent const &event) {
 						                             return onBhopKey(l_bunnyhop, event);
 					                             });
-					/*
 					ScopedKeyHandler aimbotHandler(l_input,
 					                               key_aim,
 					                               [&](SDL_KeyboardEvent const &event) {
 						                               return onAimKey(l_aimbot, event);
 					                               });
 
-					ScopedKeyHandler aim360Handler(l_input,
+					ScopedKeyHandler triggerBotHandler(l_input,
 					                               key_trigger,
 					                               [&](SDL_KeyboardEvent const &event) {
 						                               return onTriggerKey(l_aimbot, event);
 					                               });
 
-					*/
 					while (g_do_exit == false && l_isInGame == 1 &&
 					       (g_acceptInputInGameMenus || l_isInMenu == 0)) {
 						// sleep for some time to not kill performance
@@ -179,7 +176,7 @@ auto hack_loop() -> void {
 					}
 					l_input.removeMouseHandler();
 					l_bunnyhop.stop();
-					// l_aimbot.stopAim();
+					l_aimbot.stopAim();
 				}
 				// sleep for some time to not kill performance
 				std::this_thread::sleep_for(std::chrono::milliseconds(POLL_SLEEP_MS));

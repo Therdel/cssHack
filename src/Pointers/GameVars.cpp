@@ -20,10 +20,9 @@ auto read_reference_from_signature(const SignatureAOI &signatureAOI) -> T& {
     return reference;
 }
 
-template <typename T>
-auto read_reference_from_static_mem(const std::string_view libName,
+auto read_address_from_static_mem(const std::string_view libName,
 				                    std::vector<ptrdiff_t> offsets,
-                                    OffsetType lastOffsetType = OffsetType::PLAIN_OFFSET) -> T& {
+                                    OffsetType lastOffsetType = OffsetType::PLAIN_OFFSET) -> uintptr_t {
     uintptr_t library_base = MemoryUtils::lib_base_32(libName);
     uintptr_t pointer = library_base;
     for (size_t i=0; i<offsets.size(); ++i) {
@@ -39,7 +38,17 @@ auto read_reference_from_static_mem(const std::string_view libName,
         }
     }
 
-    T& reference = *reinterpret_cast<T*>(pointer);
+    return pointer;
+}
+
+template <typename T>
+auto read_reference_from_static_mem(const std::string_view libName,
+				                    std::vector<ptrdiff_t> offsets,
+                                    OffsetType lastOffsetType = OffsetType::PLAIN_OFFSET) -> T& {
+    uintptr_t address = read_address_from_static_mem(libName, std::move(offsets), lastOffsetType);
+
+    T *pointer = reinterpret_cast<T*>(address);
+    T &reference = *pointer;
     return reference;
 }
 
@@ -56,11 +65,11 @@ GameVars::GameVars()
     , radar_struct{read_reference_from_static_mem<overlay_structs::RadarStruct>(libNames::client, {Offsets::client_radarstruct_playerArray_base, 0})}
     , localplayer_base{read_address_from_signature(Signatures::localplayer_base)}
 #ifdef __linux__
-    , op_sdl_pollEvent_caller{(uintptr_t)read_reference_from_static_mem<uintptr_t>(libNames::launcher, {Offsets::launcher_sdl_pollEvent_caller})}
+    , op_sdl_pollEvent_caller{read_address_from_static_mem(libNames::launcher, {Offsets::launcher_sdl_pollEvent_caller})}
 #else
-    , op_sdl_pollEvent_call{(uintptr_t)read_reference_from_static_mem<uintptr_t>(libNames::inputsystem, {Offsets::inputsystem_sdl_pollEvent_caller})}
+    , op_sdl_pollEvent_call{read_address_from_static_mem(libNames::inputsystem, {Offsets::inputsystem_sdl_pollEvent_caller})}
 #endif
-    , op_sdl_swapWindow_caller{(uintptr_t)read_reference_from_static_mem<uintptr_t>(libNames::launcher, {Offsets::launcher_sdl_swapWindow_caller})}
+    , op_sdl_swapWindow_caller{read_address_from_static_mem(libNames::launcher, {Offsets::launcher_sdl_swapWindow_caller})}
     , fov_horizontal_degrees{read_reference_from_static_mem<float>(libNames::engine, {Offsets::engine_fov_horizontal})}
     , screen_dimensions{read_reference_from_static_mem<std::pair<int, int>>(libNames::engine, {Offsets::engine_screenDimensions})}
 {
