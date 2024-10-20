@@ -85,12 +85,11 @@ auto ESP::onDraw(SDL_Window *) -> void {
 	glEnable(GL_LINE_SMOOTH);
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
-	{
-		drawBox(glm::vec3{0, 0, 0}, {255, 0, 255, 180});
-
 		glLineWidth(m_linewidth);
+
+
 		{
-			// drawBox(glm::vec3{0, 0, 0}, {255, 0, 255, 180});
+			drawBox(glm::vec3{0, 0, 0}, {255, 0, 255, 180});
 			// drawBox(debugBoxPos, {255, 0, 255, 180});
 		if (m_enableBoxESP) {
 			drawBoxESP();
