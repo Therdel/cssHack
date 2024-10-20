@@ -37,7 +37,12 @@ auto exitLibrary() -> void {
 }
 
 auto nix_hack_main(void *) -> void* {
-	hack_loop();
+	try {
+		hack_loop();
+	}
+	catch (std::exception & e) {
+		Log::log<Log::FLUSH>("Exception: ", e.what(), "\nExiting.");
+	}
 
 	return nullptr;
 }
