@@ -9,7 +9,7 @@
 
 
 struct Player;
-//class GUI;
+class GUI;
 
 class Aimbot : public Util::NonCopyable, public Util::NonMovable {
 public:
@@ -24,8 +24,7 @@ public:
 		glm::vec3 anglesToTarget;
 	};
 
-	//explicit Aimbot(GUI &gui);
-	explicit Aimbot(GameVars);
+	explicit Aimbot(GameVars, GUI&);
 
 	~Aimbot();
 
@@ -62,7 +61,7 @@ private:
 
 	GameVars gameVars;
 
-	//GUI &m_gui;
+	GUI &m_gui;
 
 	// TODO: read max players value from memory
 	// how long between attack action start and end

@@ -17,9 +17,9 @@
 #include "Aimbot.hpp"
 #include "Bunnyhop.hpp"
 #include "Input.hpp"
-// #include "Visuals/DrawHook.hpp"
-// #include "Visuals/GUI.hpp"
-// #include "Visuals/ESP.hpp"
+#include "Visuals/DrawHook.hpp"
+#include "Visuals/GUI.hpp"
+#include "Visuals/ESP.hpp"
 // #include "Visuals/Wallhack.hpp"
 
 #define DEFAULT_LOG_CHANNEL Log::Channel::MESSAGE_BOX
@@ -141,11 +141,11 @@ auto hack_loop() -> void {
 
 		if (g_do_exit == false && l_isInGame == 1) {
 			// initialize game hacks
-//			DrawHook l_drawHook{gameVars};
-//			GUI l_gui{l_drawHook, l_input};
-			Aimbot l_aimbot{gameVars};
+			DrawHook l_drawHook{gameVars};
+			GUI l_gui{l_drawHook, l_input};
+            Aimbot l_aimbot{gameVars, l_gui};
 			Bunnyhop l_bunnyhop{gameVars};
-//			ESP l_esp{gameVars, l_drawHook, l_gui, l_aimbot};
+			ESP l_esp{gameVars, l_drawHook, l_gui, l_aimbot};
 //			Wallhack l_wallhack;
 
 			while (g_do_exit == false && l_isInGame == 1) {

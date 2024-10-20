@@ -37,24 +37,25 @@ private:
 	Aimbot &m_aimbot;
 
 	// configuration
-	float LINEWIDTH = 1.7;
-	constexpr static float FAR_PLANE = 1000000, NEAR_PLANE = 1;
+	constexpr static float FAR_PLANE = 10e9, NEAR_PLANE = 0;
+	float m_linewidth = 1.7;
+	bool m_enableAimbotTargetCross;
+	bool m_enableBulletPredictionCross;
 	bool m_enableDrawFov;
 	bool m_enableBoxESP;
 	bool m_enableLineESP;
 	bool m_enableFlagESP;
-	const SDL_Color colorT{255, 0, 0, 255};  // RED
-	const SDL_Color colorCT{0, 0, 255, 255}; // BLUE
-	const SDL_Color colorTflag{255, 255, 0, 255};
-	const SDL_Color colorCTflag{0, 255, 0, 255};
+	constexpr static SDL_Color colorT{255, 0, 0, 255};  // RED
+	constexpr static SDL_Color colorCT{0, 0, 255, 255}; // BLUE
+	constexpr static SDL_Color colorTflag{255, 255, 0, 255};
+	constexpr static SDL_Color colorCTflag{0, 255, 0, 255};
 
+	static glm::mat4 m_mat_unswizzle_game_coords;
 	glm::mat4 m_mat_view;
-	glm::mat4 m_mat_perspective;
-	glm::mat4 m_mat_normalization;
+	glm::mat4 m_mat_projection;
 
 	auto calcMatView() -> glm::mat4;
-	auto calcMatPerspective() -> glm::mat4;
-	auto calcMatNormalization() -> glm::mat4;
+	auto calcMatProjection() -> glm::mat4;
 
 	/**
 	 * Returns given position in screen coordinates, if visible
@@ -82,7 +83,7 @@ private:
 
 	auto drawAimFov() const -> void;
 
-	auto drawAimTargetCross() const -> void;
+	auto drawAimbotTargetCross() const -> void;
 
 	auto drawBulletPrediction() const -> void;
 };

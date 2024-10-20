@@ -21,20 +21,25 @@
 
 using namespace Util;
 
+// TODO: drawing doesn't work when cl_showpos is on
 ESP::ESP(GameVars gameVars, DrawHook &drawHook, GUI &gui, Aimbot &aimbot)
 		: gameVars{gameVars}
 		, m_drawHook(drawHook)
 		, m_gui(gui)
 		, m_aimbot(aimbot)
+		, m_enableAimbotTargetCross(true)
+		, m_enableBulletPredictionCross(true)
 		, m_enableDrawFov(true)
 		, m_enableBoxESP(true)
 		, m_enableLineESP(false)
-		, m_enableFlagESP(true) {
+		, m_enableFlagESP(true)
+	m_gui.registerCheckbox({m_enableAimbotTargetCross, "ESP Aimbot Target Cross"});
+	m_gui.registerCheckbox({m_enableBulletPredictionCross, "ESP Bullet Prediction Cross"});
 	m_gui.registerCheckbox({m_enableDrawFov, "ESP Fov"});
 	m_gui.registerCheckbox({m_enableBoxESP, "ESP Boxes"});
 	m_gui.registerCheckbox({m_enableLineESP, "ESP Lines"});
 	m_gui.registerCheckbox({m_enableFlagESP, "ESP Flags"});
-	m_gui.registerFloatSlider({0, 4, LINEWIDTH, "ESP Linewidth"});
+	m_gui.registerFloatSlider({0, 4, m_linewidth, "ESP Linewidth"});
 
 	m_drawHook.attachSubscriber(this);
 }
@@ -46,8 +51,26 @@ ESP::~ESP() {
 auto ESP::onDraw(SDL_Window *) -> void {
 	// update transformation matrices
 	m_mat_view = calcMatView();
-	m_mat_perspective = calcMatPerspective();
-	m_mat_normalization = calcMatNormalization();
+	m_mat_projection = calcMatProjection();
+
+	// Save game's OpenGL state
+	glPushAttrib(GL_ALL_ATTRIB_BITS); // Save all attributes
+	glPushMatrix(); // Save current matrix state
+
+	// Save game's OpenGL matrices Set up the modelview and projection matrices
+	glMatrixMode(GL_TEXTURE);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	{
 
 	// enable line antialiasing, setting linewidth and  "normal" alpha channel
 	GLboolean lastBlendEnabled = glIsEnabled(GL_BLEND);
@@ -63,7 +86,12 @@ auto ESP::onDraw(SDL_Window *) -> void {
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
 	{
-//		drawBox(glm::vec3{0, 0, 0}, {255, 0, 255, 180});
+		drawBox(glm::vec3{0, 0, 0}, {255, 0, 255, 180});
+
+		glLineWidth(m_linewidth);
+		{
+			// drawBox(glm::vec3{0, 0, 0}, {255, 0, 255, 180});
+			// drawBox(debugBoxPos, {255, 0, 255, 180});
 		if (m_enableBoxESP) {
 			drawBoxESP();
 		}
@@ -76,69 +104,77 @@ auto ESP::onDraw(SDL_Window *) -> void {
 		if (m_enableDrawFov) {
 			drawAimFov();
 		}
-		drawAimTargetCross();
+			if (m_enableAimbotTargetCross) {
+				drawAimbotTargetCross();
+			}
+			if (m_enableBulletPredictionCross) {
 		drawBulletPrediction();
 	}
+		}
+	}
 
-	// restore previous opengl state
-	glLineWidth(lastLineWidth);
-	if (!lastLineSmoothEnabled) {
-		glDisable(GL_LINE_SMOOTH);
-	}
-	glHint(GL_LINE_SMOOTH_HINT, lastSmoothHint);
-	if (!lastBlendEnabled) {
-		glDisable(GL_BLEND);
-	}
+	////// Restore game OpenGL matrices
+	glMatrixMode(GL_TEXTURE);
+	glPopMatrix();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	// Restore game OpenGL attributes
+	glPopAttrib(); // Restore all attributes
+	glPopMatrix(); // Restore the matrix state
 }
 
+// (un-)swizzle game world coords format from (z, x, y) to (x, y, z)
+// weirdly, we have to negate an axis for this to work
+glm::mat4 ESP::m_mat_unswizzle_game_coords = [] {
+	// 0  1  0  0
+	// 0  0  1  0
+	// 1  0  0  0
+	// 0  0  0  1
+	const auto unswizzle_coords = glm::transpose(glm::mat4{
+		0,  1,  0,  0,
+		0,  0,  1,  0,
+		1,  0,  0,  0,
+		0,  0,  0,  1,
+		});
+
+	const auto flip_x_axis = glm::scale(glm::vec3{-1, 1, -1});
+
+	return flip_x_axis * unswizzle_coords;
+}();
+
 auto ESP::calcMatView() -> glm::mat4 {
-	// TODO: use visual angles here for compatibility with silent aim?
-	const glm::vec3 &orientation = gameVars.angles;
-	const glm::vec3 &position = gameVars.player_pos;
-	const glm::mat4 rotation_matrix = glm::eulerAngleYXZ(orientation.y, orientation.x, orientation.z);
-	// TODO: Document http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/#translation-matrices
+	// Game coordinate system
+	//   Orientation format: (x, y, z)
+	//   Position format: (z, x, y)
+	//   Default orientation: (0, 0, 0) is looking in positive z axis
+
+	const glm::vec3 orientation = {-gameVars.angles_visual.x, gameVars.angles_visual.y, -gameVars.angles_visual.z};
+
+	const glm::vec3 position = m_mat_unswizzle_game_coords * glm::vec4{gameVars.player_pos, 1};
+
+	const glm::mat4 rotation_matrix = glm::eulerAngleYXZ(
+				glm::radians(orientation.y), glm::radians(orientation.x), glm::radians(orientation.z));
+
 	const glm::mat4 translation_matrix = glm::translate(position);
 
 	// apply rotation first, translation second
 	const glm::mat4 camera_transform = translation_matrix * rotation_matrix;
 
-	// TODO: Document: View transform must use inverses, because it must undo the camera pos/rot towards origin.
+	// View transform must use inverses, because it must undo the camera pos/rot towards origin.
 	return glm::inverse(camera_transform);
 }
 
-auto ESP::calcMatPerspective() -> glm::mat4 {
-	return {
-		glm::vec4{1, 0, 0, 0},
-	    glm::vec4{0, 1, 0, 0},
-	    glm::vec4{0, 0, 1 + (FAR_PLANE / NEAR_PLANE), FAR_PLANE},
-	    glm::vec4{0, 0, -1 / NEAR_PLANE, 0}
-	};
-}
-
-auto ESP::calcMatNormalization() -> glm::mat4 {
-	auto &screenW = gameVars.screen_dimensions.first;
-	auto &screenH = gameVars.screen_dimensions.second;
-
-	// source: https://www.khronos.org/opengl/wiki/GluPerspective_code
-	float ymax, xmax;
-	xmax = NEAR_PLANE * tanf(toRadians(gameVars.fov_horizontal_degrees) / 2.0f);
-	ymax = xmax * screenH / screenW;
-	float m_r = xmax, m_l = -xmax, m_t = ymax, m_b = -ymax;
-
-	// explanation:
-	// m_r = right  clip
-	// m_l = left   clip
-	// m_t = top    clip
-	// m_b = bottom clip
-	// NEAR_PLANE = near clipping plane
-	// FAR_PLANE  = far  clipping plane
-
-	return {
-		glm::vec4{2 / (m_r - m_l), 0, 0, -(m_r + m_l) / (m_r - m_l)},
-		glm::vec4{0, 2 / (m_t - m_b), 0, -(m_t + m_b) / (m_t - m_b)},
-		glm::vec4{0, 0, -2 * (FAR_PLANE - NEAR_PLANE), -(FAR_PLANE + NEAR_PLANE) / (FAR_PLANE - NEAR_PLANE)},
-		glm::vec4{0, 0, 0, 1}
-	};
+auto ESP::calcMatProjection() -> glm::mat4 {
+	return glm::perspective(
+		(float)glm::radians(gameVars.fov_vertical_degrees),
+		(float)gameVars.screen_dimensions.first/(float)gameVars.screen_dimensions.second,
+		(float)debugNear,
+		(float)debugFar);
 }
 
 // source: Youtube HazardEdit - Gamehacking#13 ESP Overlay
@@ -149,34 +185,35 @@ auto ESP::world_to_screen(glm::vec3 const &worldPos) const -> std::optional<glm:
 	// TODO if the modelViewMatrix is unavailable:
 	// https://gamedev.stackexchange.com/questions/168542/camera-view-matrix-from-position-yaw-pitch-worldup
 	std::optional<glm::vec2> l_result(std::nullopt);
-	glm::vec4 world_homogenous{worldPos.x, worldPos.y, worldPos.z, 1};
+
+	glm::vec4 world_homogenous_swizzled{worldPos, 1};
+	glm::vec4 world_homogenous = m_mat_unswizzle_game_coords * world_homogenous_swizzled;
 	glm::vec4 view_homogenous = m_mat_view * world_homogenous;
 
-	auto projected_homogenous = m_mat_perspective * view_homogenous;
 	// check if vertex is in front of screen
-	if (projected_homogenous.w > 0.1f) {
-		auto normalized_homogenous = m_mat_normalization * projected_homogenous;
-		auto normalized_cartesian = glm::vec3{normalized_homogenous} / normalized_homogenous.w;
+	if (glm::vec4 projected_homogenous = m_mat_projection * view_homogenous;
+		projected_homogenous.w > 0.1f) {
+		auto projected_cartesian = glm::vec3{projected_homogenous} / projected_homogenous.w;
 
-		l_result = glm::vec2{normalized_cartesian.x, normalized_cartesian.y};
+		l_result = glm::vec2{projected_cartesian.x, projected_cartesian.y};
 	}
 	return l_result;
 }
 
 auto ESP::drawBox(glm::vec3 position, SDL_Color const &color, float height, float orientationYaw, float width) const -> void {
-	constexpr size_t squareVertices = 4;
 	// describes a square of sidelength 1 centered at origin in the x/y plane
-	static std::array<glm::vec3, squareVertices> square{
+	static std::array square{
 		glm::vec3{-0.5, -0.5, 0},
 		glm::vec3{0.5, -0.5, 0},
 		glm::vec3{0.5, 0.5, 0},
 		glm::vec3{-0.5, 0.5, 0}
 	};
 
-	glLineWidth(LINEWIDTH);
+	glLineWidth(m_linewidth);
 	glBegin(GL_LINES);
 	glColor4ubv((GLubyte *) &color);
 	// draw bottom & top planes
+	constexpr size_t squareVertices = 4;
 	for (size_t idxStart = 0; idxStart < squareVertices; ++idxStart) {
 		size_t idxEnd = idxStart + 1;
 		if (idxEnd >= squareVertices) {
@@ -219,7 +256,7 @@ auto ESP::drawBox(glm::vec3 position, SDL_Color const &color, float height, floa
 }
 
 auto ESP::drawLineESP() const -> void {
-	glLineWidth(LINEWIDTH);
+	glLineWidth(m_linewidth);
 	glBegin(GL_LINES);
 	for (auto &player : gameVars.radar_struct.players) {
 		if (!player.isActive()) {
@@ -267,7 +304,7 @@ auto ESP::drawFlagESP() const -> void {
 	// flag points towards x-axis on null-orientation
 	static glm::vec3 l_flagTipOff = l_flagLowPointOff + glm::vec3{l_flagSize, 0, l_flagSize / 2.0};
 
-	glLineWidth(LINEWIDTH);
+	glLineWidth(m_linewidth);
 	for (auto &player : gameVars.radar_struct.players) {
 		if (!player.isActive()) {
 			continue;
@@ -341,7 +378,7 @@ auto ESP::drawCircleScreen(float cx, float cy, float r, int num_segments, const 
 	float y = 0;
 
 
-	glLineWidth(LINEWIDTH);
+	glLineWidth(m_linewidth);
 	glBegin(GL_LINE_LOOP);
 	glColor4ubv((GLubyte *) &color);
 	for (int ii = 0; ii < num_segments; ii++) {
@@ -432,7 +469,7 @@ auto ESP::drawScreenCross(glm::vec2 crossPos, float radius, const SDL_Color &col
 	glLineWidth(lastLineWidth);
 }
 
-auto ESP::drawAimTargetCross() const -> void {
+auto ESP::drawAimbotTargetCross() const -> void {
 	std::optional<Aimbot::AimTarget> const &l_currentTarget = m_aimbot.getCurrentTarget();
 
 	if (l_currentTarget.has_value()) {

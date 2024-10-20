@@ -20,10 +20,9 @@
 
 using namespace Util;
 
-//Aimbot::Aimbot(GUI& gui)
-Aimbot::Aimbot(GameVars gameVars)
-		//: m_gui(gui)
-		: gameVars{gameVars}
+Aimbot::Aimbot(GameVars gameVars, GUI &gui)
+		: m_gui(gui)
+		, gameVars{gameVars}
 		, m_aim_type(AIM_TYPE::BY_ANGLE)
 		, m_friendly_fire(false)
 		, m_aim_fov_rad(toRadians(15))
@@ -36,7 +35,6 @@ Aimbot::Aimbot(GameVars gameVars)
 		, m_detour_viewAngles_update()
 		, m_detour_viewAnglesVis_update()
 		, m_360() {
-	/*
 	m_gui.registerCheckbox({m_friendly_fire, "Aim Friendly Fire"});
 	m_gui.registerAngleRadSlider({0, 180, m_aim_fov_rad, "Aim FOV"});
 	m_gui.registerCheckbox({m_aim_noRecoil, "Aim NoRecoil"});
@@ -52,7 +50,6 @@ Aimbot::Aimbot(GameVars gameVars)
 		                                   }
 	                                   });
 	m_gui.registerComboBox(std::move(aimTypeComboBox));
-	*/
 
 	install();
 }

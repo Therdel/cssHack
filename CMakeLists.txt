@@ -14,12 +14,12 @@ add_library(cssHack SHARED
     src/MemoryUtils.cpp
     src/libEntry.cpp
     src/Utility.cpp
-    #src/Visuals/DrawHook.cpp
-    #src/Visuals/ESP.cpp
+    src/Visuals/DrawHook.cpp
+    src/Visuals/ESP.cpp
     #src/Visuals/Wallhack.cpp
     src/Input.cpp
-    #src/Visuals/GUI.cpp
-    #src/Visuals/Gui_imgui_impl_sdl.cpp
+    src/Visuals/GUI.cpp
+    src/Visuals/Gui_imgui_impl_sdl.cpp
     src/Pointers/GameVars.cpp
     src/Pointers/Signatures.cpp
 )

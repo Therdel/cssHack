@@ -70,7 +70,7 @@ GameVars::GameVars()
     , op_sdl_pollEvent_call{read_address_from_static_mem(libNames::inputsystem, {Offsets::inputsystem_sdl_pollEvent_caller})}
 #endif
     , op_sdl_swapWindow_caller{read_address_from_static_mem(libNames::launcher, {Offsets::launcher_sdl_swapWindow_caller})}
-    , fov_horizontal_degrees{read_reference_from_static_mem<float>(libNames::engine, {Offsets::engine_fov_horizontal})}
+    , fov_vertical_degrees{read_reference_from_static_mem<float>(libNames::engine, {Offsets::engine_fov_vertical_degrees})}
     , screen_dimensions{read_reference_from_static_mem<std::pair<int, int>>(libNames::engine, {Offsets::engine_screenDimensions})}
 {
 

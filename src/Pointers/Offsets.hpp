@@ -45,9 +45,9 @@ namespace Offsets {
 #endif
 	// ESP
 #ifdef __linux__
-	constexpr ptrdiff_t launcher_sdl_swapWindow_caller = 0x30EBC;
-	constexpr ptrdiff_t engine_screenDimensions = 0xD23A54;
-	constexpr ptrdiff_t engine_fov_horizontal = 0xC9EAF8;
+	constexpr ptrdiff_t launcher_sdl_swapWindow_caller = 0x311BC;
+	constexpr ptrdiff_t engine_screenDimensions = 0xD20014;
+	constexpr ptrdiff_t engine_fov_vertical_degrees = 0xC720A4;	// TIP: game cvar "fov" doesn't show real FOV. With fov=90, the real fov_y is ~73°
 #else
 #endif
 	// Wallhack
