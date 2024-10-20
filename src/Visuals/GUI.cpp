@@ -28,6 +28,7 @@
 
 #include "../Log.hpp"
 #include "GuiElements.hpp"
+#include <thread>
 
 using namespace GuiElements;
 
@@ -39,12 +40,18 @@ GUI::GUI(DrawHook &drawHook, Input &keyboard)
 		                  [&](SDL_KeyboardEvent const &event) {
 			                  return onGuiKey(event);
 		                  })
-		, m_didInit(false)
-		, m_show(false) {
+		, m_initImGuiMutex{}
+		, m_didInitImGui(false)
+		, m_showGuiMutex{}
+		, m_showGui{false} {
 	m_drawHook.attachSubscriber(this);
 }
 
 GUI::~GUI() {
+	if (std::scoped_lock showGuiLock{m_showGuiMutex};
+		m_showGui) {
+		m_input.removeMouseHandler();
+	}
 	m_drawHook.detachSubscriber(this);
 	shutdownImGui();
 }
@@ -81,31 +88,18 @@ auto GUI::registerButton(Button button) -> void {
 
 auto GUI::onGuiKey(SDL_KeyboardEvent const &event) -> bool {
 	if (event.type == SDL_KEYDOWN && event.repeat == 0) {
-		m_show = !m_show;
-		if (m_show) {
-			m_input.setMouseHandler([this](SDL_Event const &event) {
-				return onInputEvent(event);
+		std::scoped_lock showGuiLock{m_showGuiMutex};
+		m_showGui = !m_showGui;
+		if (m_showGui) {
+			m_input.setAllEventConsumer([this](SDL_Event const &event) {
+				const bool steal_mouseevent = ImGui_ImplSDL2_ProcessEvent(&event);
+				return steal_mouseevent;
 			});
 		} else {
-			m_input.removeMouseHandler();
+			m_input.removeAllEventConsumer();
 		}
 	}
 	return true;
-}
-
-auto GUI::onInputEvent(SDL_Event const &event) -> bool {
-	bool steal = false;
-	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == key_gui.m_keycode &&
-	    event.key.keysym.mod == key_gui.m_modifiers) {
-		steal = true;
-		if (event.key.repeat == 0) {
-			m_show = !m_show;
-		}
-	} else {
-		steal = ImGui_ImplSDL2_ProcessEvent(&event);
-	}
-
-	return steal;
 }
 
 auto GUI::onDraw(SDL_Window *window) -> void {
@@ -160,8 +154,6 @@ auto GUI::initImGui(SDL_Window *window) -> void {
 	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
 	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
 	//IM_ASSERT(font != NULL);
-
-	m_didInit = true;
 }
 
 auto GUI::shutdownImGui() -> void {
@@ -172,8 +164,10 @@ auto GUI::shutdownImGui() -> void {
 }
 
 auto GUI::imGuiNewFrame(SDL_Window *window) -> void {
-	if (!m_didInit) {
+	std::scoped_lock initImGuiLock{m_initImGuiMutex};
+	if (!m_didInitImGui) {
 		initImGui(window);
+		m_didInitImGui = true;
 	}
 
 	// Start the Dear ImGui frame
@@ -181,7 +175,8 @@ auto GUI::imGuiNewFrame(SDL_Window *window) -> void {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame(window);
 	ImGui::NewFrame();
-	if (m_show) {
+	if (std::scoped_lock showGuiLock{m_showGuiMutex};
+		m_showGui) {
 		io.MouseDrawCursor = true;
 		ImGui::Begin("Knerz");                          // Create a window called "Hello, world!" and append into it.
 		{

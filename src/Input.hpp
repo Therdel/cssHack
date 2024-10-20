@@ -33,6 +33,8 @@ struct KeyStroke {
 		}
 	}
 
+	auto operator==(KeyStroke const&) const -> bool = default;
+
 	SDL_Keycode m_keycode;
 	uint16_t m_modifiers;
 };
@@ -51,15 +53,17 @@ union SDL_Event;
 
 class Input {
 public:
+	/// receives SDL events
+	/// return value determines if the event should be hidden from the game
+	using eventHandler = std::function<bool(SDL_Event const &)>;
+
 	/// receives a key event.
 	/// return value determines if the event should be hidden from the game
 	using keyHandler = std::function<bool(SDL_KeyboardEvent const &)>;
 
 	/// receives mouse motion/button/wheel events
 	/// return value determines if the event should be hidden from the game
-	using mouseHandler = std::function<bool(SDL_Event const &)>;
-
-	using eventHandler = std::function<void(SDL_Event const &)>;
+	using mouseHandler = eventHandler;
 
 	Input(const GameVars&);
 

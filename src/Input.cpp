@@ -137,8 +137,11 @@ auto Input::detour_SDL_PollEvent(SDL_Event *callerEvent) -> int {
 		{
 			std::scoped_lock l_lock(m_allEventConsumerMutex);
 			if (m_allEventConsumer) {
-				(*m_allEventConsumer)(event);
-				steal = true;
+				const KeyStroke keystroke{event.key.keysym.sym, event.key.keysym.mod};
+				const bool is_unconsumable_special_key = 
+					(event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) &&
+					(keystroke == key_gui || keystroke == key_inject || keystroke == key_eject);
+				steal = !is_unconsumable_special_key && (*m_allEventConsumer)(event);
 			}
 		}
 		if (!steal) {

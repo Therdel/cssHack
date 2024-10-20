@@ -59,12 +59,12 @@ private:
 	std::vector<GuiElements::Button> m_debugButtons;
 
 	// imgui stuff
-	bool m_didInit;
-	bool m_show;
+	std::mutex m_initImGuiMutex;
+	bool m_didInitImGui;
+	std::mutex m_showGuiMutex;
+	bool m_showGui;
 
 	auto onGuiKey(SDL_KeyboardEvent const &event) -> bool;
-
-	auto onInputEvent(SDL_Event const &event) -> bool;
 
 	auto initImGui(SDL_Window *window) -> void;
 
