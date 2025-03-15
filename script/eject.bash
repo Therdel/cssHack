@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 # source: https://aixxe.net/2016/09/shared-library-injection
 
+# Check if script is run as root (sudo)
+if [ "$EUID" -ne 0 ]; then
+  echo "Ejection failed: Please run as root or use sudo."
+  exit 1
+fi
+
+# cd into the script's directory
+cd "$(dirname "$0")"
+
 process=hl2_linux
 pid=$(pidof $process)
 libraryPath=$(realpath "../build/libcssHack.so")
@@ -27,7 +36,7 @@ fi
 echo "Library $library is loaded. Ejecting"
 
 # enable gdb attach with ptrace (disable ptrace scope)
-echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+./disable_ptrace_scope.bash
 
 # write gdb script
 echo "

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
 
-libraryPath=$(realpath "../cmake-build-debug/libcssHack.so")
+# cd into the script's directory
+cd "$(dirname "$0")"
+
+libraryPath=$(realpath "../build/libcssHack.so")
 grep $libraryPath "/proc/$(pidof hl2_linux)/maps"
