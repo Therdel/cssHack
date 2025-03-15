@@ -1,6 +1,7 @@
 //
 // Created by therdel on 15.06.19.
 //
+#include <cstring>
 #include <optional>
 
 #include <SDL.h>
@@ -86,7 +87,7 @@ auto Input::injectEvent(SDL_Event *event) -> void {
 
 //static auto fakeMouseMotionEvent(Vec2f const &pos) -> SDL_Event {
 //	SDL_Event result;
-//	memset(&result, '\0', sizeof(result));
+//	std::memset(&result, '\0', sizeof(result));
 //
 //	result.type = SDL_MOUSEMOTION;
 //	result.motion.timestamp = std::numeric_limits<decltype(result.motion.timestamp)>::max();
@@ -98,7 +99,7 @@ auto Input::injectEvent(SDL_Event *event) -> void {
 
 static auto getNopEvent() -> SDL_Event {
 	SDL_Event result;
-	memset(&result, '\0', sizeof(result));
+        std::memset(&result, '\0', sizeof(result));
 
 //	result.type = SDL_MOUSEMOTION;
 //	auto &motionEvent = result.motion;
