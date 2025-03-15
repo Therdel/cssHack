@@ -69,10 +69,12 @@ set(GLM_INCLUDE_DIRS
 # source: https://gitlab.kitware.com/cmake/community/wikis/doc/tutorials/How-To-Write-Platform-Checks
 if(CMAKE_SYSTEM_NAME MATCHES Windows)
     set(SDL2_DIR "lib/windows/SDL2-devel-2.0.10-VC/SDL2-2.0.10")
+    find_package(SDL2 REQUIRED)
 else()
-    set(SDL2_DIR "/usr/lib/i386-linux-gnu/cmake/SDL2")
+    # set(SDL2_DIR "/usr/lib/i386-linux-gnu/cmake/SDL2")
+    # set(SDL2_DIR "lib/SDL")
+    set(SDL2_INCLUDE_DIRS "lib/SDL/include")
 endif()
-find_package(SDL2 REQUIRED)
 find_package(Threads REQUIRED)
 
 ###########################

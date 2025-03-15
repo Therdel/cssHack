@@ -8,3 +8,6 @@
 	path = lib/BoyerMoore-DontCare
 	url = https://github.com/Therdel/BoyerMoore-DontCare
 	branch = dontcare
+[submodule "lib/SDL"]
+	path = lib/SDL
+	url = https://github.com/libsdl-org/SDL.git

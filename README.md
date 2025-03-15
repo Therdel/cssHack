@@ -52,32 +52,32 @@ https://user-images.githubusercontent.com/14974231/142050572-a557c6a9-42d9-40d3-
 ## Getting Started
 ### Building
 1. **[only for GNU/Linux]**<br>
+    install compilation tools
+    ```bash
+    sudo apt-get install cmake clang
+    ```
     install packages for 32bit compilation (*game is 32bit only*)
     ```bash
     sudo apt-get install gcc-multilib g++-multilib
     ```
-1. **[only for GNU/Linux]**<br>
-    install 32bit [libSDL2](https://wiki.libsdl.org/SDL2/Installation#linuxunix) - *used for hooking renderer & IO*
+    install OpenGL dev lib *used for rendering*
     ```bash
-    sudo dpkg --add-architecture i386   # enable adding 32bit packages
-    sudo add-apt-repository universe    # add 'universe' package repo
-    sudo apt update
-    sudo apt-get install libsdl2-dev:i386
+    sudo apt-get install libgl-dev
     ```
-1. clone repository
+2. clone repository
     ```bash
-    git clone https://github.com/Therdel/cssHack.git --recurse-submodules
+    git clone https://github.com/Therdel/cssHack.git --recurse-submodules --shallow-submodules --depth=1
     cd cssHack
     ```
-1. build
+3. build
     ```bash
     mkdir build && cd build
     cmake .. && make -j
     ```
 
-### Injecting
+### Injecting **use at your own risk**
 #### Windows
-*Winject 1.7* is easy to use. **use at your own risk**. Get it from e.g. [oldschoolhack.me](https://www.oldschoolhack.me/en/downloads/tools/3610-winject-17)
+*Winject 1.7* is easy to use **use at your own risk**. Get it from e.g. [oldschoolhack.me](https://www.oldschoolhack.me/en/downloads/tools/3610-winject-17)
 #### GNU/Linux
 - I bundled three scripts in the ```scripts/``` directory: *inject.bash*, *eject.bash* & *reinject.bash*. I adapted [aixxe](https://aixxe.net/2016/09/shared-library-injection)'s idea for these.
 - You may have to adapt paths in the scripts.
