@@ -21,6 +21,63 @@
 
 using namespace Util;
 
+
+enum class PolygonMode {
+	FILL, WIREFRAME, POINTS
+};
+
+void with(PolygonMode polygonMode,
+		  std::invocable<> auto draw) {
+	// store PolygonMode for front and back each https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glGet.xml
+	GLint polygonModeBefore[2];
+	glGetIntegerv(GL_POLYGON_MODE, polygonModeBefore);
+
+	switch(polygonMode) {
+		case PolygonMode::FILL:
+		glPolygonMode(GL_FRONT, GL_FILL);
+		break;
+		case PolygonMode::WIREFRAME:
+		glPolygonMode(GL_FRONT, GL_LINE);
+		break;
+		case PolygonMode::POINTS:
+		glPolygonMode(GL_FRONT, GL_POINT);
+		break;
+	}
+
+	draw();
+
+	glPolygonMode(GL_FRONT, polygonModeBefore[0]);
+}
+void translated(glm::vec3 translate,
+		  		std::invocable<> auto draw) {
+	glPushMatrix();
+	{
+		glTranslatef(translate.x, translate.y, translate.z);
+		draw();
+	}
+	glPopMatrix();
+}
+void rotated(float angle, glm::vec3 rotate,
+			 std::invocable<> auto draw) {
+	glPushMatrix();
+	{
+		glRotatef(angle, rotate.x, rotate.y, rotate.z);
+		draw();
+	}
+	glPopMatrix();
+}
+void scaled(glm::vec3 scale,
+			std::invocable<> auto draw) {
+	glPushMatrix();
+	{
+		glScalef(scale.x, scale.y, scale.z);
+		draw();
+	}
+	glPopMatrix();
+}
+
+auto drawBox_matrixstacks(SDL_Color const &color) -> void;
+
 // TODO: drawing doesn't work when cl_showpos is on
 ESP::ESP(GameVars gameVars, DrawHook &drawHook, GUI &gui, Aimbot &aimbot)
 		: gameVars{gameVars}
@@ -33,6 +90,13 @@ ESP::ESP(GameVars gameVars, DrawHook &drawHook, GUI &gui, Aimbot &aimbot)
 		, m_enableBoxESP(true)
 		, m_enableLineESP(false)
 		, m_enableFlagESP(true)
+		, debugPlayerPos{0, 0, 200}
+		, debugPlayerEuler{0, 0, 0}
+		, debugAxesPos{0, 0, 0}
+		, eulerVariant{0}
+		, debugAxesScale{50}
+		, fov_vertical_degrees_used{gameVars.fov_vertical_degrees}
+		, debugNear{NEAR_PLANE}, debugFar{FAR_PLANE} {
 	m_gui.registerCheckbox({m_enableAimbotTargetCross, "ESP Aimbot Target Cross"});
 	m_gui.registerCheckbox({m_enableBulletPredictionCross, "ESP Bullet Prediction Cross"});
 	m_gui.registerCheckbox({m_enableDrawFov, "ESP Fov"});
@@ -40,6 +104,22 @@ ESP::ESP(GameVars gameVars, DrawHook &drawHook, GUI &gui, Aimbot &aimbot)
 	m_gui.registerCheckbox({m_enableLineESP, "ESP Lines"});
 	m_gui.registerCheckbox({m_enableFlagESP, "ESP Flags"});
 	m_gui.registerFloatSlider({0, 4, m_linewidth, "ESP Linewidth"});
+
+	m_gui.registerFloatSlider({-500, 500, debugPlayerPos.x, "debugPlayerPos x"});
+	m_gui.registerFloatSlider({-500, 500, debugPlayerPos.y, "debugPlayerPos y"});
+	m_gui.registerFloatSlider({-500, 500, debugPlayerPos.z, "debugPlayerPos z"});
+	m_gui.registerFloatSlider({ -90,  90, debugPlayerEuler.x, "debugPlayerEuler x"});
+	m_gui.registerFloatSlider({-180, 180, debugPlayerEuler.y, "debugPlayerEuler y"});
+	m_gui.registerFloatSlider({-180, 180, debugPlayerEuler.z, "debugPlayerEuler z"});
+	m_gui.registerFloatSlider({-500, 500, debugAxesPos.x, "debugAxesPos x"});
+	m_gui.registerFloatSlider({-500, 500, debugAxesPos.y, "debugAxesPos y"});
+	m_gui.registerFloatSlider({-500, 500, debugAxesPos.z, "debugAxesPos z"});
+	m_gui.registerFloatSlider({-100, 100, debugAxesScale, "debugAxesScale"});
+	m_gui.registerIntSlider({0, 5, eulerVariant, "eulerVariant"});
+	m_gui.registerFloatSlider({-180, 180, gameVars.fov_vertical_degrees, "fov_vertical_degrees"});
+	m_gui.registerFloatSlider({0, 1000, fov_vertical_degrees_used, "fov_vertical_degrees_used"});
+	m_gui.registerFloatSlider({0, 100, debugNear, "debugNear"});
+	m_gui.registerFloatSlider({0, 1000, debugFar, "debugFar"});
 
 	m_drawHook.attachSubscriber(this);
 }
@@ -70,45 +150,79 @@ auto ESP::onDraw(SDL_Window *) -> void {
 	glPushMatrix();
 	glLoadIdentity();
 
+	glMatrixMode(GL_PROJECTION);
+	// glMultMatrixf(&m_mat_projection[0][0]);
+
 	{
+		// glMatrixMode(GL_MODELVIEW);
+		// glMultMatrixf(&m_mat_view[0][0]);
+		// glMultMatrixf(&m_mat_unswizzle_game_coords[0][0]);
 
-	// enable line antialiasing, setting linewidth and  "normal" alpha channel
-	GLboolean lastBlendEnabled = glIsEnabled(GL_BLEND);
-	GLfloat lastLineWidth;
-	glGetFloatv(GL_LINE_WIDTH, &lastLineWidth);
-	GLboolean lastLineSmoothEnabled = glIsEnabled(GL_LINE_SMOOTH);
-	GLenum lastSmoothHint;
-	glGetIntegerv(GL_LINE_SMOOTH_HINT, (GLint *) &lastSmoothHint);
+		// enable line antialiasing, setting linewidth and  "normal" alpha channel
+		GLboolean lastBlendEnabled = glIsEnabled(GL_BLEND);
+		GLfloat lastLineWidth;
+		glGetFloatv(GL_LINE_WIDTH, &lastLineWidth);
+		GLboolean lastLineSmoothEnabled = glIsEnabled(GL_LINE_SMOOTH);
+		GLenum lastSmoothHint;
+		glGetIntegerv(GL_LINE_SMOOTH_HINT, (GLint *) &lastSmoothHint);
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_LINE_SMOOTH);
-	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_LINE_SMOOTH);
+		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
 		glLineWidth(m_linewidth);
 
+		// with(PolygonMode::FILL, [&] {
+		// 	glBegin(GL_QUADS);
+		// 	{
+		// 		const SDL_Color color{255, 0, 255, 100};
+		// 		glColor4ubv((GLubyte *) &color);
+
+		// 		constexpr std::array pts = {
+		// 			glm::vec3{-500, -500, 0},
+		// 			glm::vec3{500, -500, 0},
+		// 			glm::vec3{500, 500, 0},
+		// 			glm::vec3{-500, 500, 0}
+		// 		};
+
+		// 		glVertex3fv(&pts[0].x);
+		// 		glVertex3fv(&pts[1].x);
+		// 		glVertex3fv(&pts[2].x);
+		// 		glVertex3fv(&pts[3].x);
+
+		// 	}
+		// 	glEnd();
+		// });
+
+		// with(PolygonMode::WIREFRAME, [&] {
+		// 	drawOriginAxes(debugAxesScale);
+		// });
+
+		// drawBoxESP_matrixStacks();
 
 		{
 			drawBox(glm::vec3{0, 0, 0}, {255, 0, 255, 180});
 			// drawBox(debugBoxPos, {255, 0, 255, 180});
-		if (m_enableBoxESP) {
-			drawBoxESP();
-		}
-		if (m_enableLineESP) {
-			drawLineESP();
-		}
-		if (m_enableFlagESP) {
-			drawFlagESP();
-		}
-		if (m_enableDrawFov) {
-			drawAimFov();
-		}
+			drawOriginAxes(debugAxesScale);
+			if (m_enableBoxESP) {
+				drawBoxESP();
+			}
+			if (m_enableLineESP) {
+				drawLineESP();
+			}
+			if (m_enableFlagESP) {
+				drawFlagESP();
+			}
+			if (m_enableDrawFov) {
+				drawAimFov();
+			}
 			if (m_enableAimbotTargetCross) {
 				drawAimbotTargetCross();
 			}
 			if (m_enableBulletPredictionCross) {
-		drawBulletPrediction();
-	}
+				drawBulletPrediction();
+			}
 		}
 	}
 
@@ -151,7 +265,8 @@ auto ESP::calcMatView() -> glm::mat4 {
 	//   Orientation format: (x, y, z)
 	//   Position format: (z, x, y)
 	//   Default orientation: (0, 0, 0) is looking in positive z axis
-
+	
+	// TODO: really, the x angle is the only one reversed
 	const glm::vec3 orientation = {-gameVars.angles_visual.x, gameVars.angles_visual.y, -gameVars.angles_visual.z};
 
 	const glm::vec3 position = m_mat_unswizzle_game_coords * glm::vec4{gameVars.player_pos, 1};
@@ -199,6 +314,27 @@ auto ESP::world_to_screen(glm::vec3 const &worldPos) const -> std::optional<glm:
 	return l_result;
 }
 
+auto ESP::drawOriginAxes(float scale) const -> void {
+	translated(debugAxesPos, [scale] {
+		translated({scale, 0, 0}, [scale] {
+			scaled({scale, scale, scale}, [] {
+				drawBox_matrixstacks(SDL_Color{255, 0, 0, 180});
+			});
+		});
+		translated({0, scale, 0}, [scale] {
+			scaled({scale, scale, scale}, [] {
+				drawBox_matrixstacks(SDL_Color{0, 255, 0, 180});
+			});
+		});
+		translated({0, 0, scale}, [scale] {
+			scaled({scale, scale, scale}, [] {
+				drawBox_matrixstacks(SDL_Color{0, 0, 255, 180});
+			});
+		});
+	});
+}
+
+// TODO: use glDrawArrays()
 auto ESP::drawBox(glm::vec3 position, SDL_Color const &color, float height, float orientationYaw, float width) const -> void {
 	// describes a square of sidelength 1 centered at origin in the x/y plane
 	static std::array square{
@@ -254,6 +390,86 @@ auto ESP::drawBox(glm::vec3 position, SDL_Color const &color, float height, floa
 	glEnd();
 }
 
+// draw a box at (-0.5, -0.5, -0.5) to (0.5, 0.5, 0.5)
+auto drawBox_matrixstacks(SDL_Color const &color) -> void {
+	// describes a square of sidelength 1 centered at origin in the x/y plane
+
+
+	//    y1     y2
+	// y0     y3
+ 	//    x1     x2
+	// x0     x3
+	static std::array<glm::vec3, 4> l = {{
+		{ 0.5, -0.5, -0.5},
+		{ 0.5, -0.5,  0.5},
+		{-0.5, -0.5,  0.5},
+		{-0.5, -0.5, -0.5},
+	}};
+	static std::array<glm::vec3, 4> h = {{
+		{-0.5,  0.5, -0.5},
+		{-0.5,  0.5,  0.5},
+		{ 0.5,  0.5,  0.5},
+		{ 0.5,  0.5, -0.5},
+	}};
+
+	const auto draw_bottom_and_top = [&color] {
+		glBegin(GL_QUADS);
+		{
+			glColor4ubv((GLubyte *) &color);
+			// bottom
+			glVertex3fv(&l[0].x);
+			glVertex3fv(&l[1].x);
+			glVertex3fv(&l[2].x);
+			glVertex3fv(&l[3].x);
+			// top
+			glVertex3fv(&h[0].x);
+			glVertex3fv(&h[1].x);
+			glVertex3fv(&h[2].x);
+			glVertex3fv(&h[3].x);
+		}
+		glEnd();
+	};
+
+	draw_bottom_and_top();
+
+	glPushMatrix();
+	glRotatef(90.0, 1.0, 0.0, 0.0);
+	draw_bottom_and_top();
+	glRotatef(90.0, 0.0, 0.0, 1.0);
+	draw_bottom_and_top();
+	glPopMatrix();
+}
+
+// TODO: use glDrawArrays
+auto ESP::drawBoxESP_matrixStacks() const -> void {
+	static constexpr float l_flagHeight = 40.0;
+	static constexpr float l_flagSize = 30.0;
+	static glm::vec3 l_flagLowPointOff{0, 0, l_flagHeight};
+	static glm::vec3 l_flagHighPointOff = l_flagLowPointOff + glm::vec3{0, 0, l_flagSize};
+	// flag points towards x-axis on null-orientation
+	static glm::vec3 l_flagTipOff = l_flagLowPointOff + glm::vec3{l_flagSize, 0, l_flagSize / 2.0};
+
+	glLineWidth(m_linewidth);
+	for (auto &player : gameVars.radar_struct.players) {
+		if (!player.isActive()) {
+			continue;
+		}
+
+		const SDL_Color box_color = player.m_team == overlay_structs::Player::TEAM::T ?
+			colorT : colorCT;
+
+		with(PolygonMode::WIREFRAME, [&] {
+			translated(player.m_pos - glm::vec3{0, 0, 65/2}, [&] {
+				scaled({l_flagSize, l_flagSize, 65}, [&] {
+					rotated(player.m_viewangles.y, {0, 0, 1}, [&] {
+						drawBox_matrixstacks(box_color);
+					});
+				});
+			});
+		});
+	}
+}
+
 auto ESP::drawLineESP() const -> void {
 	glLineWidth(m_linewidth);
 	glBegin(GL_LINES);
@@ -295,6 +511,7 @@ auto ESP::drawBoxESP() const -> void {
 	}
 }
 
+// TODO: use glDrawArrays
 auto ESP::drawFlagESP() const -> void {
 	static constexpr float l_flagHeight = 40.0;
 	static constexpr float l_flagSize = 30.0;

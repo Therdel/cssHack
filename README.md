@@ -54,7 +54,7 @@ https://user-images.githubusercontent.com/14974231/142050572-a557c6a9-42d9-40d3-
 1. **[only for GNU/Linux]**<br>
     install compilation tools
     ```bash
-    sudo apt-get install cmake clang
+    sudo apt-get install cmake ninja clang
     ```
     install packages for 32bit compilation (*game is 32bit only*)
     ```bash
@@ -62,7 +62,7 @@ https://user-images.githubusercontent.com/14974231/142050572-a557c6a9-42d9-40d3-
     ```
     install OpenGL dev lib *used for rendering*
     ```bash
-    sudo apt-get install libgl-dev
+    sudo apt-get install libgl-dev libxext-dev libudev-dev libxkbcommon-dev
     ```
 2. clone repository
     ```bash
@@ -71,8 +71,11 @@ https://user-images.githubusercontent.com/14974231/142050572-a557c6a9-42d9-40d3-
     ```
 3. build
     ```bash
-    mkdir build && cd build
-    cmake .. && make -j
+    # configure build
+    /usr/bin/cmake -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++ --no-warn-unused-cli -S. -Bbuild -G Ninja
+
+    # build
+    cmake --build build --config Debug --target all --parallel
     ```
 
 ### Injecting **use at your own risk**
@@ -82,3 +85,6 @@ https://user-images.githubusercontent.com/14974231/142050572-a557c6a9-42d9-40d3-
 - I bundled three scripts in the ```scripts/``` directory: *inject.bash*, *eject.bash* & *reinject.bash*. I adapted [aixxe](https://aixxe.net/2016/09/shared-library-injection)'s idea for these.
 - You may have to adapt paths in the scripts.
 - These attach the GDB Debugger to the game process for injection. Doing this to a process we haven't started isn't allowed under normal circumstances. So execute ```scripts/disable_ptrace_scope.bash``` with sudo privileges once per login session to use these scripts.
+
+### Debugging
+Built using Clang(LLVM), so debug using LLDB, e.g. with [CodeLLDB](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) in vscode

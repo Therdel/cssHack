@@ -53,6 +53,7 @@ GUI::~GUI() {
 		m_input.removeMouseHandler();
 	}
 	m_drawHook.detachSubscriber(this);
+	std::this_thread::sleep_for(std::chrono::seconds(1)); // TODO: what if... swapwindow is still going though here while or after shutdown imgui?
 	shutdownImGui();
 }
 

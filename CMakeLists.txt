@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.8)
 project("cssHack")
 
+
+if(CMAKE_SYSTEM_NAME MATCHES Windows)
+else()
+    # force 32bit compilation
+    # source: https://stackoverflow.com/questions/5805874/the-proper-way-of-forcing-a-32-bit-compile-using-cmake
+    set(CMAKE_C_FLAGS -m32)
+    set(CMAKE_CXX_FLAGS -m32)
+
+endif()
+
 ###########################
 # shared library target
 ###########################
@@ -71,9 +81,20 @@ if(CMAKE_SYSTEM_NAME MATCHES Windows)
     set(SDL2_DIR "lib/windows/SDL2-devel-2.0.10-VC/SDL2-2.0.10")
     find_package(SDL2 REQUIRED)
 else()
-    # set(SDL2_DIR "/usr/lib/i386-linux-gnu/cmake/SDL2")
-    # set(SDL2_DIR "lib/SDL")
-    set(SDL2_INCLUDE_DIRS "lib/SDL/include")
+    # enable setting variables for the subdirectory
+    # source: https://stackoverflow.com/a/66342383
+    set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+
+    set(SDL_X11 OFF)
+    set(SDL_STATIC OFF)
+
+    # thanks to saxbophone
+    # source: https://github.com/libsdl-org/SDL/issues/2010#issuecomment-1903440780
+    add_subdirectory(lib/SDL EXCLUDE_FROM_ALL)
+
+    # don't postfix build name with "d" in Debug builds so the built lib name matches the SDL lib loaded in the game
+    set_target_properties(SDL2 PROPERTIES DEBUG_POSTFIX "")
+
 endif()
 find_package(Threads REQUIRED)
 
@@ -89,12 +110,11 @@ target_include_directories(cssHack
     PRIVATE ${IMGUI_INCLUDE_DIRS}
     PRIVATE ${BOYERMOOREDONTCARE_INCLUDE_DIRS}
     PRIVATE ${GLM_INCLUDE_DIRS}
-    PRIVATE ${SDL2_INCLUDE_DIRS}
 )
 
 target_link_libraries(cssHack
     PRIVATE ${CMAKE_THREAD_LIBS_INIT}
-    PRIVATE ${SDL2_LIBRARIES}
+    SDL2
 )
 
 # link OpenGL
@@ -134,12 +154,5 @@ if(CMAKE_SYSTEM_NAME MATCHES Windows)
     # disable warning caused in "lib/windows/SDL2-devel-2.0.10-VC/SDL2-2.0.10/include/SDL_config.h"
     target_compile_options(cssHack
         PRIVATE -Wno-language-extension-token
-    )
-else()
-    # force 32bit compilation
-    # source: https://stackoverflow.com/questions/5805874/the-proper-way-of-forcing-a-32-bit-compile-using-cmake
-    set_target_properties(cssHack PROPERTIES
-        COMPILE_OPTIONS "-m32"
-        LINK_OPTIONS "-m32"
     )
 endif()

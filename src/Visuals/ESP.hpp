@@ -45,6 +45,14 @@ private:
 	bool m_enableBoxESP;
 	bool m_enableLineESP;
 	bool m_enableFlagESP;
+	glm::vec3 debugPlayerPos;
+	glm::vec3 debugPlayerEuler;
+	glm::vec3 debugAxesPos;
+	int eulerVariant;
+	float debugAxesScale;
+	float fov_vertical_degrees_used;
+	float* fov_vertical;
+	float debugNear, debugFar;
 	constexpr static SDL_Color colorT{255, 0, 0, 255};  // RED
 	constexpr static SDL_Color colorCT{0, 0, 255, 255}; // BLUE
 	constexpr static SDL_Color colorTflag{255, 255, 0, 255};
@@ -57,6 +65,8 @@ private:
 	auto calcMatView() -> glm::mat4;
 	auto calcMatProjection() -> glm::mat4;
 
+	auto debug() -> void;
+
 	/**
 	 * Returns given position in screen coordinates, if visible
 	 * @param worldPos position in world space
@@ -65,6 +75,8 @@ private:
 	auto world_to_screen(glm::vec3 const &worldPos) const -> std::optional<glm::vec2>;
 
 	auto drawCircleScreen(float cx, float cy, float r, int num_segments, const SDL_Color &color) const -> void;
+
+	auto drawOriginAxes(float scale) const -> void;
 
 	auto drawBox(glm::vec3 position,
 	             SDL_Color const &color,
@@ -80,6 +92,7 @@ private:
 	auto drawBoxESP() const -> void;
 
 	auto drawFlagESP() const -> void;
+	auto drawBoxESP_matrixStacks() const -> void;
 
 	auto drawAimFov() const -> void;
 

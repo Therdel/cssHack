@@ -42,6 +42,10 @@ auto nix_hack_main(void *) -> void* {
 	}
 	catch (std::exception & e) {
 		Log::log<Log::FLUSH>("Exception: ", e.what(), "\nExiting.");
+	// 	if (!g_do_exit) {
+	// 		// user didn't wish for exit. Eject.
+	// 		eject_from_within_hack();
+	// 	}
 	}
 
 	return nullptr;

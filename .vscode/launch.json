@@ -2,6 +2,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "lldb",
+            "request": "attach",
+            "name": "Attach",
+            "pid": "${command:pickMyProcess}" // use ${command:pickProcess} to pick other users' processes
+        },
+        
+        {
             "name": "(Windows) Attach to hl2.exe",
             "type": "cppvsdbg",
             "request": "attach",
@@ -17,7 +24,7 @@
             "name": "(Linux) Attach to hl2_linux",
             "type": "cppdbg",
             "request": "attach",
-            "program": "~/.local/share/Steam/steamapps/common/Counter-Strike Source/hl2_linux",
+            "program": "/home/theo/.local/share/Steam/steamapps/common/Counter-Strike Source/hl2_linux",
             "processName": "hl2_linux",
             "processId":"${command:pickProcess}",
             "MIMode": "gdb",

@@ -3,10 +3,8 @@
 # cd into the script's directory
 cd "$(dirname "$0")"
 
-libraryPath=$(realpath "../build/libcssHack.so")
-cssPath="$HOME/.steam/steamapps/common/Counter-Strike Source"
-export LD_PRELOAD=$libraryPath
+# libraryPath=$(realpath "../build/libcssHack.so")
+# export LD_PRELOAD=$libraryPath
 
-#cd "$cssPath"
-exec "$cssPath""/hl2.sh" -game cstrike -sw -novid -console -nobreakpad +sv_lan 1 -map aim_ag_texture2.bsp
+exec /home/theo/.local/share/Steam/steamapps/common/"Counter-Strike Source"/hl2.sh -steam -game cstrike -game cstrike -novid -console -nobreakpad +sv_lan 1 -map aim_ag_texture2.bsp -sw 
 

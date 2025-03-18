@@ -58,6 +58,10 @@ private:
 	std::mutex m_debugButtonsMutex;
 	std::vector<GuiElements::Button> m_debugButtons;
 
+	struct ImGuiConnection {
+
+	};
+
 	// imgui stuff
 	std::mutex m_initImGuiMutex;
 	bool m_didInitImGui;

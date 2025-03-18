@@ -1,0 +1,50 @@
+"AppState"
+{
+	"appid"		"240"
+	"universe"		"1"
+	"name"		"Counter-Strike: Source"
+	"StateFlags"		"4"
+	"installdir"		"Counter-Strike Source"
+	"LastUpdated"		"1742167632"
+	"LastPlayed"		"1742171284"
+	"SizeOnDisk"		"4585213376"
+	"StagingSize"		"0"
+	"buildid"		"6946501"
+	"LastOwner"		"76561198217662412"
+	"AutoUpdateBehavior"		"1"
+	"AllowOtherDownloadsWhileRunning"		"0"
+	"ScheduledAutoUpdate"		"1742171287"
+	"InstalledDepots"
+	{
+		"241"
+		{
+			"manifest"		"3261854995366250836"
+			"size"		"4500132524"
+		}
+		"240"
+		{
+			"manifest"		"8533645887610833256"
+			"size"		"825745"
+		}
+		"232333"
+		{
+			"manifest"		"8067518758157153958"
+			"size"		"84255107"
+		}
+		"209"
+		{
+			"manifest"		"5452253894472573318"
+			"size"		"47205"
+		}
+	}
+	"UserConfig"
+	{
+		"language"		"english"
+		"BetaKey"		"previous_build"
+	}
+	"MountedConfig"
+	{
+		"language"		"english"
+		"BetaKey"		"previous_build"
+	}
+}
