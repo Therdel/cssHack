@@ -215,11 +215,8 @@ auto hack_loop() -> void {
 
 	while (g_do_exit == false) {
 		auto l_isInGame_always = 1;
-		auto &l_isInGame = l_isInGame_always;
-		// auto &l_isInGame = gameVars.is_ingame;
-		auto l_isInMenu_never = 0;
-		auto &l_isInMenu = l_isInMenu_never;
-		// auto &l_isInMenu = gameVars.is_inmenu;
+		auto &l_isInGame = gameVars.is_ingame;
+	    auto &l_isInMenu = gameVars.is_inmenu;
 
 		if (g_do_exit == false && l_isInGame == 1) {
 			// initialize game hacks

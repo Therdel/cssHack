@@ -33,8 +33,8 @@ namespace Offsets {
 
 	// Hack
 #ifdef __linux__
-	constexpr ptrdiff_t materialsystem_isIngame = 0x15B869;
-	constexpr ptrdiff_t vgui2_isInMenu = 0x68720;
+	constexpr ptrdiff_t materialsystem_isIngame = 0x15BC29;
+	constexpr ptrdiff_t vgui2_isInMenu = 0x68A20;
 #else
 	constexpr ptrdiff_t materialsystem_isIngame = 0x1215C9;
 #endif

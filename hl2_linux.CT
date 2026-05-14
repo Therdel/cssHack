@@ -11,9 +11,16 @@
       <Address>_vgui2.so+68A20</Address>
     </CheatEntry>
     <CheatEntry>
+      <ID>788</ID>
+      <Description>"s_materialsystem_isInGame"</Description>
+      <LastState Value="1" RealAddress="ECCBFC29"/>
+      <VariableType>Byte</VariableType>
+      <Address>_materialsystem.so+15BC29</Address>
+    </CheatEntry>
+    <CheatEntry>
       <ID>71</ID>
       <Description>"sp_client_entitylist_player_hp"</Description>
-      <LastState Value="90" RealAddress="224CC884"/>
+      <LastState Value="100" RealAddress="22BE0884"/>
       <ShowAsSigned>0</ShowAsSigned>
       <VariableType>4 Bytes</VariableType>
       <Address>"_client.so"+00B93680</Address>
@@ -24,7 +31,7 @@
     <CheatEntry>
       <ID>72</ID>
       <Description>"sp_client_entitylist_player_hp"</Description>
-      <LastState Value="90" RealAddress="224CC884"/>
+      <LastState Value="100" RealAddress="22BE0884"/>
       <ShowAsSigned>0</ShowAsSigned>
       <VariableType>4 Bytes</VariableType>
       <Address>"_client.so"+00BD0750</Address>
@@ -35,7 +42,7 @@
     <CheatEntry>
       <ID>80</ID>
       <Description>"s_client_weapon_type"</Description>
-      <LastState Value="2400" RealAddress="E6898EC4"/>
+      <LastState Value="2480" RealAddress="E6898EC4"/>
       <ShowAsSigned>0</ShowAsSigned>
       <VariableType>4 Bytes</VariableType>
       <Address>_client.so+BA5EC4</Address>
@@ -43,7 +50,7 @@
     <CheatEntry>
       <ID>37</ID>
       <Description>"s_client_ang_vis_x"</Description>
-      <LastState Value="36.63898468" RealAddress="E68B6E14"/>
+      <LastState Value="23.34328079" RealAddress="E68B6E14"/>
       <ShowAsSigned>0</ShowAsSigned>
       <VariableType>Float</VariableType>
       <Address>_client.so+BC3E14</Address>
@@ -51,7 +58,7 @@
         <CheatEntry>
           <ID>97</ID>
           <Description>"s_client_ang_vis_y"</Description>
-          <LastState Value="7.270424366" RealAddress="E68B6E18"/>
+          <LastState Value="-6.018026829" RealAddress="E68B6E18"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>Float</VariableType>
           <Address>_client.so+BC3E18</Address>
@@ -86,7 +93,7 @@
       <ID>73</ID>
       <Description>"s_client_localplayer"</Description>
       <Options moManualExpandCollapse="1"/>
-      <LastState Value="" RealAddress="224CC800"/>
+      <LastState Value="" RealAddress="22BE0800"/>
       <ShowAsSigned>0</ShowAsSigned>
       <GroupHeader>1</GroupHeader>
       <Address>"_client.so"+00B93680</Address>
@@ -97,7 +104,7 @@
         <CheatEntry>
           <ID>64</ID>
           <Description>"s_client_localplayer_bonematrix_ptr"</Description>
-          <LastState Value="231A2300" RealAddress="224CD020"/>
+          <LastState Value="276DD400" RealAddress="22BE1020"/>
           <ShowAsHex>1</ShowAsHex>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
@@ -119,7 +126,7 @@
         <CheatEntry>
           <ID>65</ID>
           <Description>"s_client_localplayer_bonematrix_ptr2"</Description>
-          <LastState Value="231A2300" RealAddress="224CD030"/>
+          <LastState Value="276DD400" RealAddress="22BE1030"/>
           <ShowAsHex>1</ShowAsHex>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
@@ -152,7 +159,7 @@
         <CheatEntry>
           <ID>9</ID>
           <Description>"s_client_localplayer_punch"</Description>
-          <LastState Value="0" RealAddress="224CD628"/>
+          <LastState Value="0" RealAddress="22BE1628"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>Float</VariableType>
           <Address>"_client.so"+00B93680</Address>
@@ -163,7 +170,7 @@
         <CheatEntry>
           <ID>62</ID>
           <Description>"s_client_localplayer_shotsfired"</Description>
-          <LastState Value="0" RealAddress="224CDC10"/>
+          <LastState Value="0" RealAddress="22BE1C10"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>"_client.so"+00B93680</Address>
@@ -174,7 +181,7 @@
         <CheatEntry>
           <ID>10</ID>
           <Description>"s_client_localplayer_target_id"</Description>
-          <LastState Value="0" RealAddress="224CDCD0"/>
+          <LastState Value="0" RealAddress="22BE1CD0"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>"_client.so"+00B93680</Address>
@@ -185,7 +192,7 @@
         <CheatEntry>
           <ID>11</ID>
           <Description>"s_client_localplayer_team"</Description>
-          <LastState Value="2" RealAddress="224CC88C"/>
+          <LastState Value="2" RealAddress="22BE088C"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>"_client.so"+00B93680</Address>
@@ -196,7 +203,7 @@
         <CheatEntry>
           <ID>59</ID>
           <Description>"s_client_localplayer_viewOffsetZ"</Description>
-          <LastState Value="64.00006104" RealAddress="224CC8E0"/>
+          <LastState Value="64.00006104" RealAddress="22BE08E0"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>Float</VariableType>
           <Address>"_client.so"+00B93680</Address>
@@ -207,7 +214,7 @@
         <CheatEntry>
           <ID>78</ID>
           <Description>"s_client_localplayer_pos_feet"</Description>
-          <LastState Value="88.50294495" RealAddress="224CCA58"/>
+          <LastState Value="131.1514435" RealAddress="22BE0A58"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>Float</VariableType>
           <Address>"_client.so"+00B93680</Address>
@@ -218,7 +225,7 @@
         <CheatEntry>
           <ID>90</ID>
           <Description>"s_client_localplayer_pBoneMatrix0"</Description>
-          <LastState Value="22D30C00" RealAddress="224CCD68"/>
+          <LastState Value="25F77800" RealAddress="22BE0D68"/>
           <ShowAsHex>1</ShowAsHex>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
@@ -230,7 +237,7 @@
         <CheatEntry>
           <ID>93</ID>
           <Description>"s_client_localplayer_pBoneMatrix1"</Description>
-          <LastState Value="22D30C00" RealAddress="224CD000"/>
+          <LastState Value="25F77800" RealAddress="22BE1000"/>
           <ShowAsHex>1</ShowAsHex>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
@@ -242,7 +249,7 @@
         <CheatEntry>
           <ID>94</ID>
           <Description>"s_client_localplayer_pBoneMatrix2"</Description>
-          <LastState Value="22D30C00" RealAddress="224CD010"/>
+          <LastState Value="25F77800" RealAddress="22BE1010"/>
           <ShowAsHex>1</ShowAsHex>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
@@ -254,7 +261,7 @@
             <CheatEntry>
               <ID>95</ID>
               <Description>"s_client_localplayer_pBoneMatrix2"</Description>
-              <LastState Value="1" RealAddress="22D30C00"/>
+              <LastState Value="1" RealAddress="25F77800"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>Float</VariableType>
               <Address>"_client.so"+00B93680</Address>
@@ -312,7 +319,7 @@
       <ID>48</ID>
       <Description>"s_engine_angles_x"</Description>
       <Options moManualExpandCollapse="1"/>
-      <LastState Value="36.63898468" RealAddress="ED92F498"/>
+      <LastState Value="23.34328079" RealAddress="ED92F498"/>
       <ShowAsSigned>0</ShowAsSigned>
       <VariableType>Float</VariableType>
       <Address>_engine.so+B33498</Address>
@@ -320,7 +327,7 @@
         <CheatEntry>
           <ID>49</ID>
           <Description>"s_engine_angles_y"</Description>
-          <LastState Value="7.270424366" RealAddress="ED92F49C"/>
+          <LastState Value="-6.018026829" RealAddress="ED92F49C"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>Float</VariableType>
           <Address>_engine.so+B3349C</Address>
@@ -339,7 +346,7 @@
       <ID>44</ID>
       <Description>"s_engine_pos_x"</Description>
       <Options moManualExpandCollapse="1"/>
-      <LastState Value="-331.0989075" RealAddress="ED88A690"/>
+      <LastState Value="-1058.439941" RealAddress="ED88A690"/>
       <ShowAsSigned>0</ShowAsSigned>
       <VariableType>Float</VariableType>
       <Address>_engine.so+A8E690</Address>
@@ -347,7 +354,7 @@
         <CheatEntry>
           <ID>45</ID>
           <Description>"s_engine_pos_y"</Description>
-          <LastState Value="-773.6013794" RealAddress="ED88A694"/>
+          <LastState Value="-806.7593384" RealAddress="ED88A694"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>Float</VariableType>
           <Address>_engine.so+A8E694</Address>
@@ -355,7 +362,7 @@
         <CheatEntry>
           <ID>46</ID>
           <Description>"s_engine_pos_z"</Description>
-          <LastState Value="152.503006" RealAddress="ED88A698"/>
+          <LastState Value="195.1515045" RealAddress="ED88A698"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>Float</VariableType>
           <Address>_engine.so+A8E698</Address>
@@ -1175,6 +1182,4 @@
     </CodeEntry>
   </CheatCodes>
   <UserdefinedSymbols/>
-  <Structures StructVersion="2">
-  </Structures>
 </CheatTable>
