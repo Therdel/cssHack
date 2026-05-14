@@ -37,7 +37,7 @@ private:
 	Aimbot &m_aimbot;
 
 	// configuration
-	constexpr static float FAR_PLANE = 10e9, NEAR_PLANE = 0;
+	constexpr static float FAR_PLANE = 10000, NEAR_PLANE = 1.0f;
 	float m_linewidth = 1.7;
 	bool m_enableAimbotTargetCross;
 	bool m_enableBulletPredictionCross;
@@ -48,11 +48,7 @@ private:
 	glm::vec3 debugPlayerPos;
 	glm::vec3 debugPlayerEuler;
 	glm::vec3 debugAxesPos;
-	int eulerVariant;
 	float debugAxesScale;
-	float fov_vertical_degrees_used;
-	float* fov_vertical;
-	float debugNear, debugFar;
 	constexpr static SDL_Color colorT{255, 0, 0, 255};  // RED
 	constexpr static SDL_Color colorCT{0, 0, 255, 255}; // BLUE
 	constexpr static SDL_Color colorTflag{255, 255, 0, 255};
@@ -64,8 +60,6 @@ private:
 
 	auto calcMatView() -> glm::mat4;
 	auto calcMatProjection() -> glm::mat4;
-
-	auto debug() -> void;
 
 	/**
 	 * Returns given position in screen coordinates, if visible

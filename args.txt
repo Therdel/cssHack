@@ -1,0 +1,27 @@
+-steam -game cstrike -game cstrike -novid -console -nobreakpad +sv_lan 1 -map aim_ag_texture2.bsp -sw
+-steam -game cstrike -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-game cstrike -w1024 -h768 -sw -novid -console -nobreakpad +sv_lan 1 +map de_dust2
+-steam -game cstrike -game cstrike -novid -console -nobreakpad +sv_lan 1 -map aim_ag_texture2.bsp -sw
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1
+-steam -game cstrike -novid -console -nobreakpad +sv_lan 1

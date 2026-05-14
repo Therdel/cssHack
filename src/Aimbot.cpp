@@ -6,6 +6,7 @@
 #include <cmath>        // std::acos
 
 #include <glm/geometric.hpp> // glm::distance
+#include <glm/mat3x4.hpp>
 
 #include "Aimbot.hpp"
 #include "Pointers/GameVars.hpp"
@@ -24,6 +25,7 @@ Aimbot::Aimbot(GameVars gameVars, GUI &gui)
 		: m_gui(gui)
 		, gameVars{gameVars}
 		, m_aim_type(AIM_TYPE::BY_ANGLE)
+		, m_targetBone{14}
 		, m_friendly_fire(false)
 		, m_aim_fov_rad(toRadians(15))
 		, m_aim_noRecoil(true)
@@ -50,6 +52,10 @@ Aimbot::Aimbot(GameVars gameVars, GUI &gui)
 		                                   }
 	                                   });
 	m_gui.registerComboBox(std::move(aimTypeComboBox));
+	m_gui.registerIntSlider({0, 18, (int&)m_targetBone, "Target Bone"});
+	m_gui.registerFloatSlider({-15.0f, 15.f, AIM_TARGET_OFFSET_HEAD.x, "Aim Target Offset X"});
+	m_gui.registerFloatSlider({-15.0f, 15.f, AIM_TARGET_OFFSET_HEAD.y, "Aim Target Offset Y"});
+	m_gui.registerFloatSlider({-15.0f, 15.f, AIM_TARGET_OFFSET_HEAD.z, "Aim Target Offset Z"});
 
 	install();
 }
@@ -276,7 +282,22 @@ auto Aimbot::getTargetAimPoint(const overlay_structs::Player &target) -> glm::ve
 	// source: https://developer.valvesoftware.com/wiki/QAngle
 	auto l_aim_target_offset_rotated = rotateAroundZ(AIM_TARGET_OFFSET_HEAD, target.m_viewangles.y);
 
-	return target.m_pos + l_aim_target_offset_rotated;
+	const IClientEntity* entity = gameVars.clientEntityList.GetClientEntity(target.m_arrayIndex + 1);
+	if (entity) {
+		const overlay_structs::LocalPlayer *playerEntity = reinterpret_cast<const overlay_structs::LocalPlayer*>(entity);
+		if (playerEntity) {
+			const auto pBoneMatrix = playerEntity->pBoneMatrix.value;
+			if (pBoneMatrix) {
+				const glm::mat3x4 &targetBoneMat = (*pBoneMatrix)[m_targetBone];
+				const glm::vec3 targetBonePos = {
+					targetBoneMat[0][3],
+					targetBoneMat[1][3],
+					targetBoneMat[2][3]
+				};
+				return targetBonePos + l_aim_target_offset_rotated;
+			}
+		}
+	}
 }
 
 auto Aimbot::cartesianToPolar(const glm::vec3 &cartesian) -> glm::vec3 {

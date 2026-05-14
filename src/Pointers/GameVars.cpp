@@ -52,6 +52,27 @@ auto read_reference_from_static_mem(const std::string_view libName,
     return reference;
 }
 
+
+template <typename T>
+auto createInterface(const std::string_view libName, const char *version) -> T& {
+	const std::optional<uintptr_t> addressCreateInterface = MemoryUtils::getSymbolAddress(libName, "CreateInterface");
+	if (!addressCreateInterface) {
+		throw std::runtime_error{std::format("Failed to find CreateInterface symbol in '{}' library", libName)};
+	}
+
+    using CreateInterfaceFn = void* (*)(const char *pName, int *pReturnCode);
+    const auto createInterface = reinterpret_cast<CreateInterfaceFn>(*addressCreateInterface);
+    int returnCode = 420;
+    const auto interfaceRaw = createInterface(version, &returnCode);
+    if (!interfaceRaw) {
+        throw std::runtime_error{std::format("Failed to use CreateInterface(\"{}\") - return code {}", version, returnCode)};
+    }
+
+    T *pointer = reinterpret_cast<T*>(interfaceRaw);
+    T &reference = *pointer;
+    return reference;
+}
+
 GameVars::GameVars()
     : on_ground{read_reference_from_signature<uint32_t>(Signatures::onGround)}
     , do_jump{read_reference_from_signature<uint32_t>(Signatures::doJump)}
@@ -70,8 +91,9 @@ GameVars::GameVars()
     , op_sdl_pollEvent_call{read_address_from_static_mem(libNames::inputsystem, {Offsets::inputsystem_sdl_pollEvent_caller})}
 #endif
     , op_sdl_swapWindow_caller{read_address_from_static_mem(libNames::launcher, {Offsets::launcher_sdl_swapWindow_caller})}
-    , fov_vertical_degrees{read_reference_from_static_mem<float>(libNames::engine, {Offsets::engine_fov_vertical_degrees})}
+    , fov_horizontal_degrees{read_reference_from_static_mem<float>(libNames::engine, {Offsets::engine_fov_horizontal_degrees})}
     , screen_dimensions{read_reference_from_static_mem<std::pair<int, int>>(libNames::engine, {Offsets::engine_screenDimensions})}
+    , clientEntityList{createInterface<IClientEntityList>(libNames::client, "VClientEntityList003")}
 {
 
 }

@@ -68,9 +68,10 @@ private:
 	static constexpr int ATTACK_SLEEP_BETWEEN_MS = 20;
 	static constexpr int MAX_PLAYERS = 64;
 	static constexpr float AIM_MIN_DISTANCE = 10;
-	static constexpr glm::vec3 AIM_TARGET_OFFSET_HEAD{ 9.141f, -3.828, 0.078 };
+	glm::vec3 AIM_TARGET_OFFSET_HEAD{ 2.387f, -1.667, 4 };
 
 	AIM_TYPE m_aim_type;
+	size_t m_targetBone;
 	bool m_friendly_fire;
 	float m_aim_fov_rad;        // >= 180 results in deactivation of fov selection
 	bool m_aim_noRecoil;
@@ -104,7 +105,7 @@ private:
 
 	auto uninstall() -> void;
 
-	static auto getTargetAimPoint(const overlay_structs::Player &target) -> glm::vec3;
+	auto getTargetAimPoint(const overlay_structs::Player &target) -> glm::vec3;
 
 	static auto cartesianToPolar(const glm::vec3 &cartesian) -> glm::vec3;
 

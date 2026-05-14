@@ -11,6 +11,24 @@ namespace overlay_structs {
     class RadarStruct;
 }
 
+// credit: Aixxe
+class CBaseHandle;
+class IClientEntity;
+class IClientNetworkable;
+class IClientUnknown;
+class IClientEntityList {
+	public:
+		virtual IClientNetworkable* GetClientNetworkable(int entindex) = 0;
+		virtual IClientNetworkable* GetClientNetworkableFromHandle(CBaseHandle handle) = 0;
+		virtual IClientUnknown* GetClientUnknownFromHandle(CBaseHandle handle) = 0;
+		virtual IClientEntity* GetClientEntity(int entindex) = 0;
+		virtual IClientEntity* GetClientEntityFromHandle(CBaseHandle handle) = 0;
+		virtual int NumberOfEntities(bool include_non_networkable) = 0;
+		virtual int GetHighestEntityIndex(void) = 0;
+		virtual void SetMaxEntities(int max_entities) = 0;
+		virtual int GetMaxEntities() = 0;
+};
+
 class GameVars {
 private:
     GameVars();
@@ -35,8 +53,10 @@ public:
     uintptr_t op_sdl_swapWindow_caller;
     uintptr_t op_sdl_pollEvent_caller;
 
-    float& fov_vertical_degrees;
+    float& fov_horizontal_degrees;
     std::pair<int, int>& screen_dimensions;
+
+    IClientEntityList& clientEntityList;
 
 private:
     uintptr_t localplayer_base;

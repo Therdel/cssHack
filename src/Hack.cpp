@@ -106,6 +106,26 @@ static auto onTriggerKey(Aimbot &aimbot, SDL_KeyboardEvent const &event) -> bool
 
 static bool g_acceptInputInGameMenus = true;
 
+#include <format>
+#include "Pointers/libNames.hpp"
+#include "MemoryUtils.hpp"
+// class CBaseHandle;
+// class IClientEntity;
+// class IClientNetworkable;
+// class IClientUnknown;
+
+// class IClientEntityList {
+// 	public:
+// 		virtual IClientNetworkable* GetClientNetworkable(int entindex) = 0;
+// 		virtual IClientNetworkable* GetClientNetworkableFromHandle(CBaseHandle handle) = 0;
+// 		virtual IClientUnknown* GetClientUnknownFromHandle(CBaseHandle handle) = 0;
+// 		virtual IClientEntity* GetClientEntity(int entindex) = 0;
+// 		virtual IClientEntity* GetClientEntityFromHandle(CBaseHandle handle) = 0;
+// 		virtual int NumberOfEntities(bool include_non_networkable) = 0;
+// 		virtual int GetHighestEntityIndex(void) = 0;
+// 		virtual void SetMaxEntities(int max_entities) = 0;
+// 		virtual int GetMaxEntities() = 0;
+// };
 auto hack_loop() -> void {
 	// TODO: detect LD_PRELOAD method with wait
 	/*
@@ -127,8 +147,70 @@ auto hack_loop() -> void {
 	l_input.setKeyHandler(key_eject, &onEjectKey);
 	wait_for_inject_combination(l_input);
 
+
+
 	if (!g_do_exit) {
 		Log::log("Injected");
+	}
+
+	// source: https://github.com/aixxe/cstrike-basehook-linux/blob/master/src/Basehook.cpp#L60
+	#define VCLIENTENTITYLIST_INTERFACE_VERSION	"VClientEntityList003"
+
+	const std::optional<uintptr_t> addressCreateInterface = MemoryUtils::getSymbolAddress(libNames::client, "CreateInterface");
+	if (!addressCreateInterface) {
+		Log::log("Failed to find CreateInterface symbol in client library");
+	} else {
+		Log::log(std::format("Found CreateInterface symbol at {:#x}", *addressCreateInterface));
+		// get IClientEntityList interface
+
+		using CreateInterfaceFn = void* (*)(const char *pName, int *pReturnCode);
+		const auto createInterface = reinterpret_cast<CreateInterfaceFn>(*addressCreateInterface);
+		int returnCode = 420;
+		const auto clientEntityListRaw = createInterface(VCLIENTENTITYLIST_INTERFACE_VERSION, &returnCode);
+		if (clientEntityListRaw) {
+			Log::log(std::format("Found IClientEntityList at {:p}\nGameVars: {:p}", clientEntityListRaw, (void*)&gameVars.clientEntityList));
+		} else {
+			Log::log(std::format("Failed to get IClientEntityList via CreateInterface(\"{}\") with return code {}", VCLIENTENTITYLIST_INTERFACE_VERSION, returnCode));
+		}
+
+		auto clientEntityList = reinterpret_cast<IClientEntityList*>(clientEntityListRaw);
+		const auto highestEntityIndex = clientEntityList->GetHighestEntityIndex();
+		const auto numberOfEntities = clientEntityList->NumberOfEntities(false);
+		const auto numberOfEntitiesNN = clientEntityList->NumberOfEntities(true);
+		const auto maxEntities = clientEntityList->GetMaxEntities();
+		Log::log(std::format("IClientEntityList: HighestEntityIndex {}\nNumberOfEntities {}, NumberOfEntitiesNN {}\n, MaxEntities {}", highestEntityIndex, numberOfEntities, numberOfEntitiesNN, maxEntities));
+
+		int countClientEntities = 0;
+		for (int i=0; i<=highestEntityIndex; i++) {
+			auto entity = clientEntityList->GetClientEntity(i);
+			if (entity) {
+				countClientEntities++;
+				if (i < 6) {
+					const auto *player = reinterpret_cast<overlay_structs::LocalPlayer*>(entity);
+					Log::log<Log::FLUSH>(std::format("Found entity at index {}: {:p}\npBoneMatrix: {:p}", i, (void*)entity, (void*)player->pBoneMatrix.value));
+				}
+			}
+		}
+		int countClientNetworkables = 0;
+		for (int i=0; i<=highestEntityIndex; i++) {
+			auto entity = clientEntityList->GetClientNetworkable(i);
+			if (entity) {
+				countClientNetworkables++;
+			}
+		}
+		Log::log(std::format("IClientEntityList: Counted {} entities by GetClientEntity & {} entities by GetClientNetworkable", countClientEntities, countClientNetworkables));
+
+		for (int i=0; i<64; ++i) {
+			auto entity = clientEntityList->GetClientEntity(i);
+		}
+
+		// auto clientEntityList = reinterpret_cast<overlay_structs::IClientEntityList*>(createInterface(VCLIENTENTITYLIST_INTERFACE_VERSION, nullptr));
+		// if (clientEntityList) {
+		// 	Log::log(std::format("Found IClientEntityList at {:p}", clientEntityList));
+		// 	gameVars.setClientEntityList(clientEntityList);
+		// } else {
+		// 	Log::log(std::format("Failed to get IClientEntityList via CreateInterface(\"{}\")", VCLIENTENTITYLIST_INTERFACE_VERSION), Log::Channel::ERROR);
+		// }
 	}
 
 	while (g_do_exit == false) {

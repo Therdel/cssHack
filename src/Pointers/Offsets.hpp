@@ -16,6 +16,7 @@ namespace Offsets {
     constexpr ptrdiff_t client_viewAngleVis = 0xBC3E14;
 
     constexpr ptrdiff_t localplayer_off_team = 0x8C;
+    constexpr ptrdiff_t localplayer_off_pBoneMatrix = 0x810;
     constexpr ptrdiff_t localplayer_off_punch = 0xE28;
     constexpr ptrdiff_t localplayer_off_targetId = 0x14D0;
     constexpr ptrdiff_t playerArray_off = 0x28;
@@ -47,7 +48,7 @@ namespace Offsets {
 #ifdef __linux__
 	constexpr ptrdiff_t launcher_sdl_swapWindow_caller = 0x311BC;
 	constexpr ptrdiff_t engine_screenDimensions = 0xD20014;
-	constexpr ptrdiff_t engine_fov_vertical_degrees = 0xC720A4;	// TIP: game cvar "fov" doesn't show real FOV. With fov=90, the real fov_y is ~73°
+	constexpr ptrdiff_t engine_fov_horizontal_degrees = 0xC9B0B8;
 #else
 #endif
 	// Wallhack

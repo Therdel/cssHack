@@ -93,10 +93,7 @@ ESP::ESP(GameVars gameVars, DrawHook &drawHook, GUI &gui, Aimbot &aimbot)
 		, debugPlayerPos{0, 0, 200}
 		, debugPlayerEuler{0, 0, 0}
 		, debugAxesPos{0, 0, 0}
-		, eulerVariant{0}
-		, debugAxesScale{50}
-		, fov_vertical_degrees_used{gameVars.fov_vertical_degrees}
-		, debugNear{NEAR_PLANE}, debugFar{FAR_PLANE} {
+		, debugAxesScale{50} {
 	m_gui.registerCheckbox({m_enableAimbotTargetCross, "ESP Aimbot Target Cross"});
 	m_gui.registerCheckbox({m_enableBulletPredictionCross, "ESP Bullet Prediction Cross"});
 	m_gui.registerCheckbox({m_enableDrawFov, "ESP Fov"});
@@ -115,11 +112,6 @@ ESP::ESP(GameVars gameVars, DrawHook &drawHook, GUI &gui, Aimbot &aimbot)
 	m_gui.registerFloatSlider({-500, 500, debugAxesPos.y, "debugAxesPos y"});
 	m_gui.registerFloatSlider({-500, 500, debugAxesPos.z, "debugAxesPos z"});
 	m_gui.registerFloatSlider({-100, 100, debugAxesScale, "debugAxesScale"});
-	m_gui.registerIntSlider({0, 5, eulerVariant, "eulerVariant"});
-	m_gui.registerFloatSlider({-180, 180, gameVars.fov_vertical_degrees, "fov_vertical_degrees"});
-	m_gui.registerFloatSlider({0, 1000, fov_vertical_degrees_used, "fov_vertical_degrees_used"});
-	m_gui.registerFloatSlider({0, 100, debugNear, "debugNear"});
-	m_gui.registerFloatSlider({0, 1000, debugFar, "debugFar"});
 
 	m_drawHook.attachSubscriber(this);
 }
@@ -203,7 +195,7 @@ auto ESP::onDraw(SDL_Window *) -> void {
 
 		{
 			drawBox(glm::vec3{0, 0, 0}, {255, 0, 255, 180});
-			// drawBox(debugBoxPos, {255, 0, 255, 180});
+			drawBox(debugPlayerPos, {255, 0, 255, 180});
 			drawOriginAxes(debugAxesScale);
 			if (m_enableBoxESP) {
 				drawBoxESP();
@@ -284,11 +276,17 @@ auto ESP::calcMatView() -> glm::mat4 {
 }
 
 auto ESP::calcMatProjection() -> glm::mat4 {
+	const float fovHorizontalRad = glm::radians(gameVars.fov_horizontal_degrees);
+	const float height = (float)gameVars.screen_dimensions.second;
+	const float width = (float)gameVars.screen_dimensions.first;
+	const float fovVerticalRad = 2*glm::atan(glm::tan(fovHorizontalRad/2)*height/width);
+
 	return glm::perspective(
-		(float)glm::radians(gameVars.fov_vertical_degrees),
-		(float)gameVars.screen_dimensions.first/(float)gameVars.screen_dimensions.second,
-		(float)debugNear,
-		(float)debugFar);
+		fovVerticalRad,
+		width/height,
+		NEAR_PLANE,
+		FAR_PLANE
+	);
 }
 
 // source: Youtube HazardEdit - Gamehacking#13 ESP Overlay
@@ -451,7 +449,12 @@ auto ESP::drawBoxESP_matrixStacks() const -> void {
 
 	glLineWidth(m_linewidth);
 	for (auto &player : gameVars.radar_struct.players) {
-		if (!player.isActive()) {
+		if (!player.is_valid() || !player.isActive()) {
+			continue;
+		}
+		// FIXME: Find out which entity in the list is the player without dist
+		// ensure there's no box drawn around our player
+		if (glm::distance(player.m_pos, gameVars.player_pos) < 20.0f) {
 			continue;
 		}
 
@@ -474,9 +477,15 @@ auto ESP::drawLineESP() const -> void {
 	glLineWidth(m_linewidth);
 	glBegin(GL_LINES);
 	for (auto &player : gameVars.radar_struct.players) {
-		if (!player.isActive()) {
+		if (!player.is_valid() || !player.isActive()) {
 			continue;
 		}
+		// FIXME: Find out which entity in the list is the player without dist
+		// ensure there's no box drawn around our player
+		if (glm::distance(player.m_pos, gameVars.player_pos) < 20.0f) {
+			continue;
+		}
+
 		auto screen_cartesian = world_to_screen(player.m_pos);
 		if (screen_cartesian.has_value()) {
 			if (player.m_team == overlay_structs::Player::TEAM::T) {
@@ -494,21 +503,51 @@ auto ESP::drawLineESP() const -> void {
 auto ESP::drawBoxESP() const -> void {
 	static SDL_Color colorT{255, 0, 0, 255};  // RED
 	static SDL_Color colorCT{0, 0, 255, 255}; // BLUE
+	static bool done = false;
 
-	for (auto &player: gameVars.radar_struct.players) {
-		if (!player.isActive()) {
+	// for (auto &player: gameVars.radar_struct.players) {
+	for (size_t i=0; i<gameVars.radar_struct.players.size(); ++i) {
+		auto &player = gameVars.radar_struct.players[i];
+		if (!player.is_valid() || !player.isActive()) {
 			continue;
 		}
 		// FIXME: Find out which entity in the list is the player without dist
 		// ensure there's no box drawn around our player
-		if (glm::distance(player.m_pos, gameVars.player_pos) >= 20.0f) {
-			drawBox(player.m_pos,
-			        player.m_team == overlay_structs::Player::TEAM::T ? colorT : colorCT,
-			        -65.0f,
-			        player.m_viewangles.y,
-			        30.0f);
+		if (glm::distance(player.m_pos, gameVars.player_pos) < 20.0f) {
+			continue;
+		}
+
+		drawBox(player.m_pos,
+				player.m_team == overlay_structs::Player::TEAM::T ? colorT : colorCT,
+				-65.0f,
+				player.m_viewangles.y,
+				30.0f);
+
+		// Bone ESP
+		const IClientEntity* entity = gameVars.clientEntityList.GetClientEntity(player.m_arrayIndex + 1);
+		if (entity) {
+			const overlay_structs::LocalPlayer *playerEntity = reinterpret_cast<const overlay_structs::LocalPlayer*>(entity);
+			if (playerEntity) {
+				const auto pBoneMatrix = playerEntity->pBoneMatrix.value;
+				if (!done) {
+					Log::log<Log::FLUSH>(std::format("Player {} at i={} m_arrayIndex={}\nEntity {:p} has pBoneMatrix {:p}", player.m_name, i, player.m_arrayIndex, (void*)playerEntity, (void*)pBoneMatrix));
+				}
+
+				if (pBoneMatrix) {
+					for (const glm::mat3x4 &boneMat : *pBoneMatrix) {
+						glm::vec3 bonePos = glm::vec3{
+							boneMat[0][3],
+							boneMat[1][3],
+							boneMat[2][3]
+						};
+						drawBox(bonePos, {255, 255, 0, 180}, 5.0f, player.m_viewangles.y, 5.0f);
+					}
+				}
+
+			}
 		}
 	}
+	done = true;
 }
 
 // TODO: use glDrawArrays
@@ -521,10 +560,16 @@ auto ESP::drawFlagESP() const -> void {
 	static glm::vec3 l_flagTipOff = l_flagLowPointOff + glm::vec3{l_flagSize, 0, l_flagSize / 2.0};
 
 	glLineWidth(m_linewidth);
-	for (auto &player : gameVars.radar_struct.players) {
+	for (auto &player: gameVars.radar_struct.players) {
 		if (!player.isActive()) {
 			continue;
 		}
+		// FIXME: Find out which entity in the list is the player without dist
+		// ensure there's no box drawn around our player
+		if (glm::distance(player.m_pos, gameVars.player_pos) < 20.0f) {
+			continue;
+		}
+
 		glm::vec3 l_flagLowWorld = l_flagLowPointOff + player.m_pos;
 		glm::vec3 l_flagHighWorld = l_flagHighPointOff + player.m_pos;
 		glm::vec3 l_flagTipWorld = player.m_pos;

@@ -1,15 +1,22 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.28)
 project("cssHack")
 
+# force 32bit compilation
+# source: https://stackoverflow.com/questions/5805874/the-proper-way-of-forcing-a-32-bit-compile-using-cmake
+set(CMAKE_C_FLAGS -m32)
+set(CMAKE_CXX_FLAGS -m32)
 
-if(CMAKE_SYSTEM_NAME MATCHES Windows)
-else()
-    # force 32bit compilation
-    # source: https://stackoverflow.com/questions/5805874/the-proper-way-of-forcing-a-32-bit-compile-using-cmake
-    set(CMAKE_C_FLAGS -m32)
-    set(CMAKE_CXX_FLAGS -m32)
+# https://discourse.cmake.org/t/find-package-png-failing-to-find-i386-libs-when-crosscompiling-on-x86-64-host/783/3
+#set(CMAKE_SYSTEM_PROCESSOR i686)
 
-endif()
+#set(CMAKE_C_FLAGS_INIT -m32)
+#set(CMAKE_CXX_FLAGS_INIT -m32)
+
+#set(CMAKE_EXE_LINKER_FLAGS_INIT -m32)
+#set(CMAKE_SHARED_LINKER_FLAGS_INIT -m32)
+#set(CMAKE_MODULE_LINKER_FLAGS_INIT -m32)
+# Set to empty string to indicate the resulting binaries can be natively executed
+#set(CMAKE_CROSSCOMPILING_EMULATOR )
 
 ###########################
 # shared library target
@@ -74,28 +81,22 @@ set(GLM_INCLUDE_DIRS
 )
 
 # SDL2
-# source: https://trenki2.github.io/blog/2017/06/02/using-sdl2-with-cmake/
-# platform check
-# source: https://gitlab.kitware.com/cmake/community/wikis/doc/tutorials/How-To-Write-Platform-Checks
-if(CMAKE_SYSTEM_NAME MATCHES Windows)
-    set(SDL2_DIR "lib/windows/SDL2-devel-2.0.10-VC/SDL2-2.0.10")
-    find_package(SDL2 REQUIRED)
-else()
-    # enable setting variables for the subdirectory
-    # source: https://stackoverflow.com/a/66342383
-    set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+# enable setting variables for the subdirectory
+# source: https://stackoverflow.com/a/66342383
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
-    set(SDL_X11 OFF)
-    set(SDL_STATIC OFF)
+set(SDL_X11 OFF)
+set(SDL_STATIC OFF)
 
-    # thanks to saxbophone
-    # source: https://github.com/libsdl-org/SDL/issues/2010#issuecomment-1903440780
-    add_subdirectory(lib/SDL EXCLUDE_FROM_ALL)
+set(_LINUX)
 
-    # don't postfix build name with "d" in Debug builds so the built lib name matches the SDL lib loaded in the game
-    set_target_properties(SDL2 PROPERTIES DEBUG_POSTFIX "")
+# thanks to saxbophone
+# source: https://github.com/libsdl-org/SDL/issues/2010#issuecomment-1903440780
+add_subdirectory(lib/SDL EXCLUDE_FROM_ALL)
 
-endif()
+# don't postfix build name with "d" in Debug builds so the built lib name matches the SDL lib loaded in the game
+set_target_properties(SDL2 PROPERTIES DEBUG_POSTFIX "")
+
 find_package(Threads REQUIRED)
 
 ###########################

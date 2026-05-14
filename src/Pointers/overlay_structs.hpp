@@ -44,6 +44,12 @@ namespace overlay_structs {
                 Player::TEAM value;
             } team;
 
+            // TODO: credit https://www.youtube.com/watch?v=elKUMiqitxY somehow
+            struct {
+                uint8_t padding[Offsets::localplayer_off_pBoneMatrix];
+                std::array<glm::mat3x4, 19>* value;
+            } pBoneMatrix;
+
             struct {
                 uint8_t padding[Offsets::localplayer_off_punch];
                 glm::vec3 value;
