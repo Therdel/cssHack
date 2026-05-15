@@ -40,8 +40,9 @@ GUI::GUI(DrawHook &drawHook, Input &keyboard)
 		                  [&](SDL_KeyboardEvent const &event) {
 			                  return onGuiKey(event);
 		                  })
-		, m_initImGuiMutex{}
-		, m_didInitImGui(false)
+		, m_imguiMutex{}
+		, m_imguiState(ImGuiLifecycle::UNINITIALIZED)
+		, m_imguiCv{}
 		, m_showGuiMutex{}
 		, m_showGui{false} {
 	m_drawHook.attachSubscriber(this);
@@ -52,9 +53,16 @@ GUI::~GUI() {
 		m_showGui) {
 		m_input.removeMouseHandler();
 	}
+	{
+		// Signal render thread to perform GL teardown, then wait.
+		// GL calls must happen on the render thread owning the GL context.
+		std::unique_lock lock{m_imguiMutex};
+		if (m_imguiState == ImGuiLifecycle::ACTIVE) {
+			m_imguiState = ImGuiLifecycle::SHUTDOWN_PENDING;
+			m_imguiCv.wait(lock, [this] { return m_imguiState == ImGuiLifecycle::SHUTDOWN_DONE; });
+		}
+	}
 	m_drawHook.detachSubscriber(this);
-	std::this_thread::sleep_for(std::chrono::seconds(1)); // TODO: what if... swapwindow is still going though here while or after shutdown imgui?
-	shutdownImGui();
 }
 
 auto GUI::registerFloatSlider(FloatSlider slider) -> void {
@@ -104,7 +112,20 @@ auto GUI::onGuiKey(SDL_KeyboardEvent const &event) -> bool {
 }
 
 auto GUI::onDraw(SDL_Window *window) -> void {
+	std::scoped_lock imguiLock{m_imguiMutex};
+	if (m_imguiState == ImGuiLifecycle::UNINITIALIZED) {
+		initImGui(window);
+		m_imguiState = ImGuiLifecycle::ACTIVE;
+	} else if (m_imguiState == ImGuiLifecycle::SHUTDOWN_PENDING) {
+		shutdownImGui();
+		m_imguiState = ImGuiLifecycle::SHUTDOWN_DONE;
+		m_imguiCv.notify_all();
+		return;
+	}
+
+	if (m_imguiState == ImGuiLifecycle::ACTIVE) {
 	imGuiNewFrame(window);
+	}
 }
 
 auto GUI::initImGui(SDL_Window *window) -> void {
@@ -165,12 +186,6 @@ auto GUI::shutdownImGui() -> void {
 }
 
 auto GUI::imGuiNewFrame(SDL_Window *window) -> void {
-	std::scoped_lock initImGuiLock{m_initImGuiMutex};
-	if (!m_didInitImGui) {
-		initImGui(window);
-		m_didInitImGui = true;
-	}
-
 	// Start the Dear ImGui frame
 	auto &io = ImGui::GetIO();
 	ImGui_ImplOpenGL3_NewFrame();

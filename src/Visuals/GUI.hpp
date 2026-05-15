@@ -4,6 +4,7 @@
 #pragma once
 
 #include <atomic>
+#include <condition_variable>
 #include <queue>
 
 #include "../Utility.hpp"
@@ -58,13 +59,15 @@ private:
 	std::mutex m_debugButtonsMutex;
 	std::vector<GuiElements::Button> m_debugButtons;
 
-	struct ImGuiConnection {
+	enum class ImGuiLifecycle { UNINITIALIZED, ACTIVE, SHUTDOWN_PENDING, SHUTDOWN_DONE };
+	// transitions:
+	//   - UNINITIALIZED→ACTIVE (render thread on first draw),
+	//   - ACTIVE→SHUTDOWN_PENDING (~GUI)
+	//   - SHUTDOWN_PENDING→SHUTDOWN_DONE (render thread)
+	std::mutex m_imguiMutex;
+	ImGuiLifecycle m_imguiState;
+	std::condition_variable m_imguiCv;
 
-	};
-
-	// imgui stuff
-	std::mutex m_initImGuiMutex;
-	bool m_didInitImGui;
 	std::mutex m_showGuiMutex;
 	bool m_showGui;
 
