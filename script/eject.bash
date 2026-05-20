@@ -1,12 +1,6 @@
 #!/usr/bin/env bash
 # source: https://aixxe.net/2016/09/shared-library-injection
 
-# Check if script is run as root (sudo)
-if [ "$EUID" -ne 0 ]; then
-  echo "Ejection failed: Please run as root or use sudo."
-  exit 1
-fi
-
 # cd into the script's directory
 cd "$(dirname "$0")"
 
@@ -16,57 +10,84 @@ libraryPath=$(realpath "../build/libcssHack.so")
 library=$(basename $libraryPath)
 
 # check running
-if [ -z "$pid" ]
-then
-    echo "$process is not running"
+if [ -z "$pid" ]; then
+    echo -e "\e[31mProcess $process is not running\e[0m"
     exit 1
 fi
 
-echo "Process: $process (pid: $pid)"
-echo "Library: $libraryPath"
+echo -e "\e[33mProcess: $process (pid: $pid)\e[0m"
+echo -e "\e[33mLibrary: $libraryPath\e[0m"
 
 # check if library is injected
-if ! grep -q $libraryPath /proc/$pid/maps ;
-then
-    echo "Library $library is not loaded. Exiting."
-    exit
+if ! grep -q $libraryPath /proc/$pid/maps ; then
+    echo -e "\e[31mLibrary $library is not loaded. Exiting.\e[0m"
+    exit 1
 fi
 
 # eject
-echo "Library $library is loaded. Ejecting"
-
-# enable gdb attach with ptrace (disable ptrace scope)
-./disable_ptrace_scope.bash
+echo -e "\e[33mLibrary $library is loaded. Ejecting\e[0m"
 
 # write gdb script
-echo "
+script="
+set print thread-events off
+set auto-solib-add off
 attach $pid
+set print thread-events on
+
 set \$dlopen = (void*(*)(char*, int)) dlopen
 set \$dlclose = (int(*)(void*)) dlclose
-set \$library = \$dlopen(\"$libraryPath\", 6)
+# create our own thread so as not to block the currently hijacked game thread,
+# which we may need to run during dlclose() in case it's currently running
+# through any of our hooks.
+set \$pthread_create = (int(*)(void*, void*, void*, void*)) pthread_create
+set \$malloc = (void*(*)(int)) malloc
+
+# Allocate 8 bytes of heap memory in the target process 
+# to hold the new thread's ID safely without smashing the stack
+set \$tid_ptr = \$malloc(8)
+
+# get current handle (Refcount ticks up to 2)
+set \$library = \$dlopen(\"$libraryPath\", 5)
+
 call \$dlclose(\$library)
-call \$dlclose(\$library)
+call \$pthread_create(\$tid_ptr, 0, \$dlclose, \$library)
+
 detach
 quit
-" > eject.gdb
+"
+script_file=$(mktemp)
+echo "$script" > "$script_file"
 
 # eject
-gdb -q --batch --command=eject.gdb
+# run GDB as root for CAP_SYS_PTRACE,
+# in order to attach to processes owned by other users
+sudo gdb -n --batch --command="$script_file"
 
-# remove gdb script
-rm eject.gdb
+rm "$script_file"
+
+echo -e "\e[33mWaiting for background thread to complete ejection...\e[0m"
+TIMEOUT_SECONDS=5
+SLEEP_INTERVAL=0.1
+TIME_ELAPSED=0
+while grep -q "$libraryPath" /proc/$pid/maps; do
+    sleep $SLEEP_INTERVAL
+    TIME_ELAPSED=$(echo "$TIME_ELAPSED + $SLEEP_INTERVAL" | bc)
+    
+    if (( $(echo "$TIME_ELAPSED >= 5" | bc -l) )); then
+        echo -e "\e[31mEjection timed out! The library is still in memory (Deadlock?).\e[0m"
+        exit 1
+    fi
+done
 
 # check running
-pid=$(pidof $process)
-if [ -z "$pid" ]
-then
-    echo "Ejection failed: $process crashed"
+if [ -z "$pid" ]; then
+    echo -e "\e[31mEjection failed: Target process crashed\e[0m"
     exit 1
 fi
 
 # check success
-if ! grep -q $libraryPath /proc/$pid/maps ; then
-    echo "Ejected library $library from process $process (pid: $pid)"
+if ! grep --quiet "$libraryPath" "/proc/$pid/maps"; then
+    echo -e "\e[32mEjection successful\e[0m"
 else
-    echo "Ejection failed: Library $library still in process $process (pid: $pid)"
+    echo -e "\e[31mEjection failed: Library still in target process\e[0m"
 fi

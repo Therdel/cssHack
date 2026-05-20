@@ -43,6 +43,7 @@ static auto wait_for_inject_combination(Input &input) -> void {
 }
 
 static auto onEjectKey(SDL_KeyboardEvent const &event) -> bool {
+	// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "onEjectKey");
 	if (event.repeat == 0) {
 		if (event.type == SDL_KEYDOWN) {
 			eject_from_within_hack();
@@ -104,8 +105,6 @@ static auto onTriggerKey(Aimbot &aimbot, SDL_KeyboardEvent const &event) -> bool
 	return false;
 }
 
-static bool g_acceptInputInGameMenus = true;
-
 #include <format>
 #include "Pointers/libNames.hpp"
 #include "MemoryUtils.hpp"
@@ -141,128 +140,135 @@ auto hack_loop() -> void {
 
 	std::this_thread::sleep_for(100ms); // FIXME: Crashes when put at main() beginning
 	const GameVars gameVars = GameVars::scan();
-
-
+	
+	
 	Input l_input{gameVars};
 	l_input.setKeyHandler(key_eject, &onEjectKey);
-	wait_for_inject_combination(l_input);
+	// std::this_thread::sleep_for(10000ms); // FIXME: Crashes when put at main() beginning
+	// throw std::runtime_error("whoopsies, crash in hack_loop(), before end");
+	// wait_for_inject_combination(l_input);
 
 
 
-	if (!g_do_exit) {
-		Log::log("Injected");
-	}
+	// if (!g_do_exit) {
+	// 	Log::log("Injected");
+	// }
 
-	// source: https://github.com/aixxe/cstrike-basehook-linux/blob/master/src/Basehook.cpp#L60
-	#define VCLIENTENTITYLIST_INTERFACE_VERSION	"VClientEntityList003"
+	// // source: https://github.com/aixxe/cstrike-basehook-linux/blob/master/src/Basehook.cpp#L60
+	// #define VCLIENTENTITYLIST_INTERFACE_VERSION	"VClientEntityList003"
 
-	const std::optional<uintptr_t> addressCreateInterface = MemoryUtils::getSymbolAddress(libNames::client, "CreateInterface");
-	if (!addressCreateInterface) {
-		Log::log("Failed to find CreateInterface symbol in client library");
-	} else {
-		Log::log(std::format("Found CreateInterface symbol at {:#x}", *addressCreateInterface));
-		// get IClientEntityList interface
+	// const std::optional<uintptr_t> addressCreateInterface = MemoryUtils::getSymbolAddress(libNames::client, "CreateInterface");
+	// if (!addressCreateInterface) {
+	// 	Log::log("Failed to find CreateInterface symbol in client library");
+	// } else {
+	// 	Log::log(std::format("Found CreateInterface symbol at {:#x}", *addressCreateInterface));
+	// 	// get IClientEntityList interface
 
-		using CreateInterfaceFn = void* (*)(const char *pName, int *pReturnCode);
-		const auto createInterface = reinterpret_cast<CreateInterfaceFn>(*addressCreateInterface);
-		int returnCode = 420;
-		const auto clientEntityListRaw = createInterface(VCLIENTENTITYLIST_INTERFACE_VERSION, &returnCode);
-		if (clientEntityListRaw) {
-			Log::log(std::format("Found IClientEntityList at {:p}\nGameVars: {:p}", clientEntityListRaw, (void*)&gameVars.clientEntityList));
-		} else {
-			Log::log(std::format("Failed to get IClientEntityList via CreateInterface(\"{}\") with return code {}", VCLIENTENTITYLIST_INTERFACE_VERSION, returnCode));
+	// 	using CreateInterfaceFn = void* (*)(const char *pName, int *pReturnCode);
+	// 	const auto createInterface = reinterpret_cast<CreateInterfaceFn>(*addressCreateInterface);
+	// 	int returnCode = 420;
+	// 	const auto clientEntityListRaw = createInterface(VCLIENTENTITYLIST_INTERFACE_VERSION, &returnCode);
+	// 	if (clientEntityListRaw) {
+	// 		Log::log(std::format("Found IClientEntityList at {:p}\nGameVars: {:p}", clientEntityListRaw, (void*)&gameVars.clientEntityList));
+	// 	} else {
+	// 		Log::log(std::format("Failed to get IClientEntityList via CreateInterface(\"{}\") with return code {}", VCLIENTENTITYLIST_INTERFACE_VERSION, returnCode));
+	// 	}
+
+	// 	auto clientEntityList = reinterpret_cast<IClientEntityList*>(clientEntityListRaw);
+	// 	const auto highestEntityIndex = clientEntityList->GetHighestEntityIndex();
+	// 	const auto numberOfEntities = clientEntityList->NumberOfEntities(false);
+	// 	const auto numberOfEntitiesNN = clientEntityList->NumberOfEntities(true);
+	// 	const auto maxEntities = clientEntityList->GetMaxEntities();
+	// 	Log::log(std::format("IClientEntityList: HighestEntityIndex {}\nNumberOfEntities {}, NumberOfEntitiesNN {}\n, MaxEntities {}", highestEntityIndex, numberOfEntities, numberOfEntitiesNN, maxEntities));
+
+	// 	int countClientEntities = 0;
+	// 	for (int i=0; i<=highestEntityIndex; i++) {
+	// 		auto entity = clientEntityList->GetClientEntity(i);
+	// 		if (entity) {
+	// 			countClientEntities++;
+	// 			if (i < 6) {
+	// 				const auto *player = reinterpret_cast<overlay_structs::LocalPlayer*>(entity);
+	// 				Log::log<Log::FLUSH>(std::format("Found entity at index {}: {:p}\npBoneMatrix: {:p}", i, (void*)entity, (void*)player->pBoneMatrix.value));
+	// 			}
+	// 		}
+	// 	}
+	// 	int countClientNetworkables = 0;
+	// 	for (int i=0; i<=highestEntityIndex; i++) {
+	// 		auto entity = clientEntityList->GetClientNetworkable(i);
+	// 		if (entity) {
+	// 			countClientNetworkables++;
+	// 		}
+	// 	}
+	// 	Log::log(std::format("IClientEntityList: Counted {} entities by GetClientEntity & {} entities by GetClientNetworkable", countClientEntities, countClientNetworkables));
+
+	// 	for (int i=0; i<64; ++i) {
+	// 		auto entity = clientEntityList->GetClientEntity(i);
+	// 	}
+
+	// 	// auto clientEntityList = reinterpret_cast<overlay_structs::IClientEntityList*>(createInterface(VCLIENTENTITYLIST_INTERFACE_VERSION, nullptr));
+	// 	// if (clientEntityList) {
+	// 	// 	Log::log(std::format("Found IClientEntityList at {:p}", clientEntityList));
+	// 	// 	gameVars.setClientEntityList(clientEntityList);
+	// 	// } else {
+	// 	// 	Log::log(std::format("Failed to get IClientEntityList via CreateInterface(\"{}\")", VCLIENTENTITYLIST_INTERFACE_VERSION), Log::Channel::ERROR);
+	// 	// }
+	// }
+
+	auto inGame = [&] { return !g_do_exit && gameVars.is_ingame == 1; };
+	auto inPlay = [&] { return inGame() && gameVars.is_inmenu == 0; };
+
+	while (!g_do_exit) {
+		if (!inGame()) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(POLL_SLEEP_MS));
+			continue;
 		}
 
-		auto clientEntityList = reinterpret_cast<IClientEntityList*>(clientEntityListRaw);
-		const auto highestEntityIndex = clientEntityList->GetHighestEntityIndex();
-		const auto numberOfEntities = clientEntityList->NumberOfEntities(false);
-		const auto numberOfEntitiesNN = clientEntityList->NumberOfEntities(true);
-		const auto maxEntities = clientEntityList->GetMaxEntities();
-		Log::log(std::format("IClientEntityList: HighestEntityIndex {}\nNumberOfEntities {}, NumberOfEntitiesNN {}\n, MaxEntities {}", highestEntityIndex, numberOfEntities, numberOfEntitiesNN, maxEntities));
+		// initialize game hacks
+		// TODO: test without hooks, to remove bugs that happen without the hooking / locking dependency to game threads
+		struct WaitOnDestroy { ~WaitOnDestroy() { std::this_thread::sleep_for(std::chrono::milliseconds(100)); }};
+		WaitOnDestroy wait;
+		// DrawHook l_drawHook{gameVars};
+		// GUI l_gui{l_drawHook, l_input};
+		// Aimbot l_aimbot{gameVars, l_gui};
+		// Bunnyhop l_bunnyhop{gameVars};
+		// ESP l_esp{gameVars, l_drawHook, l_gui, l_aimbot};
+//		Wallhack l_wallhack;
 
-		int countClientEntities = 0;
-		for (int i=0; i<=highestEntityIndex; i++) {
-			auto entity = clientEntityList->GetClientEntity(i);
-			if (entity) {
-				countClientEntities++;
-				if (i < 6) {
-					const auto *player = reinterpret_cast<overlay_structs::LocalPlayer*>(entity);
-					Log::log<Log::FLUSH>(std::format("Found entity at index {}: {:p}\npBoneMatrix: {:p}", i, (void*)entity, (void*)player->pBoneMatrix.value));
-				}
+		while (inGame()) {
+			if (!inPlay()) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(POLL_SLEEP_MS));
+				continue;
 			}
-		}
-		int countClientNetworkables = 0;
-		for (int i=0; i<=highestEntityIndex; i++) {
-			auto entity = clientEntityList->GetClientNetworkable(i);
-			if (entity) {
-				countClientNetworkables++;
-			}
-		}
-		Log::log(std::format("IClientEntityList: Counted {} entities by GetClientEntity & {} entities by GetClientNetworkable", countClientEntities, countClientNetworkables));
 
-		for (int i=0; i<64; ++i) {
-			auto entity = clientEntityList->GetClientEntity(i);
-		}
+			// initialize input bindings
+			// ScopedKeyHandler bhopHandler(l_input,
+			//                              key_bhop,
+			//                              [&](SDL_KeyboardEvent const &event) {
+			// 	                             return onBhopKey(l_bunnyhop, event);
+			//                              });
+			// ScopedKeyHandler aimbotHandler(l_input,
+			//                                key_aim,
+			//                                [&](SDL_KeyboardEvent const &event) {
+			// 	                               return onAimKey(l_aimbot, event);
+			//                                });
+			// ScopedKeyHandler triggerBotHandler(l_input,
+			//                                    key_trigger,
+			//                                    [&](SDL_KeyboardEvent const &event) {
+			// 	                                   return onTriggerKey(l_aimbot, event);
+			//                                    });
 
-		// auto clientEntityList = reinterpret_cast<overlay_structs::IClientEntityList*>(createInterface(VCLIENTENTITYLIST_INTERFACE_VERSION, nullptr));
-		// if (clientEntityList) {
-		// 	Log::log(std::format("Found IClientEntityList at {:p}", clientEntityList));
-		// 	gameVars.setClientEntityList(clientEntityList);
-		// } else {
-		// 	Log::log(std::format("Failed to get IClientEntityList via CreateInterface(\"{}\")", VCLIENTENTITYLIST_INTERFACE_VERSION), Log::Channel::ERROR);
-		// }
-	}
-
-	while (g_do_exit == false) {
-		auto l_isInGame_always = 1;
-		auto &l_isInGame = gameVars.is_ingame;
-	    auto &l_isInMenu = gameVars.is_inmenu;
-
-		if (g_do_exit == false && l_isInGame == 1) {
-			// initialize game hacks
-			DrawHook l_drawHook{gameVars};
-			GUI l_gui{l_drawHook, l_input};
-            Aimbot l_aimbot{gameVars, l_gui};
-			Bunnyhop l_bunnyhop{gameVars};
-			ESP l_esp{gameVars, l_drawHook, l_gui, l_aimbot};
-//			Wallhack l_wallhack;
-
-			while (g_do_exit == false && l_isInGame == 1) {
-				if (g_do_exit == false && l_isInGame == 1 &&
-				    (g_acceptInputInGameMenus || l_isInMenu == 0)) {
-					// initialize input bindings
-					ScopedKeyHandler bhopHandler(l_input,
-					                             key_bhop,
-					                             [&](SDL_KeyboardEvent const &event) {
-						                             return onBhopKey(l_bunnyhop, event);
-					                             });
-					ScopedKeyHandler aimbotHandler(l_input,
-					                               key_aim,
-					                               [&](SDL_KeyboardEvent const &event) {
-						                               return onAimKey(l_aimbot, event);
-					                               });
-
-					ScopedKeyHandler triggerBotHandler(l_input,
-					                               key_trigger,
-					                               [&](SDL_KeyboardEvent const &event) {
-						                               return onTriggerKey(l_aimbot, event);
-					                               });
-
-					while (g_do_exit == false && l_isInGame == 1 &&
-					       (g_acceptInputInGameMenus || l_isInMenu == 0)) {
-						// sleep for some time to not kill performance
-						std::this_thread::sleep_for(std::chrono::milliseconds(POLL_SLEEP_MS));
-					}
-					l_input.removeMouseHandler();
-					l_bunnyhop.stop();
-					l_aimbot.stopAim();
-				}
-				// sleep for some time to not kill performance
+			while (inPlay()) {
 				std::this_thread::sleep_for(std::chrono::milliseconds(POLL_SLEEP_MS));
 			}
+			// TODO: opening/closing ingame chat quickly will somehow get stuck in the loop
+			// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "!inPlay anymore");
+			// l_input.removeMouseHandler();
+			// l_bunnyhop.stop();
+			// l_aimbot.stopAim();
 		}
-		// check if the player is ingame
-		std::this_thread::sleep_for(std::chrono::milliseconds(POLL_SLEEP_MS));
+		// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "!inGame anymore");
 	}
+	// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "exiting hack loop");
 
+	throw std::runtime_error("hellooo"); // FIXME: crashes with external eject
 }

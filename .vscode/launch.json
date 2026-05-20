@@ -5,7 +5,14 @@
             "type": "lldb",
             "request": "attach",
             "name": "Attach",
-            "pid": "${command:pickMyProcess}" // use ${command:pickProcess} to pick other users' processes
+            "waitFor": true,
+            "linux": {
+                "program": "hl2_linux"
+            },
+            "windows": {
+                "program": "hl2.exe",
+            },
+            // "pid": "${command:pickMyProcess}" // use ${command:pickProcess} to pick other users' processes
         }
     ]
 }

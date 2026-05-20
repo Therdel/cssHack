@@ -262,6 +262,9 @@ auto Aimbot::install() -> void {
 
 auto Aimbot::uninstall() -> void {
 	if (!m_detour_viewAngles_update.remove()) {
+		// TODO: possibly, trampolines lie close to each other.
+		//		 during removal of one detour, we might accidentally change permissions of the other detour's trampoline and thus cause failures.
+		//       allocate them further (page boundary?) apart to prevent this?
 		Log::log("Aimbot failed to un-detour update_ang");
 	}
 
@@ -282,22 +285,23 @@ auto Aimbot::getTargetAimPoint(const overlay_structs::Player &target) -> glm::ve
 	// source: https://developer.valvesoftware.com/wiki/QAngle
 	auto l_aim_target_offset_rotated = rotateAroundZ(AIM_TARGET_OFFSET_HEAD, target.m_viewangles.y);
 
-	const IClientEntity* entity = gameVars.clientEntityList.GetClientEntity(target.m_arrayIndex + 1);
-	if (entity) {
-		const overlay_structs::LocalPlayer *playerEntity = reinterpret_cast<const overlay_structs::LocalPlayer*>(entity);
-		if (playerEntity) {
-			const auto pBoneMatrix = playerEntity->pBoneMatrix.value;
-			if (pBoneMatrix) {
-				const glm::mat3x4 &targetBoneMat = (*pBoneMatrix)[m_targetBone];
-				const glm::vec3 targetBonePos = {
-					targetBoneMat[0][3],
-					targetBoneMat[1][3],
-					targetBoneMat[2][3]
-				};
-				return targetBonePos + l_aim_target_offset_rotated;
-			}
-		}
-	}
+	return target.m_pos + l_aim_target_offset_rotated;
+	// const IClientEntity* entity = gameVars.clientEntityList.GetClientEntity(target.m_arrayIndex + 1);
+	// if (entity) {
+	// 	const overlay_structs::LocalPlayer *playerEntity = reinterpret_cast<const overlay_structs::LocalPlayer*>(entity);
+	// 	if (playerEntity) {
+	// 		const auto pBoneMatrix = playerEntity->pBoneMatrix.value;
+	// 		if (pBoneMatrix) {
+	// 			const glm::mat3x4 &targetBoneMat = (*pBoneMatrix)[m_targetBone];
+	// 			const glm::vec3 targetBonePos = {
+	// 				targetBoneMat[0][3],
+	// 				targetBoneMat[1][3],
+	// 				targetBoneMat[2][3]
+	// 			};
+	// 			return targetBonePos + l_aim_target_offset_rotated;
+	// 		}
+	// 	}
+	// }
 }
 
 auto Aimbot::cartesianToPolar(const glm::vec3 &cartesian) -> glm::vec3 {

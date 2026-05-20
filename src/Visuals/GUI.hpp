@@ -66,6 +66,10 @@ private:
 	//   - SHUTDOWN_PENDING→SHUTDOWN_DONE (render thread)
 	std::mutex m_imguiMutex;
 	ImGuiLifecycle m_imguiState;
+#ifdef __linux__
+	SDL_Window *m_window;
+	SDL_GLContext m_sharedGLContext;
+#endif
 	std::condition_variable m_imguiCv;
 
 	std::mutex m_showGuiMutex;

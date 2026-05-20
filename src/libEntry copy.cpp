@@ -8,17 +8,18 @@
 #include "MemoryUtils.hpp"
 
 std::atomic_bool g_loaded{false};
-// std::mutex g_ejectingFromWithinGameMutex;
-// std::atomic_bool g_ejectingFromWithinGame{false};
-std::atomic_bool g_eject_initiated{false};
+std::atomic<EjectState> g_ejectState __attribute__ ((init_priority (1000))) = EjectState::NOT_EJECTING;
 
 #ifdef __linux__
 
 #include <dlfcn.h>      // dlopen, dlclose
-pthread_t g_nix_hack_thread;
-// pthread_t g_nix_eject_thread;
+std::thread g_nix_hack_thread __attribute__ ((init_priority (1000)));
+std::jthread g_nix_eject_thread __attribute__ ((init_priority (1000)));
 
-__attribute__((constructor))
+
+// this might run before static init of the globals,
+// (3000) ensures they are initialized before
+__attribute__((constructor(3000)))
 auto initLibrary() -> void {
 
 	// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "initLibrary");
@@ -28,122 +29,113 @@ auto initLibrary() -> void {
 
 __attribute__((destructor))
 auto exitLibrary() -> void {
-	// // Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "exitLibrary()");
+	// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "exitLibrary()");
 	// if (g_ejectingFromWithinGame) {
-	// 	if (pthread_join(g_nix_eject_thread, nullptr) != 0) {
-	// 		Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "Join eject-thread failed");
-	// 	}
+	// if (g_ejectState == EjectState::EJECTING_FROM_WITHIN_HACK) {
+		// if (pthread_join(g_nix_eject_thread, nullptr) != 0) {
+		// 	// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "Join eject-thread failed");
+		// }
 	// } else {
+	if (g_ejectState == EjectState::EJECTING_EXTERNALLY) {
 		// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "exitLibrary::eject_hack()");
-		eject_hack(nullptr);
-	// }
+		// eject_hack(nullptr);
+		eject_hack();
+	}
 	// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "exited Library");
 }
 
-auto nix_hack_main(void *) -> void* {
+// auto nix_hack_main(void *) -> void* {
+auto nix_hack_main() -> void {
 	try {
 		hack_loop();
 	}
 	catch (std::exception & e) {
-		const auto what = e.what();
-		Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "Exception: ", e.what(), "\nExiting."); // FIXME: somehow deadlocks when exception happens...
-		// TODO: check this
-		// TODO: debug with simulate_external_eject().
-		//       this is needed when Input is destroyed as part of hack_loop().
+		Log::log<Log::FLUSH>("Exception: ", e.what(), "\nExiting.");
 		if (!g_do_exit) {
 			// user didn't wish for exit. Eject.
 			eject_from_within_hack();
 		}
 	}
 
-	return nullptr;
+	// return nullptr;
 }
 
 auto nix_init_hack() -> void {
-	if (g_loaded == false) {
+	const bool loaded = g_nix_hack_thread.joinable();
+	if (!loaded) {
 		g_do_exit = false;
 
 		// start hack in its own thread
-		pthread_create(&g_nix_hack_thread, nullptr, &nix_hack_main, nullptr);
-		pthread_setname_np(g_nix_hack_thread, "cssHack");
-
-
-		g_loaded = true;
+		g_nix_hack_thread = std::thread{nix_hack_main};
+		pthread_setname_np(g_nix_hack_thread.native_handle(), "cssHack");
+		// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "g_nix_hack_thread joinable: ", g_nix_hack_thread.joinable(), " id: ", g_nix_hack_thread.get_id());
 	}
-}
-
-auto simulate_external_eject() -> void {
-	bool expected = false;
-	const bool exchanged = g_eject_initiated.compare_exchange_strong(expected, true, std::memory_order_seq_cst);
-	if (!exchanged) {
-		// another thread already initiated eject, so we can just return
-		return;
-	}
-
-	auto libPath = MemoryUtils::this_lib_path();
-	void *handle = dlopen(libPath.c_str(),  RTLD_LAZY | RTLD_NOLOAD);
-	dlclose(handle);
-
-	pthread_attr_t tAttr;
-	pthread_t dlcloseThread;
-	pthread_attr_init(&tAttr);
-	pthread_attr_setdetachstate(&tAttr, PTHREAD_CREATE_DETACHED);
-	pthread_create(&dlcloseThread, &tAttr, (void *(*)(void *)) dlclose, handle);
 }
 
 auto eject_from_within_hack() -> void {
-	simulate_external_eject();
-	// // Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "eject_from_within_hack()");
+	// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "eject_from_within_hack()");
 	// std::scoped_lock l_lock(g_ejectingFromWithinGameMutex);
 	// if (!g_ejectingFromWithinGame) {
-	// 	// g_do_exit = true;
-	// 	g_ejectingFromWithinGame = true;
+		// g_do_exit = true;
+		// g_ejectingFromWithinGame = true;
 
-	// 	pthread_create(&g_nix_eject_thread, nullptr, &eject_hack, nullptr);
-	// 	pthread_setname_np(g_nix_eject_thread, "cssHack_eject");
+		// pthread_create(&g_nix_eject_thread, nullptr, &eject_hack, nullptr);
 	// }
+	EjectState expectedCurrentValue = EjectState::NOT_EJECTING;
+	bool success = g_ejectState.compare_exchange_strong(expectedCurrentValue, EjectState::EJECTING_FROM_WITHIN_HACK);
+	if (success) {
+
+		g_nix_eject_thread = std::jthread{eject_hack};
+		pthread_setname_np(g_nix_eject_thread.native_handle(), "cssHack_eject");
+	}
 }
 
-auto eject_hack(void *) -> void* {
+// auto eject_hack(void *) -> void* {
+auto eject_hack() -> void {
 	// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "eject_hack()");
 	// ensure hack was loaded before
-	if (g_loaded == true) {
-		g_loaded = false;
+	// if (g_loaded == true) {
+		// g_loaded = false;
+	const bool joinable = g_nix_hack_thread.joinable();
+	if (joinable) {
 		// stop hack loop
 		g_do_exit = true;
 
 		// wait for hack termination
 		// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "eject_hack::join hack main");
-		if (pthread_join(g_nix_hack_thread, nullptr) != 0) {
-			Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "Join hack main failed");
-		}
+		// if (pthread_join(g_nix_hack_thread, nullptr) != 0) {
+		// 	Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "Join hack main failed");
+		// }
+		g_nix_hack_thread.join();
 		// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "eject_hack::join hack main done");
 		Log::stop();
 		// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "eject_hack::join hack main done, log stopped");
 
 		// if (g_ejectingFromWithinGame) {
-		// 	auto libPath = MemoryUtils::this_lib_path();
+		if (g_ejectState == EjectState::EJECTING_FROM_WITHIN_HACK) {
+			auto libPath = MemoryUtils::this_lib_path();
 
-		// 	// 1. get library handle (dlopen), incrementing the library handle's reference count by 1.
-		// 	// 2. close once (dlclose) to decrement/restore the reference count again
-		// 	// source: https://linux.die.net/man/3/dlclose
-		// 	void *handle = dlopen(libPath.c_str(),  RTLD_LAZY | RTLD_NOLOAD);
-		// 	dlclose(handle);
+			// get library handle and make it re-loadable again (RTLD_NOLOAD | RTLD_GLOBAL)
+			// incrementing the reference count by 1
+			// source: https://linux.die.net/man/3/dlclose
+			void *handle = dlopen(libPath.c_str(), RTLD_NOW | RTLD_NOLOAD);
+			// close once to decrease lib ref count because of dlopen a moment ago
+			dlclose(handle);
 
-		// 	// call dlclose in a separate thread so this library code can be
-		// 	// safely deallocated during dlclose
-		// 	std::scoped_lock l_lock(g_ejectingFromWithinGameMutex); // TODO: remove lock
-		// 	pthread_attr_t tAttr;
-		// 	pthread_t dlcloseThread;
-		// 	pthread_attr_init(&tAttr);
-		// 	pthread_attr_setdetachstate(&tAttr, PTHREAD_CREATE_DETACHED);
-		// 	// run dlclose in a separate thread, which will run __attribute((destructor)), which joins this "eject" thread.
-		// 	// After dlclose() finishes the destructor, it deallocates the library.
-		// 	// This is safe as no thread is running any of its code at that point.
-		// 	pthread_create(&dlcloseThread, &tAttr, (void *(*)(void *)) dlclose, handle);
-		// }
+			// call dlclose in a thread so this library code can be
+			// safely deallocated during dlclose
+			// std::scoped_lock l_lock(g_ejectingFromWithinGameMutex);
+			pthread_attr_t tAttr;
+			pthread_t closeThread;
+			pthread_attr_init(&tAttr);
+			// use pthread here to have detach configured before thread start,
+			// exiting the hack thread quickly before the dlclose thread,
+			// thus minimizing risk of dlclose deallocating code which the hack thread still executes on
+			pthread_attr_setdetachstate(&tAttr, PTHREAD_CREATE_DETACHED);
+			pthread_create(&closeThread, &tAttr, (void *(*)(void *)) dlclose, handle);
+		}
 	}
-	return nullptr;
+	// return nullptr;
 }
 
 #else // windows
@@ -166,7 +158,8 @@ auto WINAPI DllMain(HMODULE hModule,
 
   case DLL_PROCESS_DETACH:
 	// TODO: synchronize & remove atomic
-	if (!g_ejectingFromWithinGame) {
+	// if (!g_ejectingFromWithinGame) {
+	if (g_ejectState == EjectState::EJECTING_EXTERNALLY) {
 	  // FIXME: thread lock is held in dllmain, no synchronizing is possible.
 	  //        how to exit?
 	  eject_from_libEntry();
@@ -225,7 +218,8 @@ auto WINAPI win_eject_hack(LPVOID) -> DWORD {
 	  // not stopping will cause the log thread and thus the DLL to persist in the process
 	Log::stop();
 
-	if (g_ejectingFromWithinGame) {
+	// if (g_ejectingFromWithinGame) {
+	if (g_ejectState == EjectState::EJECTING_FROM_WITHIN_HACK) {
 	  FreeLibraryAndExitThread(g_win_hModule, 0);
 	}
   }
@@ -233,10 +227,13 @@ auto WINAPI win_eject_hack(LPVOID) -> DWORD {
 }
 
 auto eject_from_within_hack() -> void {
-  std::scoped_lock l_lock(g_ejectingFromWithinGameMutex);
-  if (!g_ejectingFromWithinGame) {
-	g_do_exit = true;
-	g_ejectingFromWithinGame = true;
+//   std::scoped_lock l_lock(g_ejectingFromWithinGameMutex);
+//   if (!g_ejectingFromWithinGame) {
+// 	g_do_exit = true;
+// 	g_ejectingFromWithinGame = true;
+  EjectState expectedCurrentValue = EjectState::NOT_EJECTING;
+  bool success = g_ejectState.compare_exchange_strong(expectedCurrentValue, EjectState::EJECTING_FROM_WITHIN_HACK);
+  if (success) {
 
 	g_win_eject_thread = CreateThread(nullptr, 0, &win_eject_hack, nullptr, 0, nullptr);
 
