@@ -26,7 +26,11 @@
 
 #include "Log.hpp"
 
-std::atomic_bool g_do_exit{false};
+// std::atomic_bool g_do_exit{false};
+auto exit_requested() -> bool {
+	return g_lifecycle == Lifecycle::EJECTING_BY_OURSELF
+	    || g_lifecycle == Lifecycle::EJECTING_EXTERNALLY;
+}
 
 using namespace std::chrono_literals;
 
@@ -37,7 +41,8 @@ static auto wait_for_inject_combination(Input &input) -> void {
 				l_injected = true;
 				return true;
 			});
-	while (l_injected == false && g_do_exit == false) {
+	// while (l_injected == false && g_do_exit == false) {
+	while (l_injected == false && !exit_requested()) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(POLL_SLEEP_MS));
 	}
 }
@@ -128,7 +133,8 @@ static auto onTriggerKey(Aimbot &aimbot, SDL_KeyboardEvent const &event) -> bool
 auto hack_loop() -> void {
 	// TODO: detect LD_PRELOAD method with wait
 	/*
-	while (!g_do_exit) {
+	// while (!g_do_exit) {
+	while (!exit_requested()) {
 
 	  bool isKeyEjectDown = GetAsyncKeyState(VK_F11) & 0x1;
 	  if (isKeyEjectDown) {
@@ -150,7 +156,7 @@ auto hack_loop() -> void {
 
 
 
-	// if (!g_do_exit) {
+	// if (!exit_requested()) {
 	// 	Log::log("Injected");
 	// }
 
@@ -214,10 +220,10 @@ auto hack_loop() -> void {
 	// 	// }
 	// }
 
-	auto inGame = [&] { return !g_do_exit && gameVars.is_ingame == 1; };
+	auto inGame = [&] { return !exit_requested() && gameVars.is_ingame == 1; };
 	auto inPlay = [&] { return inGame() && gameVars.is_inmenu == 0; };
 
-	while (!g_do_exit) {
+	while (!exit_requested()) {
 		if (!inGame()) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(POLL_SLEEP_MS));
 			continue;
@@ -227,11 +233,11 @@ auto hack_loop() -> void {
 		// TODO: test without hooks, to remove bugs that happen without the hooking / locking dependency to game threads
 		struct WaitOnDestroy { ~WaitOnDestroy() { std::this_thread::sleep_for(std::chrono::milliseconds(100)); }};
 		WaitOnDestroy wait;
-		// DrawHook l_drawHook{gameVars};
-		// GUI l_gui{l_drawHook, l_input};
-		// Aimbot l_aimbot{gameVars, l_gui};
-		// Bunnyhop l_bunnyhop{gameVars};
-		// ESP l_esp{gameVars, l_drawHook, l_gui, l_aimbot};
+		DrawHook l_drawHook{gameVars};
+		GUI l_gui{l_drawHook, l_input};
+		Aimbot l_aimbot{gameVars, l_gui};
+		Bunnyhop l_bunnyhop{gameVars};
+		ESP l_esp{gameVars, l_drawHook, l_gui, l_aimbot};
 //		Wallhack l_wallhack;
 
 		while (inGame()) {
@@ -241,30 +247,30 @@ auto hack_loop() -> void {
 			}
 
 			// initialize input bindings
-			// ScopedKeyHandler bhopHandler(l_input,
-			//                              key_bhop,
-			//                              [&](SDL_KeyboardEvent const &event) {
-			// 	                             return onBhopKey(l_bunnyhop, event);
-			//                              });
-			// ScopedKeyHandler aimbotHandler(l_input,
-			//                                key_aim,
-			//                                [&](SDL_KeyboardEvent const &event) {
-			// 	                               return onAimKey(l_aimbot, event);
-			//                                });
-			// ScopedKeyHandler triggerBotHandler(l_input,
-			//                                    key_trigger,
-			//                                    [&](SDL_KeyboardEvent const &event) {
-			// 	                                   return onTriggerKey(l_aimbot, event);
-			//                                    });
+			ScopedKeyHandler bhopHandler(l_input,
+			                             key_bhop,
+			                             [&](SDL_KeyboardEvent const &event) {
+				                             return onBhopKey(l_bunnyhop, event);
+			                             });
+			ScopedKeyHandler aimbotHandler(l_input,
+			                               key_aim,
+			                               [&](SDL_KeyboardEvent const &event) {
+				                               return onAimKey(l_aimbot, event);
+			                               });
+			ScopedKeyHandler triggerBotHandler(l_input,
+			                                   key_trigger,
+			                                   [&](SDL_KeyboardEvent const &event) {
+				                                   return onTriggerKey(l_aimbot, event);
+			                                   });
 
 			while (inPlay()) {
 				std::this_thread::sleep_for(std::chrono::milliseconds(POLL_SLEEP_MS));
 			}
 			// TODO: opening/closing ingame chat quickly will somehow get stuck in the loop
 			// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "!inPlay anymore");
-			// l_input.removeMouseHandler();
-			// l_bunnyhop.stop();
-			// l_aimbot.stopAim();
+			l_input.removeMouseHandler();
+			l_bunnyhop.stop();
+			l_aimbot.stopAim();
 		}
 		// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "!inGame anymore");
 	}

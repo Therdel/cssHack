@@ -49,7 +49,30 @@ GUI::GUI(DrawHook &drawHook, Input &keyboard)
 	m_drawHook.attachSubscriber(this);
 }
 
-GUI::~GUI() {
+GUI::~GUI() {	
+	// // unsubscribe from and block until the last onDraw()
+	// // unsubscribe from onDraw() and await its last call
+	// // this prevents a deadlock with onDraw() which would otherwise lock SDL which we will lock in shutdownImGui()
+	// m_drawHook.detachSubscriber(this);
+
+	// if (std::scoped_lock showGuiLock{m_showGuiMutex};
+	// 	m_showGui) {
+	// 	m_input.removeMouseHandler();
+	// }
+	// {
+	// 	std::scoped_lock lock{m_imguiMutex};
+	// 	if (m_imguiState == ImGuiLifecycle::ACTIVE) {
+	// 		m_imguiState = ImGuiLifecycle::SHUTDOWN_PENDING;
+	// 		SDL_GL_MakeCurrent(m_window, m_sharedGLContext);
+	// 		shutdownImGui();
+	// 		SDL_GL_MakeCurrent(m_window, nullptr);
+	// 		SDL_GL_DeleteContext(m_sharedGLContext);
+	// 	}
+	// 	m_imguiState = ImGuiLifecycle::SHUTDOWN_DONE;
+	// }
+
+	// m_drawHook.detachSubscriber(this);
+
 	if (std::scoped_lock showGuiLock{m_showGuiMutex};
 		m_showGui) {
 		m_input.removeMouseHandler();
@@ -58,13 +81,14 @@ GUI::~GUI() {
 		std::unique_lock lock{m_imguiMutex};
 		if (m_imguiState == ImGuiLifecycle::ACTIVE) {
 			m_imguiState = ImGuiLifecycle::SHUTDOWN_PENDING;
-			SDL_GL_MakeCurrent(m_window, m_sharedGLContext);
-			shutdownImGui();
-			SDL_GL_MakeCurrent(m_window, nullptr);
-			SDL_GL_DeleteContext(m_sharedGLContext);
+			m_imguiCv.wait(lock, [&]{
+				return m_imguiState == ImGuiLifecycle::SHUTDOWN_DONE;
+			});
+		} else {
+			m_imguiState = ImGuiLifecycle::SHUTDOWN_DONE;
 		}
-		m_imguiState = ImGuiLifecycle::SHUTDOWN_DONE;
 	}
+
 	m_drawHook.detachSubscriber(this);
 }
 
@@ -115,7 +139,25 @@ auto GUI::onGuiKey(SDL_KeyboardEvent const &event) -> bool {
 }
 
 auto GUI::onDraw(SDL_Window *window) -> void {
-	std::scoped_lock imguiLock{m_imguiMutex}; // FIXME: DEADLOCK during simulate_external_eject()
+	// blocking renderer thread if ~GUI is running could deadlock,
+	// since ~GUI runs SDL cleanup functions which might block while SDL_SwapWindow is blocked.
+	// const std::unique_lock lock{m_imguiMutex, std::try_to_lock};
+	// if (!lock) {
+	// 	return;
+	// }
+
+	// std::scoped_lock imguiLock{m_imguiMutex}; // FIXME: DEADLOCK during simulate_external_eject()
+	// if (m_imguiState == ImGuiLifecycle::UNINITIALIZED) {
+	// 	initImGui(window);
+	// 	m_imguiState = ImGuiLifecycle::ACTIVE;
+	// }
+
+	// if (m_imguiState == ImGuiLifecycle::ACTIVE) {
+	// 	imGuiNewFrame(window);
+	// }
+
+	// signal onDraw to shut down ImGui on its next pass
+	std::scoped_lock imguiLock{m_imguiMutex};
 	if (m_imguiState == ImGuiLifecycle::UNINITIALIZED) {
 		initImGui(window);
 		m_imguiState = ImGuiLifecycle::ACTIVE;
@@ -123,6 +165,15 @@ auto GUI::onDraw(SDL_Window *window) -> void {
 
 	if (m_imguiState == ImGuiLifecycle::ACTIVE) {
 		imGuiNewFrame(window);
+	} else if (m_imguiState == ImGuiLifecycle::SHUTDOWN_PENDING) {
+		// we're on the render thread → SDL/GL calls are safe here
+		
+		// SDL_GL_MakeCurrent(m_window, m_sharedGLContext);
+		shutdownImGui();
+		// SDL_GL_MakeCurrent(m_window, nullptr);
+		// SDL_GL_DeleteContext(m_sharedGLContext);
+		m_imguiState = ImGuiLifecycle::SHUTDOWN_DONE;
+		m_imguiCv.notify_all();
 	}
 }
 
@@ -159,12 +210,12 @@ auto GUI::initImGui(SDL_Window *window) -> void {
 	// Setup Platform/Renderer bindings
 	{
 		// create GL context shared with renderer to allow GL cleanup calls in Destructor running on another thread 
-		SDL_GLContext game_renderer_context = SDL_GL_GetCurrentContext();
-		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-		m_sharedGLContext = SDL_GL_CreateContext(window); // shares game's context namespace
-		m_window = window;
-		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
-		SDL_GL_MakeCurrent(window, game_renderer_context); // restore game's context as current
+		// SDL_GLContext game_renderer_context = SDL_GL_GetCurrentContext();
+		// SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+		// m_sharedGLContext = SDL_GL_CreateContext(window); // shares game's context namespace
+		// m_window = window;
+		// SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
+		// SDL_GL_MakeCurrent(window, game_renderer_context); // restore game's context as current
 	}
 	ImGui_ImplSDL2_InitForOpenGL(window, SDL_GL_GetCurrentContext());
 	ImGui_ImplOpenGL3_Init(glsl_version);

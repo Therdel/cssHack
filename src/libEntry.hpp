@@ -3,17 +3,24 @@
 #include <mutex>
 #include <atomic>
 
+enum class Lifecycle {
+	RUNNING,
+	EJECTING_BY_OURSELF,
+	EJECTING_EXTERNALLY,
+};
+
 // flag that tells if the hack was loaded before
-extern std::atomic_bool g_loaded;
-extern std::mutex g_ejectingFromWithinGameMutex;
-extern std::atomic_bool g_ejectingFromWithinGame;
+extern std::atomic<Lifecycle> g_lifecycle;
+// extern std::atomic_bool g_loaded;
+// extern std::mutex g_ejectingFromWithinGameMutex;
+// extern std::atomic_bool g_ejectingFromWithinGame;
 
 #ifdef __linux__
 
 #include <pthread.h>
 
 extern pthread_t g_nix_hack_thread;
-extern pthread_t g_nix_eject_thread;
+// extern pthread_t g_nix_eject_thread;
 
 auto nix_hack_main(void *) -> void*;
 
@@ -27,7 +34,7 @@ auto exitLibrary() -> void;
 
 auto eject_from_within_hack() -> void;
 
-auto eject_hack(void *) -> void*;
+// auto eject_hack(void *) -> void*;
 
 #else // windows
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers

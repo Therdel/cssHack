@@ -201,6 +201,7 @@ void ImGui_ImplSDL2_Shutdown()
     g_ClipboardTextData = NULL;
 
     // Destroy SDL mouse cursors
+    // SDL_SetCursor(NULL); 
     for (ImGuiMouseCursor cursor_n = 0; cursor_n < ImGuiMouseCursor_COUNT; cursor_n++)
         SDL_FreeCursor(g_MouseCursors[cursor_n]);
     memset(g_MouseCursors, 0, sizeof(g_MouseCursors));

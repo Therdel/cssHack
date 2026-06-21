@@ -42,7 +42,8 @@ set print thread-events on
 # cont
 
 set \$dlopen = (void*(*)(char*, int)) dlopen
-set \$result = \$dlopen(\"$libraryPath\", 1)
+set \$RTLD_NOW = 2
+set \$result = \$dlopen(\"$libraryPath\", \$RTLD_NOW)
 
 if \$result == 0
     printf \"Injection Error: %s\\n\", (char*)dlerror()

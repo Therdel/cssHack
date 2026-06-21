@@ -7,37 +7,34 @@
 #include "Log.hpp"
 #include "MemoryUtils.hpp"
 
-std::atomic_bool g_loaded{false};
-// std::mutex g_ejectingFromWithinGameMutex;
-// std::atomic_bool g_ejectingFromWithinGame{false};
-std::atomic_bool g_eject_initiated{false};
+std::atomic<Lifecycle> g_lifecycle{Lifecycle::RUNNING};
 
 #ifdef __linux__
 
 #include <dlfcn.h>      // dlopen, dlclose
 pthread_t g_nix_hack_thread;
-// pthread_t g_nix_eject_thread;
 
 __attribute__((constructor))
 auto initLibrary() -> void {
-
 	// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "initLibrary");
-
-	nix_init_hack();
+	
+	// start hack in its own thread
+	pthread_create(&g_nix_hack_thread, nullptr, &nix_hack_main, nullptr);
+	pthread_setname_np(g_nix_hack_thread, "cssHack");
 }
 
 __attribute__((destructor))
 auto exitLibrary() -> void {
-	// // Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "exitLibrary()");
-	// if (g_ejectingFromWithinGame) {
-	// 	if (pthread_join(g_nix_eject_thread, nullptr) != 0) {
-	// 		Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "Join eject-thread failed");
-	// 	}
-	// } else {
-		// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "exitLibrary::eject_hack()");
-		eject_hack(nullptr);
-	// }
-	// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "exited Library");
+	auto expected = Lifecycle::RUNNING;
+	g_lifecycle.compare_exchange_strong(expected, Lifecycle::EJECTING_EXTERNALLY);
+	
+	// wait for hack termination
+	if (pthread_join(g_nix_hack_thread, nullptr) != 0) {
+		Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "Join hack main failed");
+	}
+	
+	// TODO: unhook here?
+	Log::stop();
 }
 
 auto nix_hack_main(void *) -> void* {
@@ -46,39 +43,51 @@ auto nix_hack_main(void *) -> void* {
 	}
 	catch (std::exception & e) {
 		const auto what = e.what();
-		Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "Exception: ", e.what(), "\nExiting."); // FIXME: somehow deadlocks when exception happens...
-		// TODO: check this
-		// TODO: debug with simulate_external_eject().
+		// FIXME: somehow deadlocks when exception happens...
+		// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "Exception: ", e.what(), "\nExiting.");
+		// TODO: debug with simulate_external_eject(). (not really, won't stop all threads right?)
 		//       this is needed when Input is destroyed as part of hack_loop().
-		if (!g_do_exit) {
-			// user didn't wish for exit. Eject.
-			eject_from_within_hack();
-		}
+
+		// if we're not ejecting already, we must ensure self-ejection
+		auto expected = Lifecycle::RUNNING;
+		g_lifecycle.compare_exchange_strong(expected, Lifecycle::EJECTING_BY_OURSELF);
+		
+	}
+	
+	if (g_lifecycle == Lifecycle::EJECTING_BY_OURSELF) {
+		const auto libPath = MemoryUtils::this_lib_path();
+
+		// 1. get library handle (dlopen), incrementing the library handle's reference count by 1.
+		// 2. close once (dlclose) to decrement/restore the reference count again
+		// source: https://linux.die.net/man/3/dlclose
+		void *handle = dlopen(libPath.c_str(),  RTLD_LAZY | RTLD_NOLOAD);
+		dlclose(handle);
+
+		// call dlclose in a separate thread so this library code can be
+		// safely deallocated during dlclose
+		pthread_t dlcloseThread;
+		pthread_attr_t tAttr;
+		pthread_attr_init(&tAttr);
+		pthread_attr_setdetachstate(&tAttr, PTHREAD_CREATE_DETACHED);
+		// run dlclose in a separate thread, which will run __attribute((destructor)), which joins this "main" thread.
+		// After dlclose() finishes the destructor, it deallocates the library.
+		// This is safe as no thread is running any of its code at that point.
+		pthread_create(&dlcloseThread, &tAttr, (void *(*)(void *)) dlclose, handle);
 	}
 
 	return nullptr;
 }
 
-auto nix_init_hack() -> void {
-	if (g_loaded == false) {
-		g_do_exit = false;
-
-		// start hack in its own thread
-		pthread_create(&g_nix_hack_thread, nullptr, &nix_hack_main, nullptr);
-		pthread_setname_np(g_nix_hack_thread, "cssHack");
-
-
-		g_loaded = true;
-	}
-}
-
+// TODO
 auto simulate_external_eject() -> void {
-	bool expected = false;
-	const bool exchanged = g_eject_initiated.compare_exchange_strong(expected, true, std::memory_order_seq_cst);
-	if (!exchanged) {
-		// another thread already initiated eject, so we can just return
-		return;
-	}
+	// // TODO: NOT HOW EXTERNAL EJECT WOULD WORK - EXTERNAL WOULD CAS IN DESTRUCTOR, NOT HERE!!
+	// // 		only here to prevent multiple concurrent calls.
+	// auto expected = Lifecycle::RUNNING;
+	// const bool exchanged = g_lifecycle.compare_exchange_strong(expected, Lifecycle::EJECTING_EXTERNALLY);
+	// if (!exchanged) {
+	// 	// another thread already initiated eject, so we can just return
+	// 	return;
+	// }
 
 	auto libPath = MemoryUtils::this_lib_path();
 	void *handle = dlopen(libPath.c_str(),  RTLD_LAZY | RTLD_NOLOAD);
@@ -92,58 +101,18 @@ auto simulate_external_eject() -> void {
 }
 
 auto eject_from_within_hack() -> void {
-	simulate_external_eject();
-	// // Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "eject_from_within_hack()");
-	// std::scoped_lock l_lock(g_ejectingFromWithinGameMutex);
-	// if (!g_ejectingFromWithinGame) {
-	// 	// g_do_exit = true;
-	// 	g_ejectingFromWithinGame = true;
+	auto expected = Lifecycle::RUNNING;
+	const auto exchanged = g_lifecycle.compare_exchange_strong(
+		expected,
+		Lifecycle::EJECTING_BY_OURSELF);
+	
+	// TODO: why does this deadlock renderer in GUI::onDraw?
+	//     - SDL_FreeCursor doesn't run, it deadlocks
+	// simulate_external_eject();
 
-	// 	pthread_create(&g_nix_eject_thread, nullptr, &eject_hack, nullptr);
-	// 	pthread_setname_np(g_nix_eject_thread, "cssHack_eject");
+	// if (exchanged) {
+	// 	Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "eject_from_within_hack()");
 	// }
-}
-
-auto eject_hack(void *) -> void* {
-	// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "eject_hack()");
-	// ensure hack was loaded before
-	if (g_loaded == true) {
-		g_loaded = false;
-		// stop hack loop
-		g_do_exit = true;
-
-		// wait for hack termination
-		// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "eject_hack::join hack main");
-		if (pthread_join(g_nix_hack_thread, nullptr) != 0) {
-			Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "Join hack main failed");
-		}
-		// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "eject_hack::join hack main done");
-		Log::stop();
-		// Log::log<Log::FLUSH>(Log::Channel::MESSAGE_BOX, "eject_hack::join hack main done, log stopped");
-
-		// if (g_ejectingFromWithinGame) {
-		// 	auto libPath = MemoryUtils::this_lib_path();
-
-		// 	// 1. get library handle (dlopen), incrementing the library handle's reference count by 1.
-		// 	// 2. close once (dlclose) to decrement/restore the reference count again
-		// 	// source: https://linux.die.net/man/3/dlclose
-		// 	void *handle = dlopen(libPath.c_str(),  RTLD_LAZY | RTLD_NOLOAD);
-		// 	dlclose(handle);
-
-		// 	// call dlclose in a separate thread so this library code can be
-		// 	// safely deallocated during dlclose
-		// 	std::scoped_lock l_lock(g_ejectingFromWithinGameMutex); // TODO: remove lock
-		// 	pthread_attr_t tAttr;
-		// 	pthread_t dlcloseThread;
-		// 	pthread_attr_init(&tAttr);
-		// 	pthread_attr_setdetachstate(&tAttr, PTHREAD_CREATE_DETACHED);
-		// 	// run dlclose in a separate thread, which will run __attribute((destructor)), which joins this "eject" thread.
-		// 	// After dlclose() finishes the destructor, it deallocates the library.
-		// 	// This is safe as no thread is running any of its code at that point.
-		// 	pthread_create(&dlcloseThread, &tAttr, (void *(*)(void *)) dlclose, handle);
-		// }
-	}
-	return nullptr;
 }
 
 #else // windows
